@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% block page_name %}Mes Demandes de Livraison{% endblock %}
+{% block content %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Demandes de Livraison</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        .status-badge {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        
+        .status-EN_ATTENTE {
+            background-color: #ffc107;
+            color: #000;
+        }
+        
+        .status-VALIDATION_CLIENT {
+            background-color: #17a2b8;
+            color: #fff;
+        }
+        
+        .status-VALIDATION_LIVREUR {
+            background-color: #007bff;
+            color: #fff;
+        }
+        
+        .status-LIVREUR_ROUTE {
+            background-color: #fd7e14;
+            color: #fff;
+        }
+        
+        .status-RECEPTION_COLIS {
+            background-color: #6610f2;
+            color: #fff;
+        }
+        
+        .status-LIVRAISON_EN_ROUTE {
+            background-color: #e83e8c;
+            color: #fff;
+        }
+        
+        .status-TERMINEE {
+            background-color: #28a745;
+            color: #fff;
+        }
+        
+        .status-ANNULEE {
+            background-color: #dc3545;
+            color: #fff;
+        }
+        
+        .demande-card {
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+        
+        .demande-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>📦 Mes Demandes de Livraison</h2>
+            <a href="{% url 'creer_demande' %}" class="btn btn-primary">
+                ➕ Nouvelle Demande
+            </a>
+        </div>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        {% if demandes %}
+            <div class="row">
+                {% for demande in demandes %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card demande-card h-100" onclick="window.location.href='{% url 'detail_demande' demande.id %}'">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <h5 class="card-title mb-0">{{ demande.ref }}</h5>
+                                <span class="status-badge status-{{ demande.statut }}">
+                                    {{ demande.get_statut_display|truncatewords:2 }}
+                                </span>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <small class="text-muted">🟢 Départ:</small>
+                                <p class="mb-1">{{ demande.adresse_depart|truncatewords:5 }}</p>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <small class="text-muted">🔴 Destination:</small>
+                                <p class="mb-1">{{ demande.adresse_destination|truncatewords:5 }}</p>
+                            </div>
+                            
+                            <hr>
+                            
+                            <div class="row">
+                                <div class="col-6">
+                                    <small class="text-muted">Type:</small>
+                                    <p class="mb-0"><strong>{{ demande.get_type_course_display }}</strong></p>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted">Poids:</small>
+                                    <p class="mb-0"><strong>{{ demande.poids_colis }} kg</strong></p>
+                                </div>
+                            </div>
+                            
+                            {% if demande.cout_livraison %}
+                            <div class="mt-2">
+                                <small class="text-muted">Coût:</small>
+                                <p class="mb-0 text-primary"><strong>{{ demande.cout_livraison }} FCFA</strong></p>
+                            </div>
+                            {% endif %}
+                            
+                            <hr>
+                            
+                            <small class="text-muted">
+                                📅 {{ demande.date_demande|date:"d/m/Y à H:i" }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info text-center">
+                <h4>Aucune demande pour le moment</h4>
+                <p>Créez votre première demande de livraison en cliquant sur le bouton ci-dessus.</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

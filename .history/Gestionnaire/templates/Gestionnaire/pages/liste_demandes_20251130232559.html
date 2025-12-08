@@ -1,0 +1,614 @@
+{% extends 'base_gestionnaire.html' %}
+{% load static %}
+
+{% block title %}Liste des Demandes de Coursier{% endblock %}
+
+{% block content %}
+{% block extra_css %}
+<style>
+:root {
+    --primary-color: #4f46e5;
+    --secondary-color: #6366f1;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --info-color: #3b82f6;
+    --light-bg: #f8fafc;
+    --card-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    --card-hover-shadow: 0 12px 28px rgba(0,0,0,0.12);
+}
+
+/* Styles communs */
+.card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: var(--card-shadow);
+    transition: all 0.3s ease;
+    margin-bottom: 1.5rem;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--card-hover-shadow);
+}
+
+.card-header {
+    background: white;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    border-radius: 16px 16px 0 0 !important;
+    padding: 1.25rem 1.5rem;
+}
+
+.card-header h6 {
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+/* Styles pour la liste des demandes */
+.status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.status-EN_ATTENTE {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-VALIDATION_CLIENT {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.status-VALIDATION_LIVREUR {
+    background: #e0e7ff;
+    color: #4338ca;
+}
+
+.status-LIVREUR_ROUTE {
+    background: #fed7aa;
+    color: #9a3412;
+}
+
+.status-RECEPTION_COLIS {
+    background: #e9d5ff;
+    color: #6b21a8;
+}
+
+.status-LIVRAISON_EN_ROUTE {
+    background: #fce7f3;
+    color: #9f1239;
+}
+
+.status-TERMINEE {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-ANNULEE {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* Tableau des demandes */
+.table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 0.75rem;
+    margin: -0.75rem 0;
+}
+
+.table thead th {
+    border: none;
+    background: var(--light-bg);
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    padding: 0.75rem 1.25rem;
+}
+
+.table tbody tr {
+    background: white;
+    transition: all 0.3s ease;
+    border-radius: 12px;
+}
+
+.table tbody tr:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.table tbody td {
+    vertical-align: middle;
+    padding: 1rem 1.25rem;
+    border-top: 1px solid #f1f5f9;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.table tbody td:first-child {
+    border-left: 1px solid #f1f5f9;
+    border-radius: 12px 0 0 12px;
+}
+
+.table tbody td:last-child {
+    border-right: 1px solid #f1f5f9;
+    border-radius: 0 12px 12px 0;
+}
+
+/* Boutons d'action */
+.btn-action {
+    padding: 0.5rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+}
+
+.btn-action:hover {
+    transform: translateY(-2px);
+}
+
+.btn-sm i {
+    font-size: 0.8rem;
+}
+
+/* Filtres */
+.filters-section {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--card-shadow);
+}
+
+.filter-group {
+    margin-bottom: 1rem;
+}
+
+.search-box {
+    position: relative;
+}
+
+.search-box input {
+    padding: 0.75rem 1rem 0.75rem 2.75rem;
+    border-radius: 12px;
+    border: 2px solid #e2e8f0;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.search-box input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    outline: none;
+}
+
+.search-box i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+}
+
+/* Pagination */
+.pagination {
+    margin-top: 2rem;
+}
+
+.page-item .page-link {
+    border: none;
+    color: #64748b;
+    margin: 0 0.25rem;
+    border-radius: 8px;
+    min-width: 36px;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.page-item.active .page-link {
+    background: var(--primary-color);
+    color: white;
+}
+
+.page-item .page-link:hover {
+    background: #f1f5f9;
+    color: var(--primary-color);
+}
+
+/* Badges */
+.badge {
+    padding: 0.5em 0.8em;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* Cartes de statistiques */
+.stats-card {
+    border-left: 4px solid;
+    transition: all 0.3s ease;
+}
+
+.stats-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--card-hover-shadow);
+}
+
+.stats-card .card-body {
+    padding: 1.5rem;
+}
+
+.stats-card .stats-title {
+    font-size: 0.875rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+}
+
+.stats-card .stats-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+/* Timeline */
+.timeline-step {
+    position: relative;
+    padding-left: 2rem;
+    margin-bottom: 2rem;
+}
+
+.timeline-step:last-child {
+    margin-bottom: 0;
+}
+
+.timeline-step::before {
+    content: '';
+    position: absolute;
+    left: 0.5rem;
+    top: 0.5rem;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    z-index: 1;
+}
+
+.timeline-step.active::before {
+    width: 16px;
+    height: 16px;
+    left: 0.25rem;
+    top: 0.25rem;
+    background: var(--success-color);
+}
+
+.timeline-step.completed::before {
+    background: var(--success-color);
+}
+
+.timeline-content {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: var(--card-shadow);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .table-responsive {
+        border: none;
+    }
+    
+    .table thead {
+        display: none;
+    }
+    
+    .table tbody tr {
+        display: block;
+        margin-bottom: 1.5rem;
+        border-radius: 12px;
+        box-shadow: var(--card-shadow);
+    }
+    
+    .table tbody td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        border: none;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    
+    .table tbody td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #64748b;
+        margin-right: 1rem;
+        flex: 1;
+    }
+    
+    .table tbody td:last-child {
+        border-bottom: none;
+    }
+    
+    .table tbody td:first-child,
+    .table tbody td:last-child {
+        border-radius: 0;
+    }
+    
+    .table tbody tr:last-child {
+        margin-bottom: 0;
+    }
+}
+</style>
+{% endblock %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-0 text-gray-800">Gestion des Demandes de Coursier</h1>
+        </div>
+    </div>
+
+    <!-- Cartes de statistiques -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total des demandes</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_demandes }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                En attente</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ demandes_en_attente }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                En cours</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ demandes_en_cours }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-sync fa-spin fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Terminées</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ demandes_terminees }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulaire de recherche et filtres -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Filtres de recherche</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" class="form-inline">
+                <div class="form-group mx-sm-3 mb-2">
+                    <input type="text" name="q" class="form-control" placeholder="Rechercher..." value="{{ search_query }}">
+                </div>
+                <div class="form-group mx-sm-3 mb-2">
+                    <select name="statut" class="form-control">
+                        <option value="">Tous les statuts</option>
+                        {% for statut in statut_choices %}
+                            <option value="{{ statut.0 }}" {% if selected_statut == statut.0 %}selected{% endif %}>
+                                {{ statut.1 }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group mx-sm-3 mb-2">
+                    <select name="type_course" class="form-control">
+                        <option value="">Tous les types</option>
+                        {% for type in type_course_choices %}
+                            <option value="{{ type.0 }}" {% if selected_type == type.0 %}selected{% endif %}>
+                                {{ type.1 }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary mb-2">
+                    <i class="fas fa-search"></i> Filtrer
+                </button>
+                <a href="{% url 'Gestionnaire:liste_demandes' %}" class="btn btn-secondary mb-2 ml-2">
+                    <i class="fas fa-sync-alt"></i> Réinitialiser
+                </a>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tableau des demandes -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Liste des demandes</h6>
+            <a href="#" class="btn btn-success btn-sm">
+                <i class="fas fa-plus"></i> Nouvelle demande
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Référence</th>
+                            <th>Date</th>
+                            <th>Client</th>
+                            <th>Adresse de départ</th>
+                            <th>Adresse d'arrivée</th>
+                            <th>Type</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for demande in demandes %}
+                        <tr>
+                            <td>{{ demande.ref }}</td>
+                            <td>{{ demande.date_demande|date:"d/m/Y H:i" }}</td>
+                            <td>{{ demande.client.get_full_name|default:demande.client.username }}</td>
+                            <td>{{ demande.adresse_depart|truncatechars:30 }}</td>
+                            <td>{{ demande.adresse_destination|truncatechars:30 }}</td>
+                            <td>
+                                <span class="badge {% if demande.type_course == 'EXPRESSE' %}bg-warning{% else %}bg-info{% endif %}">
+                                    {{ demande.get_type_course_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge 
+                                    {% if demande.statut == 'EN_ATTENTE' %}bg-secondary
+                                    {% elif demande.statut == 'TERMINEE' %}bg-success
+                                    {% elif demande.statut == 'ANNULEE' %}bg-danger
+                                    {% else %}bg-primary{% endif %}">
+                                    {{ demande.get_statut_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{% url 'Gestionnaire:detail_demande' demande.pk %}" class="btn btn-info btn-sm" title="Voir les détails">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="#" class="btn btn-primary btn-sm" title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center">Aucune demande trouvée</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <div class="mt-3">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_statut %}&statut={{ selected_statut }}{% endif %}{% if selected_type %}&type_course={{ selected_type }}{% endif %}" aria-label="First">
+                                    <span aria-hidden="true">&laquo;&laquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_statut %}&statut={{ selected_statut }}{% endif %}{% if selected_type %}&type_course={{ selected_type }}{% endif %}" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                        {% endif %}
+                        
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_statut %}&statut={{ selected_statut }}{% endif %}{% if selected_type %}&type_course={{ selected_type }}{% endif %}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_statut %}&statut={{ selected_statut }}{% endif %}{% if selected_type %}&type_course={{ selected_type }}{% endif %}" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_statut %}&statut={{ selected_statut }}{% endif %}{% if selected_type %}&type_course={{ selected_type }}{% endif %}" aria-label="Last">
+                                    <span aria-hidden="true">&raquo;&raquo;</span>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Page level plugins -->
+<script src="{% static 'vendor/datatables/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>
+
+<!-- Page level custom scripts -->
+<script>
+    $(document).ready(function() {
+        // Initialisation de DataTables
+        var table = $('#dataTable').DataTable({
+            "paging": false,
+            "info": false,
+            "searching": false,
+            "order": [[1, "desc"]] // Tri par défaut sur la colonne date
+        });
+        
+        // Gestion des filtres
+        $('select[name="statut"], select[name="type_course"]').on('change', function() {
+            $('form').submit();
+        });
+    });
+</script>
+{% endblock %}

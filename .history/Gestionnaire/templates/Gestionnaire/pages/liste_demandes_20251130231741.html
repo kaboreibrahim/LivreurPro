@@ -1,0 +1,921 @@
+{% extends 'base_gestionnaire.html' %}
+{% load static %}
+
+{% block title %}Liste des Demandes de Coursier{% endblock %}
+
+{% block content %}
+
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --secondary-color: #6366f1;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --info-color: #3b82f6;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            min-height: 100vh;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        
+        .page-header {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0;
+        }
+        
+        .page-subtitle {
+            color: #64748b;
+            margin-top: 0.5rem;
+            font-size: 0.95rem;
+        }
+        
+        .btn-primary-custom {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+        
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+        }
+        
+        /* Filtres */
+        .filters-section {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        
+        .filter-group {
+            margin-bottom: 0;
+        }
+        
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            color: #64748b;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .filter-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .filter-btn.active {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+        
+        .search-box {
+            position: relative;
+        }
+        
+        .search-box input {
+            padding: 0.75rem 1rem 0.75rem 2.75rem;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+        
+        .search-box input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            outline: none;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+        
+        /* Cartes de demandes */
+        .demande-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            cursor: pointer;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .demande-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .demande-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+            border-color: var(--primary-color);
+        }
+        
+        .demande-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .card-header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1.5rem;
+        }
+        
+        .demande-ref {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0;
+        }
+        
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .status-EN_ATTENTE {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-VALIDATION_CLIENT {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .status-VALIDATION_LIVREUR {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+        
+        .status-LIVREUR_ROUTE {
+            background: #fed7aa;
+            color: #9a3412;
+        }
+        
+        .status-RECEPTION_COLIS {
+            background: #e9d5ff;
+            color: #6b21a8;
+        }
+        
+        .status-LIVRAISON_EN_ROUTE {
+            background: #fce7f3;
+            color: #9f1239;
+        }
+        
+        .status-TERMINEE {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-ANNULEE {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .location-section {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .location-item {
+            display: flex;
+            align-items: start;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .location-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .location-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 1rem;
+        }
+        
+        .location-icon.departure {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .location-icon.destination {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .location-text {
+            flex: 1;
+        }
+        
+        .location-label {
+            font-size: 0.75rem;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .location-address {
+            color: #1e293b;
+            font-weight: 500;
+            margin: 0.25rem 0 0 0;
+            font-size: 0.9rem;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .info-item {
+            background: #f8fafc;
+            padding: 0.75rem;
+            border-radius: 8px;
+        }
+        
+        .info-label {
+            font-size: 0.75rem;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.25rem;
+        }
+        
+        .info-value {
+            color: #1e293b;
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin: 0;
+        }
+        
+        .cost-section {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            padding: 1rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+            text-align: center;
+        }
+        
+        .cost-label {
+            font-size: 0.75rem;
+            color: #0369a1;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .cost-value {
+            color: #0c4a6e;
+            font-weight: 800;
+            font-size: 1.5rem;
+            margin: 0.25rem 0 0 0;
+        }
+        
+        .card-footer-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 2px solid #f1f5f9;
+        }
+        
+        .date-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #64748b;
+            font-size: 0.85rem;
+        }
+        
+        .view-details {
+            color: var(--primary-color);
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        /* Empty state */
+        .empty-state {
+            background: white;
+            border-radius: 16px;
+            padding: 4rem 2rem;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .empty-state h3 {
+            color: #1e293b;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .empty-state p {
+            color: #64748b;
+            margin-bottom: 2rem;
+        }
+        
+        /* Stats cards */
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #1e293b;
+            margin: 0.5rem 0;
+        }
+        
+        .stat-label {
+            color: #64748b;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        /* Responsive Mobile First */
+        @media (max-width: 768px) {
+            body {
+                background: white;
+            }
+            
+            .container {
+                padding: 0;
+            }
+            
+            .page-header {
+                padding: 1rem;
+                border-radius: 0 0 24px 24px;
+                margin-bottom: 1rem;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            }
+            
+            .page-title {
+                font-size: 1.5rem;
+            }
+            
+            .page-subtitle {
+                font-size: 0.85rem;
+            }
+            
+            .btn-primary-custom {
+                width: 100%;
+                padding: 1rem;
+                font-size: 1rem;
+                margin-top: 1rem;
+            }
+            
+            /* Stats en carousel horizontal */
+            .stats-cards {
+                display: flex;
+                overflow-x: auto;
+                gap: 0.75rem;
+                padding: 0 1rem;
+                margin-bottom: 1rem;
+                scroll-snap-type: x mandatory;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .stats-cards::-webkit-scrollbar {
+                display: none;
+            }
+            
+            .stat-card {
+                min-width: 140px;
+                padding: 1rem;
+                scroll-snap-align: start;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            }
+            
+            .stat-value {
+                font-size: 1.75rem;
+            }
+            
+            .stat-label {
+                font-size: 0.8rem;
+            }
+            
+            /* Filtres adaptés mobile */
+            .filters-section {
+                padding: 1rem;
+                border-radius: 0;
+                margin-bottom: 0;
+                position: sticky;
+                top: 0;
+                z-index: 100;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            }
+            
+            .filter-group {
+                display: flex;
+                overflow-x: auto;
+                gap: 0.5rem;
+                padding-bottom: 0.5rem;
+                scroll-snap-type: x mandatory;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .filter-group::-webkit-scrollbar {
+                display: none;
+            }
+            
+            .filter-btn {
+                white-space: nowrap;
+                margin: 0;
+                padding: 0.65rem 1rem;
+                font-size: 0.85rem;
+                scroll-snap-align: start;
+                flex-shrink: 0;
+            }
+            
+            .search-box {
+                margin-top: 0.75rem;
+            }
+            
+            .search-box input {
+                padding: 0.85rem 1rem 0.85rem 2.75rem;
+                font-size: 0.95rem;
+            }
+            
+            /* Cards optimisées mobile */
+            .row {
+                margin: 0;
+            }
+            
+            .demande-item {
+                padding: 0 0.75rem 0.75rem 0.75rem;
+            }
+            
+            .demande-card {
+                padding: 1.25rem;
+                border-radius: 20px;
+                box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            }
+            
+            .demande-card:active {
+                transform: scale(0.98);
+            }
+            
+            .card-header-section {
+                margin-bottom: 1.25rem;
+                flex-direction: column;
+                gap: 0.75rem;
+                align-items: flex-start;
+            }
+            
+            .demande-ref {
+                font-size: 1.15rem;
+            }
+            
+            .status-badge {
+                padding: 0.5rem 1rem;
+                font-size: 0.7rem;
+                align-self: flex-start;
+            }
+            
+            .location-section {
+                padding: 1rem;
+                margin-bottom: 1rem;
+            }
+            
+            .location-item {
+                margin-bottom: 1rem;
+            }
+            
+            .location-icon {
+                width: 36px;
+                height: 36px;
+            }
+            
+            .location-label {
+                font-size: 0.7rem;
+            }
+            
+            .location-address {
+                font-size: 0.95rem;
+                line-height: 1.4;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 0.75rem;
+            }
+            
+            .info-item {
+                padding: 0.85rem;
+            }
+            
+            .info-label {
+                font-size: 0.7rem;
+            }
+            
+            .info-value {
+                font-size: 1rem;
+            }
+            
+            .cost-section {
+                padding: 1rem;
+                margin: 1rem 0;
+            }
+            
+            .cost-label {
+                font-size: 0.7rem;
+            }
+            
+            .cost-value {
+                font-size: 1.75rem;
+            }
+            
+            .card-footer-section {
+                flex-direction: column;
+                gap: 0.75rem;
+                align-items: flex-start;
+                padding-top: 1rem;
+            }
+            
+            .date-info {
+                font-size: 0.8rem;
+            }
+            
+            .view-details {
+                font-size: 0.9rem;
+                align-self: flex-end;
+            }
+            
+            /* Empty state mobile */
+            .empty-state {
+                margin: 1rem;
+                padding: 3rem 1.5rem;
+                border-radius: 20px;
+            }
+            
+            .empty-state-icon {
+                font-size: 3rem;
+            }
+            
+            .empty-state h3 {
+                font-size: 1.25rem;
+            }
+            
+            .empty-state p {
+                font-size: 0.9rem;
+            }
+            
+            /* Messages d'alerte */
+            .alert {
+                margin: 0 1rem 1rem 1rem;
+                border-radius: 12px;
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* Très petits écrans */
+        @media (max-width: 375px) {
+            .page-title {
+                font-size: 1.3rem;
+            }
+            
+            .stat-card {
+                min-width: 120px;
+            }
+            
+            .demande-card {
+                padding: 1rem;
+            }
+            
+            .cost-value {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-0 text-gray-800">Gestion des Demandes de Coursier</h1>
+        </div>
+    </div>
+
+    <!-- Cartes de statistiques -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total des demandes</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_demandes }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                En attente</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ demandes_en_attente }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                En cours</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ demandes_en_cours }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-sync fa-spin fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Terminées</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ demandes_terminees }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulaire de recherche et filtres -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Filtres de recherche</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" class="form-inline">
+                <div class="form-group mx-sm-3 mb-2">
+                    <input type="text" name="q" class="form-control" placeholder="Rechercher..." value="{{ search_query }}">
+                </div>
+                <div class="form-group mx-sm-3 mb-2">
+                    <select name="statut" class="form-control">
+                        <option value="">Tous les statuts</option>
+                        {% for statut in statut_choices %}
+                            <option value="{{ statut.0 }}" {% if selected_statut == statut.0 %}selected{% endif %}>
+                                {{ statut.1 }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group mx-sm-3 mb-2">
+                    <select name="type_course" class="form-control">
+                        <option value="">Tous les types</option>
+                        {% for type in type_course_choices %}
+                            <option value="{{ type.0 }}" {% if selected_type == type.0 %}selected{% endif %}>
+                                {{ type.1 }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary mb-2">
+                    <i class="fas fa-search"></i> Filtrer
+                </button>
+                <a href="{% url 'Gestionnaire:liste_demandes' %}" class="btn btn-secondary mb-2 ml-2">
+                    <i class="fas fa-sync-alt"></i> Réinitialiser
+                </a>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tableau des demandes -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Liste des demandes</h6>
+            <a href="#" class="btn btn-success btn-sm">
+                <i class="fas fa-plus"></i> Nouvelle demande
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Référence</th>
+                            <th>Date</th>
+                            <th>Client</th>
+                            <th>Adresse de départ</th>
+                            <th>Adresse d'arrivée</th>
+                            <th>Type</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for demande in demandes %}
+                        <tr>
+                            <td>{{ demande.ref }}</td>
+                            <td>{{ demande.date_demande|date:"d/m/Y H:i" }}</td>
+                            <td>{{ demande.client.get_full_name|default:demande.client.username }}</td>
+                            <td>{{ demande.adresse_depart|truncatechars:30 }}</td>
+                            <td>{{ demande.adresse_destination|truncatechars:30 }}</td>
+                            <td>
+                                <span class="badge {% if demande.type_course == 'EXPRESSE' %}bg-warning{% else %}bg-info{% endif %}">
+                                    {{ demande.get_type_course_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge 
+                                    {% if demande.statut == 'EN_ATTENTE' %}bg-secondary
+                                    {% elif demande.statut == 'TERMINEE' %}bg-success
+                                    {% elif demande.statut == 'ANNULEE' %}bg-danger
+                                    {% else %}bg-primary{% endif %}">
+                                    {{ demande.get_statut_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{% url 'Gestionnaire:detail_demande' demande.pk %}" class="btn btn-info btn-sm" title="Voir les détails">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="#" class="btn btn-primary btn-sm" title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center">Aucune demande trouvée</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <div class="mt-3">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_statut %}&statut={{ selected_statut }}{% endif %}{% if selected_type %}&type_course={{ selected_type }}{% endif %}" aria-label="First">
+                                    <span aria-hidden="true">&laquo;&laquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_statut %}&statut={{ selected_statut }}{% endif %}{% if selected_type %}&type_course={{ selected_type }}{% endif %}" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                        {% endif %}
+                        
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_statut %}&statut={{ selected_statut }}{% endif %}{% if selected_type %}&type_course={{ selected_type }}{% endif %}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_statut %}&statut={{ selected_statut }}{% endif %}{% if selected_type %}&type_course={{ selected_type }}{% endif %}" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_statut %}&statut={{ selected_statut }}{% endif %}{% if selected_type %}&type_course={{ selected_type }}{% endif %}" aria-label="Last">
+                                    <span aria-hidden="true">&raquo;&raquo;</span>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Page level plugins -->
+<script src="{% static 'vendor/datatables/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>
+
+<!-- Page level custom scripts -->
+<script>
+    $(document).ready(function() {
+        // Initialisation de DataTables
+        var table = $('#dataTable').DataTable({
+            "paging": false,
+            "info": false,
+            "searching": false,
+            "order": [[1, "desc"]] // Tri par défaut sur la colonne date
+        });
+        
+        // Gestion des filtres
+        $('select[name="statut"], select[name="type_course"]').on('change', function() {
+            $('form').submit();
+        });
+    });
+</script>
+{% endblock %}

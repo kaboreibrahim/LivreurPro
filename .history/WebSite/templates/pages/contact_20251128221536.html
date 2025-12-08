@@ -1,0 +1,174 @@
+{% extends 'layouts/base_site.html' %}
+{% load static %}
+{% block content %}
+
+    <!-- Hero Start -->
+ <!-- Hero Start -->
+ <div class="container-fluid pt-5 bg-primary hero-header"   style="background: linear-gradient(135deg, #000080, #0000b3);">
+    <div class="container pt-5">
+    <div class="row g-5 pt-5">
+        <div class="col-lg-6 align-self-center text-center text-lg-start mb-lg-5">
+             <h1 class="display-4 text-white mb-4 animated slideInRight" id="typingTextTitle"></h1>                     
+            <script>
+                const text = "Contactez-nous";
+                let index = 0;
+            
+                function typeText() {
+                    if (index < text.length) {
+                        document.getElementById("typingTextTitle").innerHTML += text.charAt(index);
+                        index++;
+                        setTimeout(typeText, 50); // Adjust the typing speed here (in milliseconds)
+                    }
+                }
+            
+                window.onload = typeText;
+            </script>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb justify-content-center justify-content-lg-start mb-0">
+                    <li class="breadcrumb-item"><a class="text-white"  href="{% url 'Accueil' %}">Accueil</a></li>
+                    <li class="breadcrumb-item text-white active" aria-current="page">Contactez-nous</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="col-lg-6 align-self-end text-center text-lg-end">
+            <img class="img-fluid" src="img/delivery-hero-img.png" alt="" style="max-height: 300px;">
+        </div>
+    </div>
+</div>
+</div>
+<!-- Hero End -->
+
+
+
+<!-- Contact Form -->
+<section class="contact" id="contact">
+<div class="container">
+    <div class="section-header">
+        <h3>Contactez-nous</h3>
+        <p>Notre équipe est à votre disposition pour répondre à toutes vos questions</p>
+    </div>
+    <div class="contact-wrapper">
+        <div class="contact-info">
+            <h4>Informations de contact</h4>
+            <div class="contact-details">
+                <div class="contact-item">
+                    <div class="contact-icon">📍</div>
+                    <p>Grand Bassam Modeste, Côte d'Ivoire</p>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">📞</div>
+                    <p>+225 01 02 33 17 40</p>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">✉️</div>
+                    <p>contact@monlivreurpro.fr</p>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">⏰</div>
+                    <p>Lun-Ven: 8h-19h | Sam: 9h-17h</p>
+                </div>
+            </div>
+            <h4>Suivez-nous</h4>
+            <div class="social-links">
+                <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="social-icon"><i class="fab fa-youtube"></i></a>
+                <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+            </div>
+        </div>
+        <div class="contact-form">
+            <form method="post" action="{% url 'Contact' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="name">Nom complet</label>
+                    <input type="text" id="name" name="name" maxlength="50" required placeholder="Nom complet" pattern="[A-Za-z]+" title="Les chiffres ne sont pas autorisés" required oninput="this.value = this.value.replace(/[^a-zA-Z]/g, '');">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="Email" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Téléphone</label>
+                    <select id="countrycode" onchange="updatePhonePlaceholder()" name="countrycode">
+                      <option value="+225">Côte d'Ivoire (+225)</option>
+                    </select>
+                    <input type="tel" id="phone" name="phone" maxlength="13" placeholder="+225 00 00 00 00" pattern="[0-9]+" title="Ne pas inclure de lettres" required oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+
+                  </div>
+                  
+                  <script>
+                    function updatePhonePlaceholder() {
+                      var phoneInput = document.getElementById('phone');
+                      var countryCode = document.getElementById('countryCode').value;
+                      phoneInput.placeholder = countryCode + " 00 00 00 00";
+                    }
+                    
+                    fetch('https://restcountries.com/v3.1/all')
+                    .then(response => response.json())
+                    .then(data => {
+                        const selectElement = document.getElementById('countryCode');
+                        data.forEach(country => {
+                        const code = country.idd ? country.idd.root + (country.idd.suffixes ? country.idd.suffixes[0] : '') : '';
+                        if (code) {
+                            const option = document.createElement('option');
+                            option.value = code;
+                            option.textContent = `${country.name.common} (${code})`;
+                            selectElement.appendChild(option);
+                        }
+                        });
+                    });
+                  </script>  
+                <div class="form-group">
+                    <label for="subject">Sujet</label>
+                    <select id="subject" name="subject">
+                        <option value="devis">Demande de devis</option>
+                        <option value="info">Renseignements</option>
+                        <option value="partenariat">Partenariat</option>
+                        <option value="autre">Autre</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="message">Message</label>
+                    <textarea name="message" id="message" cols="30" rows="5" class="form-control" placeholder="Écrivez votre message ici..." maxlength="300" required></textarea>
+                    <span id="caracteres">0</span> / 300 caractères
+                </div>
+                <button type="submit" class="submit-button">Envoyer le message</button>
+            </form>
+        </div>
+    </div>
+</div>
+</section>
+<hr>      
+<!-- Map Start -->
+<div class="container-fluid py-5" style="background: linear-gradient(135deg, #000080, #0000b3);">
+<div class="container text-center">
+    <div class="col-lg-10 mx-auto wow fadeIn" data-wow-delay="0.3s">
+        <div class="btn btn-sm border rounded-pill text-white px-3 mb-3">Notre localisation</div>
+        <h1 class="text-white mb-4">Trouvez-nous sur la carte</h1>
+        <!-- Embed Google Map -->
+        <div class="ratio ratio-16x9">
+            <iframe 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3973.2575875811353!2d-3.8218435245278495!3d5.22217209475559!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xfc1f70020173019%3A0x93a22def0370ad99!2sOils%20of%20Africa!5e0!3m2!1sen!2sus!4v1741558314742!5m2!1sen!2sus" 
+                width="100%" 
+                height="540" 
+                style="border:0;" 
+                allowfullscreen="" 
+                loading="lazy" 
+                referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+        </div>
+    </div>
+</div>
+</div>
+<!-- Map End -->
+<script>
+    var message = document.getElementById('message');
+    var caracteres = document.getElementById('caracteres');
+
+    message.addEventListener('input', function() {
+      caracteres.textContent = message.value.length;
+    });
+  </script>
+</div>
+ 
+{% endblock content %}

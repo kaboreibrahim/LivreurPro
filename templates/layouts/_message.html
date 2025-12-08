@@ -1,0 +1,41 @@
+{% load static %}
+
+<!-- Fichier CSS externe -->
+<link rel="stylesheet" href="{% static 'css/notifications.css' %}">
+
+<div class="notification-container">
+    {% for message in messages %}
+        {% with message_type=message.tags|default:'info' %}
+        {% if 'error' in message.tags %}
+            <div class="notification error">
+        {% elif 'success' in message.tags %}
+            <div class="notification success">
+        {% elif 'warning' in message.tags %}
+            <div class="notification warning">
+        {% else %}
+            <div class="notification info">
+        {% endif %}
+            <span class="icon">
+                {% if 'success' in message.tags %}
+                    <i class="ri-checkbox-circle-fill"></i>
+                {% elif 'error' in message.tags %}
+                    <i class="ri-close-circle-fill"></i>
+                {% elif 'warning' in message.tags %}
+                    <i class="ri-alert-fill"></i>
+                {% else %}
+                    <i class="ri-information-fill"></i>
+                {% endif %}
+            </span>
+            <div class="content">
+                {{ message|safe }}
+            </div>
+            <button class="close-btn" onclick="this.parentElement.remove()">
+                <i class="ri-close-line"></i>
+            </button>
+        </div>
+        {% endwith %}
+    {% endfor %}
+</div>
+
+<!-- Fichier JavaScript externe -->
+<script src="{% static 'js/notifications.js' %}"></script>

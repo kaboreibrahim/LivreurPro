@@ -1,0 +1,237 @@
+<!-- Modal de contact du livreur -->
+<div class="modal fade" id="contacterLivreurModal" tabindex="-1" role="dialog" aria-labelledby="contacterLivreurModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="contacterLivreurModalLabel">
+                    <i class="fas fa-phone-alt mr-2"></i>Contacter le livreur
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Fermer">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <img id="livreurPhotoContact" src="" class="img-fluid rounded-circle mb-3" style="width: 100px; height: 100px; object-fit: cover;">
+                    <h4 id="livreurNomContact"> Nom Livreur</h4>
+                    <p class="text-muted">Livreur assigné à la demande #{{ demande.ref }}</p>
+                </div>
+                
+                <div class="list-group mb-4">
+                    <a href="tel:{{ demande.coursier.phone_number }}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1"><i class="fas fa-phone-alt text-primary mr-2"></i> Appeler</h5>
+                        </div>
+                        <p class="mb-1">{{ demande.coursier.phone_number|default:"Numéro non disponible" }}</p>
+                        <small>Cliquez pour appeler directement</small>
+                    </a>
+                    
+                    <a href="https://wa.me/{{ demande.coursier.phone_number|default:'' }}" target="_blank" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1"><i class="fab fa-whatsapp text-success mr-2"></i> WhatsApp</h5>
+                        </div>
+                        <p class="mb-1">Envoyer un message WhatsApp</p>
+                        <small>Ouvre l'application WhatsApp</small>
+                    </a>
+                    
+                    <a href="#" class="list-group-item list-group-item-action" data-toggle="collapse" data-target="#smsForm">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1"><i class="fas fa-sms text-info mr-2"></i> Envoyer un SMS</h5>
+                        </div>
+                        <p class="mb-1">Écrire un message texte</p>
+                    </a>
+                    
+                    <div id="smsForm" class="collapse p-3 border-top">
+                        <form id="smsFormContent">
+                            <div class="form-group">
+                                <label for="messageText">Votre message :</label>
+                                <textarea class="form-control" id="messageText" rows="3" placeholder="Écrivez votre message ici..."></textarea>
+                                <small class="form-text text-muted">Ce message sera envoyé par SMS au livreur</small>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">
+                                <i class="fas fa-paper-plane"></i> Envoyer le SMS
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> 
+                    Vous pouvez également suivre la position en temps réel du livreur sur la carte en cliquant sur le bouton <strong>Localiser</strong>.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                <a href="#" class="btn btn-primary" data-dismiss="modal" data-toggle="modal" data-target="#localiserLivreurModal">
+                    <i class="fas fa-map-marker-alt"></i> Localiser sur la carte
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de localisation du livreur -->
+<div class="modal fade" id="localiserLivreurModal" tabindex="-1" role="dialog" aria-labelledby="localiserLivreurModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="localiserLivreurModalLabel">
+                    <i class="fas fa-map-marker-alt mr-2"></i>Localisation du livreur
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Fermer">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-0" style="height: 500px;">
+                <!-- Carte de localisation -->
+                <div id="map" style="width: 100%; height: 100%; min-height: 500px;">
+                    <div class="d-flex justify-content-center align-items-center h-100">
+                        <div class="text-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="sr-only">Chargement de la carte...</span>
+                            </div>
+                            <p class="mt-2">Chargement de la carte en cours...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Informations de suivi -->
+                <div class="p-3 border-top">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-1"><i class="fas fa-user mr-2 text-primary"></i> <span id="livreurNomCarte"> Nom Livreur</span></p>
+                            <p class="mb-1"><i class="fas fa-phone-alt mr-2 text-primary"></i> {{ demande.coursier.phone_number|default:"Non disponible" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1"><i class="fas fa-clock mr-2 text-primary"></i> Dernière mise à jour : <span id="lastUpdate">à l'instant</span></p>
+                            <p class="mb-1"><i class="fas fa-stopwatch mr-2 text-primary"></i> Temps estimé : <span id="tempsEstime">En cours de calcul...</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                <button type="button" class="btn btn-primary" id="refreshLocation">
+                    <i class="fas fa-sync-alt"></i> Actualiser la position
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Style pour les cartes de contact */
+.list-group-item {
+    border-left: none;
+    border-right: none;
+    border-radius: 0 !important;
+    transition: all 0.3s ease;
+}
+
+.list-group-item:first-child {
+    border-top: none;
+}
+
+.list-group-item:last-child {
+    border-bottom: 1px solid rgba(0,0,0,.125);
+}
+
+.list-group-item:hover {
+    background-color: #f8f9fa;
+    padding-left: 15px;
+}
+
+/* Style pour la carte de localisation */
+#map {
+    border-radius: 0.35rem;
+    overflow: hidden;
+}
+
+/* Style pour les boutons d'action */
+.btn-action {
+    min-width: 100px;
+    margin: 0 5px;
+}
+</style>
+
+<script>
+$(document).ready(function() {
+    // Initialisation de la carte (sera complétée avec l'API de cartographie)
+    var map, marker;
+    var livreurPosition = null;
+    
+    // Gestion de l'ouverture du modal de localisation
+    $('#localiserLivreurModal').on('shown.bs.modal', function () {
+        initMap();
+    });
+    
+    // Fonction d'initialisation de la carte
+    function initMap() {
+        // Ici, vous devriez initialiser votre carte avec une API comme Google Maps ou Leaflet
+        // Pour l'exemple, nous allons simplement afficher un message
+        $('#map').html(
+            '<div class="d-flex flex-column justify-content-center align-items-center h-100 bg-light">' +
+            '   <i class="fas fa-map-marked-alt fa-4x text-muted mb-3"></i>' +
+            '   <h5 class="text-muted">Carte de localisation</h5>' +
+            '   <p class="text-muted text-center px-4">La localisation en temps réel nécessite une clé API de cartographie (Google Maps, Mapbox, etc.)</p>' +
+            '</div>'
+        );
+        
+        // Dans une implémentation réelle, vous utiliseriez quelque chose comme :
+        // map = L.map('map').setView([latitude, longitude], 13);
+        // L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        // marker = L.marker([latitude, longitude]).addTo(map);
+    }
+    
+    // Simulation de la mise à jour de la position
+    function updatePosition() {
+        // Dans une implémentation réelle, vous feriez un appel AJAX pour obtenir la position actuelle
+        // du livreur depuis votre backend
+        console.log("Mise à jour de la position du livreur...");
+        
+        // Mettre à jour l'heure de dernière mise à jour
+        const now = new Date();
+        $('#lastUpdate').text('à ' + now.getHours() + 'h' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes());
+        
+        // Simuler un temps de trajet aléatoire entre 5 et 15 minutes
+        const tempsRestant = Math.floor(Math.random() * 10) + 5;
+        $('#tempsEstime').text('environ ' + tempsRestant + ' minutes');
+    }
+    
+    // Bouton d'actualisation de la position
+    $('#refreshLocation').on('click', function() {
+        updatePosition();
+        $(this).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Actualisation...');
+        
+        // Simuler un délai de chargement
+        setTimeout(() => {
+            $(this).html('<i class="fas fa-sync-alt"></i> Actualiser la position');
+        }, 1000);
+    });
+    
+    // Gestion de l'envoi de SMS
+    $('#smsFormContent').on('submit', function(e) {
+        e.preventDefault();
+        const message = $('#messageText').val().trim();
+        
+        if (!message) {
+            alert('Veuillez écrire un message avant d\'envoyer.');
+            return;
+        }
+        
+        // Ici, vous feriez un appel AJAX pour envoyer le SMS via votre backend
+        console.log("Envoi du message :", message);
+        
+        // Afficher un message de confirmation
+        alert('Votre message a été envoyé au livreur.');
+        $('#messageText').val('');
+        $('#smsForm').collapse('hide');
+    });
+    
+    // Initialiser la position au chargement si le modal est déjà ouvert
+    if ($('#localiserLivreurModal').hasClass('show')) {
+        initMap();
+        updatePosition();
+    }
+});
+</script>

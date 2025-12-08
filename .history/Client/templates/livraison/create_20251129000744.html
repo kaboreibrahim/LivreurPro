@@ -1,0 +1,765 @@
+ {% extends 'base.html' %}
+{% block page_name %}Nouvelle Demande de Livraison{% endblock %}
+{% block content %}
+{% load static %}
+
+<style>
+    /* Définition des Variables */
+    :root {
+        --primary: #000080; /* Bleu Marine */
+        --secondary: #FF6B00; /* Orange Vif */
+        --light: #FFF9E5;
+        --dark: #1A1A1A;
+        --success-color: #28a745;
+        --danger-color: #dc3545;
+    }
+    
+    #map {
+        height: 500px;
+        width: 100%;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .search-container {
+        position: relative;
+        margin-bottom: 20px;
+    }
+    
+    .search-input-wrapper {
+        position: relative;
+    }
+    
+    .search-input-wrapper input {
+        padding-right: 45px;
+    }
+    
+    .location-btn {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: var(--secondary);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        z-index: 10;
+        font-size: 18px; /* Taille de l'icône 🎯 */
+    }
+    
+    .location-btn:hover {
+        background: #e55f00;
+        transform: translateY(-50%) scale(1.1);
+    }
+    
+    .location-btn:active {
+        transform: translateY(-50%) scale(0.95);
+    }
+    
+    .suggestions-list {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 2px solid var(--primary);
+        border-top: none;
+        max-height: 300px;
+        overflow-y: auto;
+        z-index: 1000;
+        box-shadow: 0 8px 16px rgba(0, 0, 128, 0.15);
+        border-radius: 0 0 12px 12px;
+        display: none;
+    }
+    
+    .suggestion-item {
+        padding: 15px 20px;
+        cursor: pointer;
+        border-bottom: 1px solid var(--light);
+        transition: all 0.2s;
+        display: flex;
+        align-items: start;
+        gap: 12px;
+    }
+    
+    .suggestion-item:hover {
+        background-color: var(--light);
+        padding-left: 25px;
+    }
+    
+    .suggestion-icon {
+        color: var(--primary);
+        font-size: 18px;
+        margin-top: 2px;
+        flex-shrink: 0;
+    }
+    
+    .suggestion-content {
+        flex: 1;
+    }
+    
+    .suggestion-title {
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 2px;
+    }
+    
+    .suggestion-subtitle {
+        font-size: 0.85rem;
+        color: #666;
+    }
+    
+    .info-distance {
+        background: linear-gradient(135deg, var(--primary), #0000b8);
+        color: white;
+        padding: 15px 25px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        box-shadow: 0 4px 12px rgba(0, 0, 128, 0.2);
+    }
+    
+    .info-distance-icon {
+        font-size: 24px;
+    }
+    
+    .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        margin-bottom: 25px;
+    }
+    
+    .card-header {
+        background: linear-gradient(135deg, var(--primary), #0000b8);
+        color: white;
+        border-radius: 12px 12px 0 0 !important;
+        padding: 20px;
+        border: none;
+    }
+    
+    .card-header h5 {
+        margin: 0;
+        font-weight: 600;
+    }
+    
+    .form-control, .form-select {
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 12px 15px;
+        transition: all 0.3s;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.2rem rgba(0, 0, 128, 0.15);
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 8px;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, var(--secondary), #ff8533);
+        border: none;
+        padding: 15px 30px;
+        font-weight: 600;
+        border-radius: 10px;
+        transition: all 0.3s;
+        box-shadow: 0 4px 12px rgba(255, 107, 0, 0.3);
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 107, 0, 0.4);
+        background: linear-gradient(135deg, #ff8533, var(--secondary));
+    }
+    
+    .loading-spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid white;
+        border-top-color: transparent;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+        margin-left: 8px;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    .marker-popup {
+        font-size: 13px;
+    }
+    
+    .marker-popup strong {
+        color: var(--primary);
+    }
+    
+    /* Style pour les markers draggables */
+    .mapboxgl-marker {
+        cursor: move !important;
+    }
+    
+    .search-loading {
+        padding: 15px;
+        text-align: center;
+        color: var(--primary);
+    }
+    
+    .no-results {
+        padding: 20px;
+        text-align: center;
+        color: #999;
+    }
+
+    /* Styles spécifiques pour les Marqueurs (SVG amélioré) */
+    .marker-depart, .marker-destination {
+        width: 40px;
+        height: 40px;
+    }
+    
+    /* Début: Vert/Bleu */
+    .marker-depart svg circle { fill: var(--success-color); }
+    .marker-depart svg text { font-size: 24px; }
+
+    /* Destination: Rouge/Orange */
+    .marker-destination svg circle { fill: var(--danger-color); }
+    .marker-destination svg text { font-size: 24px; }
+    
+</style>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4" style="color: var(--primary); font-weight: 700;">📦 Nouvelle Demande de Livraison</h2>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            <form method="post" enctype="multipart/form-data" id="dcl-form">
+                {% csrf_token %}
+                
+                                <div class="card">
+                    <div class="card-header">
+                        <h5>📍 Localisation de la livraison</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="map"></div>
+                        
+                        <div id="info-distance" class="info-distance" style="display: none;">
+                            <span class="info-distance-icon">📏</span>
+                            <div>
+                                <div style="font-size: 0.9rem; opacity: 0.9;">Distance estimée</div>
+                                <div style="font-size: 1.3rem;"><span id="distance-value">-</span> km</div>
+                            </div>
+                        </div>
+                        
+                                                <div class="search-container">
+                            <label class="form-label">🟢 Adresse de départ</label>
+                            <div class="search-input-wrapper">
+                                <input type="text" 
+                                       id="search-depart" 
+                                       class="form-control" 
+                                       placeholder="Rechercher ou utiliser ma position actuelle...">
+                                <button type="button" class="location-btn" id="btn-my-location" title="Utiliser ma position actuelle">
+                                    🎯                                 </button>
+                            </div>
+                            <div id="suggestions-depart" class="suggestions-list"></div>
+                                                        {{ form.adresse_depart }}
+                            {{ form.latitude_depart }}
+                            {{ form.longitude_depart }}
+                        </div>
+                        
+                                                <div class="search-container">
+                            <label class="form-label">🔴 Adresse de destination</label>
+                            <div class="search-input-wrapper">
+                                <input type="text" 
+                                       id="search-destination" 
+                                       class="form-control" 
+                                       placeholder="Rechercher une adresse de destination...">
+                            </div>
+                            <div id="suggestions-destination" class="suggestions-list"></div>
+                                                        {{ form.adresse_destination }}
+                            {{ form.latitude_destination }}
+                            {{ form.longitude_destination }}
+                        </div>
+                        
+                        <div class="alert alert-info" style="border-left: 4px solid var(--primary);">
+                            💡 <strong>Astuce:</strong> Vous pouvez déplacer les marqueurs (🟢 et 🔴) sur la carte pour ajuster précisément les positions.
+                        </div>
+                    </div>
+                </div>
+                
+                                <div class="card">
+                    <div class="card-header">
+                        <h5>📦 Informations du Colis</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">📞 Contact Destinataire</label>
+                                {{ form.Contact_destinateur }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">🚗 Type de course</label>
+                                {{ form.type_course }}
+                            </div>
+                            
+                            <div class="col-12 mb-3">
+                                <label class="form-label">📝 Description du colis</label>
+                                {{ form.description_colis }}
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">⚖️ Poids (kg)</label>
+                                {{ form.poids_colis }}
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">💰 Valeur (FCFA)</label>
+                                {{ form.valeur_colis }}
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">📅 Date de récupération</label>
+                                {{ form.date_recuperation }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">📷 Photo du colis 1</label>
+                                {{ form.photo_colis1 }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">📷 Photo du colis 2 (optionnel)</label>
+                                {{ form.photo_colis2 }}
+                            </div>
+                            
+                            <div class="col-12 mb-3">
+                                <label class="form-label">📋 Instructions supplémentaires</label>
+                                {{ form.instructions }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        🚀 Créer la demande de livraison
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<link href='https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css' rel='stylesheet' />
+
+<script src='https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js'></script>
+
+<script>
+    mapboxgl.accessToken = '{{ mapbox_token }}';
+    
+    // Initialiser la carte centrée sur Abidjan
+    const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v12',
+        center: [-4.0305, 5.3599], // Abidjan, Côte d'Ivoire
+        zoom: 11
+    });
+    
+    // Ajouter les contrôles de navigation
+    map.addControl(new mapboxgl.NavigationControl());
+    map.addControl(new mapboxgl.GeolocateControl({
+        positionOptions: {
+            enableHighAccuracy: true
+        },
+        trackUserLocation: true,
+        showUserHeading: true
+    }));
+    
+    // Markers et Route
+    let markerDepart = null;
+    let markerDestination = null;
+    window.suggestionMarkers = []; // Pour les marqueurs de recherche temporaires
+    
+    // Fonction pour obtenir la position actuelle du client
+    document.getElementById('btn-my-location').addEventListener('click', () => {
+        const btn = document.getElementById('btn-my-location');
+        btn.innerHTML = '<span class="loading-spinner"></span>';
+        btn.disabled = true;
+        
+        if ('geolocation' in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const { latitude, longitude } = position.coords;
+                    
+                    // Géocodage inverse pour obtenir l'adresse
+                    try {
+                        const response = await fetch(
+                            `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?` +
+                            `access_token=${mapboxgl.accessToken}&language=fr`
+                        );
+                        const data = await response.json();
+                        const address = data.features[0]?.place_name || 'Ma position actuelle';
+                        
+                        // Mettre à jour les champs visible et cachés
+                        document.getElementById('search-depart').value = address;
+                        document.getElementById('adresse_depart').value = address;
+                        document.getElementById('latitude_depart').value = latitude;
+                        document.getElementById('longitude_depart').value = longitude;
+                        
+                        // Créer ou mettre à jour le marker draggable
+                        createDraggableMarker(longitude, latitude, 'depart', address);
+                        
+                        // Centrer la carte
+                        map.flyTo({
+                            center: [longitude, latitude],
+                            zoom: 15
+                        });
+                        
+                        // Calculer l'itinéraire si destination existe
+                        calculateRoute();
+                        
+                    } catch (error) {
+                        console.error('Erreur géocodage:', error);
+                        alert('Impossible de récupérer l\'adresse exacte');
+                    }
+                    
+                    btn.innerHTML = '🎯';
+                    btn.disabled = false;
+                },
+                (error) => {
+                    console.error('Erreur géolocalisation:', error);
+                    alert('Impossible d\'accéder à votre position. Vérifiez les autorisations.');
+                    btn.innerHTML = '🎯';
+                    btn.disabled = false;
+                }
+            );
+        } else {
+            alert('La géolocalisation n\'est pas supportée par votre navigateur');
+            btn.innerHTML = '🎯';
+            btn.disabled = false;
+        }
+    });
+    
+    // Créer un marker draggable
+    function createDraggableMarker(lng, lat, type, address) {
+        // Icônes de Marqueur personnalisées
+        const svgMarkup = (color, text) => `
+            <svg width="40" height="40" viewBox="0 0 40 40">
+                <circle cx="20" cy="20" r="18" fill="${color}" stroke="white" stroke-width="3"/>
+                <text x="20" y="27" text-anchor="middle" fill="white" font-weight="bold" font-size="24">${text}</text>
+            </svg>`;
+
+        const el = document.createElement('div');
+        el.className = type === 'depart' ? 'marker-depart' : 'marker-destination';
+        el.innerHTML = type === 'depart' 
+            ? svgMarkup('var(--success-color)', 'A') // Vert pour Départ
+            : svgMarkup('var(--danger-color)', 'B'); // Rouge pour Destination
+        
+        const marker = new mapboxgl.Marker({
+            element: el,
+            draggable: true
+        })
+        .setLngLat([lng, lat])
+        .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(
+            `<div class="marker-popup"><strong>${type === 'depart' ? 'Départ' : 'Destination'}</strong><br>${address}</div>`
+        ))
+        .addTo(map);
+        
+        // Événement de fin de drag
+        marker.on('dragend', async () => {
+            const lngLat = marker.getLngLat();
+            
+            // Géocodage inverse
+            try {
+                const response = await fetch(
+                    `https://api.mapbox.com/geocoding/v5/mapbox.places/${lngLat.lng},${lngLat.lat}.json?` +
+                    `access_token=${mapboxgl.accessToken}&language=fr`
+                );
+                const data = await response.json();
+                const newAddress = data.features[0]?.place_name || 'Position personnalisée';
+                
+                // Mettre à jour les champs
+                document.getElementById(`search-${type}`).value = newAddress;
+                document.getElementById(`adresse_${type}`).value = newAddress;
+                document.getElementById(`latitude_${type}`).value = lngLat.lat;
+                document.getElementById(`longitude_${type}`).value = lngLat.lng;
+                
+                // Mettre à jour le popup
+                marker.setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(
+                    `<div class="marker-popup"><strong>${type === 'depart' ? 'Départ' : 'Destination'}</strong><br>${newAddress}</div>`
+                ));
+                
+                // Recalculer l'itinéraire
+                calculateRoute();
+            } catch (error) {
+                console.error('Erreur géocodage:', error);
+            }
+        });
+        
+        if (type === 'depart') {
+            if (markerDepart) markerDepart.remove();
+            markerDepart = marker;
+        } else {
+            if (markerDestination) markerDestination.remove();
+            markerDestination = marker;
+        }
+        
+        return marker;
+    }
+    
+    // Fonction de recherche de lieux
+    async function searchPlace(query, type) {
+        // Nettoyer les marqueurs de suggestion précédents
+        window.suggestionMarkers.forEach(m => m.remove());
+        window.suggestionMarkers = [];
+
+        if (query.length < 3) {
+            document.getElementById(`suggestions-${type}`).style.display = 'none';
+            return;
+        }
+        
+        const suggestionsList = document.getElementById(`suggestions-${type}`);
+        suggestionsList.innerHTML = '<div class="search-loading">🔍 Recherche en cours...</div>';
+        suggestionsList.style.display = 'block';
+        
+        try {
+            const response = await fetch(
+                `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?` +
+                `access_token=${mapboxgl.accessToken}&` +
+                `country=CI&` + // Cibler la Côte d'Ivoire
+                `limit=10&` +
+                `language=fr`
+            );
+            
+            const data = await response.json();
+            
+            displaySuggestions(data.features, type);
+            
+            if (data.features.length > 0) {
+                const bounds = new mapboxgl.LngLatBounds();
+                
+                // Afficher les marqueurs de suggestion et étendre la vue
+                data.features.forEach((feature, index) => {
+                    bounds.extend(feature.center);
+                    
+                    const el = document.createElement('div');
+                    el.style.width = '25px';
+                    el.style.height = '25px';
+                    el.style.borderRadius = '50%';
+                    el.style.background = type === 'depart' ? 'var(--success-color)' : 'var(--danger-color)';
+                    el.style.opacity = '0.6';
+                    el.style.border = '2px solid white';
+                    el.style.cursor = 'pointer';
+                    
+                    const suggestionMarker = new mapboxgl.Marker(el)
+                        .setLngLat(feature.center)
+                        .addTo(map);
+                    
+                    // Clic sur le marqueur de suggestion = sélection
+                    el.addEventListener('click', () => {
+                        selectPlace(feature, type);
+                    });
+                    
+                    window.suggestionMarkers.push(suggestionMarker);
+                });
+
+                // Ajuster la vue pour montrer tous les résultats
+                map.fitBounds(bounds, { padding: 50, maxZoom: 14 });
+            }
+        } catch (error) {
+            console.error('Erreur de recherche:', error);
+            suggestionsList.innerHTML = '<div class="no-results">❌ Erreur de recherche</div>';
+        }
+    }
+    
+    // Afficher les suggestions
+    function displaySuggestions(features, type) {
+        const suggestionsList = document.getElementById(`suggestions-${type}`);
+        suggestionsList.innerHTML = '';
+        
+        if (features.length === 0) {
+            suggestionsList.innerHTML = '<div class="no-results">Aucun résultat trouvé</div>';
+            return;
+        }
+        
+        features.forEach(feature => {
+            const div = document.createElement('div');
+            div.className = 'suggestion-item';
+            
+            // Logique d'icône plus simple et UX-friendly
+            let icon = '📌';
+            if (feature.place_type.includes('address')) icon = '🏠';
+            else if (feature.place_type.includes('locality')) icon = '🏙️';
+            
+            div.innerHTML = `
+                <span class="suggestion-icon">${icon}</span>
+                <div class="suggestion-content">
+                    <div class="suggestion-title">${feature.text}</div>
+                    <div class="suggestion-subtitle">${feature.place_name}</div>
+                </div>
+            `;
+            
+            div.onclick = () => selectPlace(feature, type);
+            suggestionsList.appendChild(div);
+        });
+        
+        suggestionsList.style.display = 'block';
+    }
+    
+    // Sélectionner un lieu
+    function selectPlace(feature, type) {
+        const [lng, lat] = feature.center;
+        const address = feature.place_name;
+        
+        // Mettre à jour les champs
+        document.getElementById(`search-${type}`).value = feature.text; // Affiche le nom court du lieu dans l'input visible
+        document.getElementById(`adresse_${type}`).value = address;
+        document.getElementById(`latitude_${type}`).value = lat;
+        document.getElementById(`longitude_${type}`).value = lng;
+        
+        // Cacher les suggestions et supprimer les markers de suggestion
+        document.getElementById(`suggestions-${type}`).style.display = 'none';
+        
+        window.suggestionMarkers.forEach(m => m.remove());
+        window.suggestionMarkers = [];
+        
+        // Créer le marker draggable
+        createDraggableMarker(lng, lat, type, address);
+        
+        // Centrer la carte
+        map.flyTo({
+            center: [lng, lat],
+            zoom: 14
+        });
+        
+        // Calculer l'itinéraire
+        calculateRoute();
+    }
+    
+    // Calculer l'itinéraire
+    async function calculateRoute() {
+        const departLng = document.getElementById('longitude_depart').value;
+        const departLat = document.getElementById('latitude_depart').value;
+        const destLng = document.getElementById('longitude_destination').value;
+        const destLat = document.getElementById('latitude_destination').value;
+        
+        const infoDistanceDiv = document.getElementById('info-distance');
+        const distanceValueSpan = document.getElementById('distance-value');
+        
+        if (!departLng || !destLng) {
+            if (map.getLayer('route')) map.removeLayer('route');
+            if (map.getSource('route')) map.removeSource('route');
+            infoDistanceDiv.style.display = 'none';
+            return;
+        }
+        
+        try {
+            const response = await fetch(
+                `https://api.mapbox.com/directions/v5/mapbox/driving/${departLng},${departLat};${destLng},${destLat}?` +
+                `geometries=geojson&` +
+                `access_token=${mapboxgl.accessToken}`
+            );
+            
+            const data = await response.json();
+            const route = data.routes[0];
+            const distance = (route.distance / 1000).toFixed(2); // Convertir en km
+            
+            // Afficher la distance
+            distanceValueSpan.textContent = distance;
+            infoDistanceDiv.style.display = 'flex';
+            
+            // Dessiner l'itinéraire
+            const routeSourceData = {
+                type: 'Feature',
+                properties: {},
+                geometry: route.geometry
+            };
+            
+            if (map.getSource('route')) {
+                map.getSource('route').setData(routeSourceData);
+            } else {
+                map.addLayer({
+                    id: 'route',
+                    type: 'line',
+                    source: { type: 'geojson', data: routeSourceData },
+                    layout: { 'line-join': 'round', 'line-cap': 'round' },
+                    paint: {
+                        'line-color': 'var(--secondary)', // Orange pour l'itinéraire
+                        'line-width': 5,
+                        'line-opacity': 0.75
+                    }
+                });
+            }
+            
+            // Ajuster la vue pour voir l'itinéraire complet
+            const coordinates = route.geometry.coordinates;
+            const bounds = coordinates.reduce((bounds, coord) => {
+                return bounds.extend(coord);
+            }, new mapboxgl.LngLatBounds(coordinates[0], coordinates[0]));
+            
+            map.fitBounds(bounds, { padding: 50 });
+            
+        } catch (error) {
+            console.error('Erreur calcul itinéraire:', error);
+            // Cacher l'info distance en cas d'erreur
+            infoDistanceDiv.style.display = 'none';
+        }
+    }
+    
+    // Événements de recherche avec debounce
+    let searchTimeout;
+    
+    document.getElementById('search-depart').addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            searchPlace(e.target.value, 'depart');
+        }, 500);
+    });
+    
+    document.getElementById('search-destination').addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            searchPlace(e.target.value, 'destination');
+        }, 500);
+    });
+    
+    // Fermer les suggestions et nettoyer les marqueurs de suggestion
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.search-container')) {
+            document.getElementById('suggestions-depart').style.display = 'none';
+            document.getElementById('suggestions-destination').style.display = 'none';
+            
+            // Supprimer les markers de suggestion
+            window.suggestionMarkers.forEach(m => m.remove());
+            window.suggestionMarkers = [];
+        }
+    });
+</script>
+
+{% endblock %}

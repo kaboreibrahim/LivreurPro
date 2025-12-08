@@ -1,0 +1,211 @@
+{% extends 'layouts/base_site.html' %}
+{% load static %}
+{% block content %}
+
+
+
+    <!-- Hero Start -->
+    <div class="container-fluid pt-5  hero-header mb-5" 
+    style="background: linear-gradient(135deg, #000080, #0000b3);">     
+       <div class="container pt-5">
+            <div class="row g-5 pt-5">
+                <div class="col-lg-6 align-self-center text-center text-lg-start mb-lg-5">
+                    <h1 class="display-4 text-white mb-4 animated slideInRight" id="typingTextTitle"></h1>                     
+                    <script>
+                        const text = "a propos de nous";
+                        let index = 0;
+                    
+                        function typeText() {
+                            if (index < text.length) {
+                                document.getElementById("typingTextTitle").innerHTML += text.charAt(index);
+                                index++;
+                                setTimeout(typeText, 50); // Adjust the typing speed here (in milliseconds)
+                            }
+                        }
+                    
+                        window.onload = typeText;
+                    </script>                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb justify-content-center justify-content-lg-start mb-0">
+                            <li class="breadcrumb-item"><a class="text-white" href="{% url 'Accueil' %}">accueil</a></li>
+                             <li class="breadcrumb-item text-white active" aria-current="page">Apropos</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="col-lg-6 align-self-end text-center text-lg-end">
+                    <img class="img-fluid" src="" alt="" style="max-height: 300px;">
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Hero End -->
+
+
+    <!-- Full Screen Search Start -->
+    <div class="modal fade" id="searchModal" tabindex="-1">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content" style="background: rgba(20, 24, 62, 0.7);">
+                <div class="modal-header border-0">
+                    <button type="button" class="btn btn-square bg-white btn-close" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body d-flex align-items-center justify-content-center">
+                    <div class="input-group" style="max-width: 600px;">
+                        <input type="text" class="form-control bg-transparent border-light p-3"
+                            placeholder="Type search keyword">
+                        <button class="btn btn-light px-4"><i class="bi bi-search"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="about-section py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h2 class="about-title">À propos de Mon Livreur Pro</h2>
+                    <p class="about-description" style="text-align: justify;">
+                        <strong>Mon Livreur Pro</strong> est une entreprise innovante spécialisée dans la livraison rapide et fiable, dédiée à simplifier vos besoins logistiques. Nous avons pour mission de vous offrir un service de coursier moderne, flexible et accessible, que ce soit pour des livraisons personnelles ou professionnelles.
+                    </p>
+                    <p class="about-description" style="text-align: justify;">
+                        Depuis notre création, nous nous efforçons de répondre aux attentes de nos clients en proposant des solutions de transport sur mesure, adaptées à toutes sortes de besoins : urgents, ponctuels ou réguliers. Grâce à une équipe dynamique et des véhicules performants, nous vous garantissons une livraison dans les meilleurs délais et dans les conditions les plus sûres.
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <h3 class="values-title">Nos Valeurs</h3>
+                    <ul class="values-list">
+                        <li><strong>Fiabilité</strong> : Votre temps est précieux, c'est pourquoi nous mettons un point d'honneur à respecter nos délais de livraison.</li>
+                        <li><strong>Flexibilité</strong> : Nous nous adaptons à vos besoins spécifiques, que ce soit pour une livraison express ou sur-mesure.</li>
+                        <li><strong>Accessibilité</strong> : Nos services sont accessibles à tous avec des tarifs compétitifs pour une qualité de livraison optimale.</li>
+                    </ul>
+                </div>
+            </div>
+    
+            <div class="row mt-4">
+                <div class="col text-center">
+                    <h3 class="why-choose-title">Pourquoi Choisir Mon Livreur Pro ?</h3>
+                    <ul class="why-choose-list">
+                        <li><strong>Service rapide et sécurisé</strong> : Livraison rapide, suivie et sécurisée, pour répondre à vos besoins urgents.</li>
+                        <li><strong>Équipe professionnelle</strong> : Des livreurs formés pour garantir un service irréprochable et une conduite responsable.</li>
+                        <li><strong>Simplicité et efficacité</strong> : Demander un coursier n’a jamais été aussi facile grâce à notre plateforme en ligne intuitive.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+   
+    <!-- About Start -->
+    <div class="container-fluid py-5">
+        <div class="container">
+            <div class="row g-5 align-items-center">
+                <div class="col-lg-6 wow fadeIn" data-wow-delay="0.1s">
+                    <div class="about-img">
+                        <img class="img-fluid" src="{% static 'site/img/about2.jpg' %}" alt="Livreur Mon Livreur Pro">
+                    </div>
+                </div>
+                <div class="col-lg-6 wow fadeIn" data-wow-delay="0.5s">
+                    <div class="btn btn-sm border rounded-pill text-primary px-3 mb-3">À propos de nous</div>
+                    <h1 class="mb-4">Une solution rapide et fiable pour vos livraisons</h1>
+                    <p class="mb-4">Avec Mon Livreur Pro, envoyez vos colis en toute simplicité ! Nous mettons à votre disposition un service de livraison efficace, sécurisé et adapté aux besoins des entreprises.</p>
+                    <p class="mb-4">Que ce soit pour des documents administratifs, des commandes e-commerce ou des repas, nos coursiers assurent un transport rapide et professionnel.</p>
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <h6 class="mb-3"><i class="fa fa-check text-primary me-2"></i>Livraison express</h6>
+                            <h6 class="mb-0"><i class="fa fa-check text-primary me-2"></i>Fiabilité et sécurité</h6>
+                        </div>
+                        <div class="col-sm-6">
+                            <h6 class="mb-3"><i class="fa fa-check text-primary me-2"></i>Disponible 24/7</h6>
+                            <h6 class="mb-0"><i class="fa fa-check text-primary me-2"></i>Tarifs compétitifs</h6>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center mt-4">
+                        <a class="btn btn-primary rounded-pill px-4 me-3" href="#">En savoir plus</a>
+                        <a class="btn btn-outline-primary btn-square me-3" href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a class="btn btn-outline-primary btn-square me-3" href="#"><i class="fab fa-twitter"></i></a>
+                        <a class="btn btn-outline-primary btn-square me-3" href="#"><i class="fab fa-instagram"></i></a>
+                        <a class="btn btn-outline-primary btn-square" href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Team Start -->
+    <div class="container-fluid bg-light py-5">
+        <div class="container py-5">
+            <div class="row g-5 align-items-center">
+                <div class="col-lg-5 wow fadeIn" data-wow-delay="0.1s">
+                    <div class="btn btn-sm border rounded-pill text-primary px-3 mb-3">Notre Équipe</div>
+                    <h1 class="mb-4">Rencontrez les Membres de notre Équipe Expérimentée</h1>
+                    <p class="mb-4">Notre équipe est composée de professionnels passionnés et dédiés à la livraison rapide et fiable. Découvrez les personnes qui rendent "Mon Livreur Pro" si spécial et qui travaillent sans relâche pour garantir la meilleure expérience pour nos clients.</p>
+                    <a class="btn btn-primary rounded-pill px-4" href="">En savoir plus</a>
+                </div>
+                <div class="col-lg-7">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="row g-4">
+                                <div class="col-12 wow fadeIn" data-wow-delay="0.1s">
+                                    <div class="team-item bg-white text-center rounded p-4 pt-0">
+                                        <img class="img-fluid rounded-circle p-4" src="{% static 'site/img/personel.jpg' %}" alt="">
+                                        <h5 class="mb-0">Koffi marc</h5>
+                                        <small>Chef des livreur </small>
+                                        <div class="d-flex justify-content-center mt-3">
+                                            <a class="btn btn-square btn-primary m-1" href=""><i class="fab fa-facebook-f"></i></a>
+                                            <a class="btn btn-square btn-primary m-1" href=""><i class="fab fa-twitter"></i></a>
+                                            <a class="btn btn-square btn-primary m-1" href=""><i class="fab fa-instagram"></i></a>
+                                            <a class="btn btn-square btn-primary m-1" href=""><i class="fab fa-linkedin-in"></i></a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 wow fadeIn" data-wow-delay="0.5s">
+                                    <div class="team-item bg-white text-center rounded p-4 pt-0">
+                                        <img class="img-fluid rounded-circle p-4" src="{% static 'site/img/personel.jpg' %}" alt="">
+                                        <h5 class="mb-0"> koffi jean jacque</h5>
+                                        <small>Directrice des opérations</small>
+                                        <div class="d-flex justify-content-center mt-3">
+                                            <a class="btn btn-square btn-primary m-1" href=""><i class="fab fa-facebook-f"></i></a>
+                                            <a class="btn btn-square btn-primary m-1" href=""><i class="fab fa-twitter"></i></a>
+                                            <a class="btn btn-square btn-primary m-1" href=""><i class="fab fa-instagram"></i></a>
+                                            <a class="btn btn-square btn-primary m-1" href=""><i class="fab fa-linkedin-in"></i></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 pt-md-4">
+                            <div class="row g-4">
+                                <div class="col-12 wow fadeIn" data-wow-delay="0.3s">
+                                    <div class="team-item bg-white text-center rounded p-4 pt-0">
+                                        <img class="img-fluid rounded-circle p-4" src="{% static 'site/img/personel.jpg' %}" alt="">
+                                        <h5 class="mb-0">Sophie Bernard</h5>
+                                        <small>Responsable Logistique</small>
+                                        <div class="d-flex justify-content-center mt-3">
+                                            <a class="btn btn-square btn-primary m-1" href=""><i class="fab fa-facebook-f"></i></a>
+                                            <a class="btn btn-square btn-primary m-1" href=""><i class="fab fa-twitter"></i></a>
+                                            <a class="btn btn-square btn-primary m-1" href=""><i class="fab fa-instagram"></i></a>
+                                            <a class="btn btn-square btn-primary m-1" href=""><i class="fab fa-linkedin-in"></i></a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 wow fadeIn" data-wow-delay="0.7s">
+                                    <div class="team-item bg-white text-center rounded p-4 pt-0">
+                                        <img class="img-fluid rounded-circle p-4" src="{% static 'site/img/personel.jpg' %}" alt="">
+                                        <h5 class="mb-0">Pierre Martin</h5>
+                                        <small>Chef de Projet</small>
+                                        <div class="d-flex justify-content-center mt-3">
+                                            <a class="btn btn-square btn-primary m-1" href=""><i class="fab fa-facebook-f"></i></a>
+                                            <a class="btn btn-square btn-primary m-1" href=""><i class="fab fa-twitter"></i></a>
+                                            <a class="btn btn-square btn-primary m-1" href=""><i class="fab fa-instagram"></i></a>
+                                            <a class="btn btn-square btn-primary m-1" href=""><i class="fab fa-linkedin-in"></i></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}

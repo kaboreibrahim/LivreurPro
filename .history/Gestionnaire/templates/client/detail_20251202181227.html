@@ -1,0 +1,145 @@
+{% extends 'base_gestionnaire.html' %}
+{% block page_title %}Détails du Client - {{ client.username }}{% endblock %}
+{% block content %}
+{% load static %}
+
+
+{% block title %}Détails du Client - {{ client.username }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Profil</h4>
+                </div>
+                <div class="card-body text-center">
+                    <div class="profile-photo mb-3">
+                        {% if client.photos %}
+                            <img src="{{ client.photos.url }}" alt="Photo de profil" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+                        {% else %}
+                            <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 150px; height: 150px; margin: 0 auto; font-size: 3rem;">
+                                {{ client.username|first|upper }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <h4>{{ client.get_full_name|default:client.username }}</h4>
+                    <p class="text-muted">Client</p>
+                    
+                    <div class="d-flex justify-content-center gap-2 mb-3">
+                        <a href="{% url 'gestionnaire:activer_desactiver_client' client.pk %}" 
+                           class="btn {% if client.is_active %}btn-warning{% else %}btn-success{% endif %}"
+                           onclick="return confirm('Êtes-vous sûr de vouloir {% if client.is_active %}désactiver{% else %}activer{% endif %} ce client ?')">
+                            {% if client.is_active %}
+                                <i class="fas fa-ban me-1"></i> Désactiver
+                            {% else %}
+                                <i class="fas fa-check me-1"></i> Activer
+                            {% endif %}
+                        </a>
+                        <a href="{% url 'gestionnaire:liste_clients' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Retour
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Informations du client</h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <tbody>
+                                <tr>
+                                    <th>Nom d'utilisateur</th>
+                                    <td>{{ client.username }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Email</th>
+                                    <td>{{ client.email }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Téléphone</th>
+                                    <td>{{ client.Contact|default:"Non renseigné" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Date d'inscription</th>
+                                    <td>{{ client.date_joined|date:"d/m/Y H:i" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Dernière connexion</th>
+                                    <td>
+                                        {% if client.last_login %}
+                                            {{ client.last_login|date:"d/m/Y H:i" }}
+                                        {% else %}
+                                            Jamais connecté
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Statut</th>
+                                    <td>
+                                        <span class="badge {% if client.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                                            {% if client.is_active %}Actif{% else %}Inactif{% endif %}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Email vérifié</th>
+                                    <td>
+                                        {% if client.is_verified %}
+                                            <span class="badge bg-success">Oui</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">Non</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>En ligne</th>
+                                    <td>
+                                        {% if client.is_online %}
+                                            <span class="badge bg-success">En ligne</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Hors ligne</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-photo {
+        width: 150px;
+        height: 150px;
+        margin: 0 auto 1rem;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 3px solid #f8f9fa;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+    .card {
+        margin-bottom: 1.5rem;
+        border: none;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+    }
+    .table th {
+        width: 200px;
+    }
+</style>
+{% endblock %}

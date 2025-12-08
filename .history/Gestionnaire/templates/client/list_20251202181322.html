@@ -1,0 +1,108 @@
+{% extends 'base_gestionnaire.html' %}
+{% block page_title %}liste de client {% endblock %}
+{% block content %}
+{% load static %}
+
+{% block title %}Liste des Clients{% endblock %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Liste des Clients</h4>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <form class="d-flex" method="get">
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="q" value="{{ search_query }}" placeholder="Rechercher...">
+                                <select class="form-select" name="status">
+                                    <option value="">Tous les statuts</option>
+                                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Actifs</option>
+                                    <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactifs</option>
+                                </select>
+                                <button class="btn btn-primary" type="submit">Filtrer</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Nom d'utilisateur</th>
+                                    <th>Email</th>
+                                    <th>Téléphone</th>
+                                    <th>Date d'inscription</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for client in clients %}
+                                <tr>
+                                    <td>{{ client.username }}</td>
+                                    <td>{{ client.email }}</td>
+                                    <td>{{ client.Contact }}</td>
+                                    <td>{{ client.date_joined|date:"d/m/Y H:i" }}</td>
+                                    <td>
+                                        <span class="badge {% if client.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                                            {% if client.is_active %}Actif{% else %}Inactif{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{" class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{% url 'Gestionnaire:activer_desactiver_client' client.pk %}" 
+                                           class="btn btn-sm {% if client.is_active %}btn-warning{% else %}btn-success{% endif %}"
+                                           onclick="return confirm('Êtes-vous sûr de vouloir {% if client.is_active %}désactiver{% else %}activer{% endif %} ce client ?')">
+                                            {% if client.is_active %}
+                                                <i class="fas fa-ban"></i>
+                                            {% else %}
+                                                <i class="fas fa-check"></i>
+                                            {% endif %}
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center">Aucun client trouvé</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    {% if is_paginated %}
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ search_query }}&status={{ status_filter }}">Précédent</a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                {% else %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ num }}&q={{ search_query }}&status={{ status_filter }}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ search_query }}&status={{ status_filter }}">Suivant</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

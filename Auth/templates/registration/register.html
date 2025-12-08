@@ -1,0 +1,243 @@
+{% extends 'registration/base.html' %}
+{% load static %}
+{% load static i18n %}
+{% block content %}
+<div class="authentication-wrapper authentication-basic container-p-y">
+    <div class="authentication-inner">
+    <!-- Register Card -->
+    <div class="card">
+        <div class="card-body">
+        <!-- Logo -->
+        <div class="app-brand justify-content-center">
+            <!-- Ajout du logo -->
+            <img src="{% static 'assets/img/logo.png' %}" alt="Logo MON LIVRO PRO" class="app-brand-logo" style="height: 70px;" /><br>
+            {% comment %} <span class="app-brand-text demo text-body fw-bolder">MON LIVRO PRO</span> {% endcomment %}
+        </div>
+        <!-- /Logo -->
+        <h4 class="mb-2">L'aventure commence ici 🚀</h4>
+        <p class="mb-4">inscrivez vous pour commencer une nouvelle aventure!</p>
+
+        <form  method="post" action="{% url 'register' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <hr class="my-4">
+
+        <!-- user name -->
+            <div class="mb-3">
+                <label class="form-label" for="basic-icon-default-fullname">Nom d'utilisateur</label>
+                <div class="input-group input-group-merge">
+                <span id="basic-icon-default-fullname2" class="input-group-text"
+                    ><i class="bx bx-user"></i
+                ></span>
+                <input
+                    name="username"
+                    type="text"
+                    class="form-control"
+                    id="id_username"
+                    placeholder="exemple:ange147"
+                    aria-label="John Doe"
+                    aria-describedby="basic-icon-default-fullname2"
+                    value="{{ form.username.value|default_if_none:'' }}"
+                >
+                </div>
+                <div class="form-text">Vous pouvez utiliser des lettres et des chiffres</div>
+
+                {% if form.username.errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.username.errors %}
+                        <span style="font-size: 13px;">{{ error|escape }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        <!-- user name end  -->
+
+
+        <!-- first name -->
+        <div class="mb-3">
+            <label class="form-label" for="basic-icon-default-fullname">Prenom</label>
+            <div class="input-group input-group-merge">
+            <span id="basic-icon-default-fullname2" class="input-group-text"
+                ><i class="bx bx-user"></i
+            ></span>
+            <input
+                name="first_name"
+                type="text"
+                class="form-control"
+                id="id_first_name"
+                placeholder="Prénom"
+                aria-label="Prénom  "
+                aria-describedby="basic-icon-default-fullname2"
+                value="{{ form.first_name.value|default_if_none:'' }}"
+            >
+            </div>
+            {% if form.first_name.errors %}
+            <div class="alert alert-danger">
+                {% for error in form.first_name.errors %}
+                    <span style="font-size: 13px;">{{ error|escape }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+
+        <!-- user last name    -->
+
+          <!-- first name -->
+          <div class="mb-3">
+            <label class="form-label" for="basic-icon-default-fullname">Nom</label>
+            <div class="input-group input-group-merge">
+            <span id="basic-icon-default-fullname2" class="input-group-text"
+                ><i class="bx bx-user"></i
+            ></span>
+            <input
+                name="last_name"
+                type="text"
+                class="form-control"
+                id="id_last_name"
+                placeholder="Nom"
+                aria-describedby="basic-icon-default-fullname2"
+                value="{{ form.last_name.value|default_if_none:'' }}"
+                aria-label="Nom"
+             >
+            </div>
+            {% if form.last_name.errors %}
+            <div class="alert alert-danger">
+                {% for error in form.last_name.errors %}
+                    <span style="font-size: 13px;">{{ error|escape }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        <hr class="my-4">
+
+
+        
+ 
+
+    <!-- email  -->
+    <div class="mb-3">
+        <label class="form-label" for="basic-icon-default-email">Email</label>
+        <div class="input-group input-group-merge">
+          <span class="input-group-text"><i class="bx bx-envelope"></i></span>
+          <input
+            type="email"
+            name="email"
+            id="id_email"
+            class="form-control"
+            placeholder=""
+            aria-label="john.doe"
+            aria-describedby="basic-icon-default-email2"
+            value="{{ form.email.value|default_if_none:'' }}"
+
+          />
+          <span id="basic-icon-default-email2" class="input-group-text">@example.com</span>
+        </div>
+        {% if form.email.errors %}
+        <div class="alert alert-danger">
+            {% for error in form.email.errors %}
+                <span style="font-size: 13px;">{{ error|escape }}</span>
+            {% endfor %}
+        </div>   
+        {% endif %}
+       </div>
+
+           <!-- tel   -->
+       <div class="mb-3">
+        <label class="form-label" for="basic-icon-default-phone">Tel </label>
+        <div class="input-group input-group-merge">
+          <span id="basic-icon-default-phone2" class="input-group-text"
+            ><i class="bx bx-phone"></i
+          ></span>
+          <input
+            type="text"
+            name="Contact"
+            id="id_Contact"
+            class="form-control"
+            placeholder="+225 "
+            aria-label="658 799 8941"
+            aria-describedby="basic-icon-default-phone2"
+          />
+        </div>
+        {% if form.Contact.errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.Contact.errors %}
+                            <span style="font-size: 13px;">{{ error|escape }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+      </div>
+      
+        <!-- password   -->
+        <hr class="my-4">
+        <div class="mb-3 form-password-toggle">
+            <label class="form-label" for="password">Mot de passe</label>
+            <div class="input-group input-group-merge">
+              <input
+                type="password"
+                id="password1"
+                class="form-control"
+                name="password1"
+                placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                aria-describedby="password1"
+              />
+              <span class="input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>
+              {% if form.password1.errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.password1.errors %}
+                                <span style="font-size: 13px;">{{ error|escape }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+            </div>
+        </div>
+
+        <div class="mb-3 form-password-toggle">
+            <label class="form-label" for="password"> Confirmez le mot de passe </label>
+            <div class="input-group input-group-merge">
+              <input
+                type="password"
+                id="password2"
+                class="form-control"
+                name="password2"
+                placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                aria-describedby="password2"
+              />
+              <span class="input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>
+              {% if form.password2.errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.password2.errors %}
+                                <span style="font-size: 13px;">{{ error|escape }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+            </div>
+        </div>
+
+             
+            
+
+            <div class="mb-3">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="terms-conditions" name="terms" />
+                <label class="form-check-label" for="terms-conditions">
+                    Je suis d'accord avec J'accept
+                  <a href="javascript:void(0);">Politique de confidentialité et conditions</a>
+                </label>
+              </div>
+            </div>
+            <button class="btn btn-primary d-grid w-100">S'inscrire</button>
+          </form>
+
+          <p class="text-center">
+            <span>Disposez-vous déjà d'un compte?</span>
+            <a href="{% url 'login'%}">
+              <span>Se connecter à la place</span>
+            </a>
+          </p>
+        </div>
+      </div>
+      <!-- Register Card -->
+    </div>
+
+{% endblock %}
+

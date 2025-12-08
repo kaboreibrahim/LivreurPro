@@ -1,0 +1,608 @@
+{% extends 'base_gestionnaire.html' %}
+{% block page_title %}Détails du Client - {{ client.username }}{% endblock %}
+{% load static %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-color: #4f46e5;
+        --secondary-color: #6366f1;
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --info-color: #3b82f6;
+    }
+    
+    body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+        min-height: 100vh;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    
+    /* Breadcrumb */
+    .breadcrumb-custom {
+        background: transparent;
+        padding: 0;
+        margin-bottom: 1.5rem;
+    }
+    
+    .breadcrumb-custom .breadcrumb-item {
+        color: #64748b;
+        font-size: 0.9rem;
+    }
+    
+    .breadcrumb-custom .breadcrumb-item a {
+        color: var(--primary-color);
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+    
+    .breadcrumb-custom .breadcrumb-item a:hover {
+        color: var(--secondary-color);
+    }
+    
+    .breadcrumb-custom .breadcrumb-item.active {
+        color: #1e293b;
+        font-weight: 600;
+    }
+    
+    /* Carte de profil */
+    .profile-card {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        text-align: center;
+        position: sticky;
+        top: 20px;
+    }
+    
+    .profile-photo-wrapper {
+        position: relative;
+        width: 160px;
+        height: 160px;
+        margin: 0 auto 1.5rem;
+    }
+    
+    .profile-photo {
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 4px solid #f1f5f9;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        position: relative;
+    }
+    
+    .profile-photo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .profile-initials {
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3.5rem;
+        font-weight: 700;
+        color: white;
+        border: 4px solid #f1f5f9;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+    
+    .online-indicator {
+        position: absolute;
+        bottom: 8px;
+        right: 8px;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--success-color);
+        border: 3px solid white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .online-indicator.offline {
+        background: #94a3b8;
+    }
+    
+    .profile-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0 0 0.25rem 0;
+    }
+    
+    .profile-role {
+        color: #64748b;
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    .action-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 2px solid #f1f5f9;
+    }
+    
+    .btn-action {
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        border: 2px solid;
+    }
+    
+    .btn-deactivate {
+        background: rgba(245, 158, 11, 0.1);
+        border-color: rgba(245, 158, 11, 0.3);
+        color: #f59e0b;
+    }
+    
+    .btn-deactivate:hover {
+        background: #f59e0b;
+        border-color: #f59e0b;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+    }
+    
+    .btn-activate {
+        background: rgba(16, 185, 129, 0.1);
+        border-color: rgba(16, 185, 129, 0.3);
+        color: #10b981;
+    }
+    
+    .btn-activate:hover {
+        background: #10b981;
+        border-color: #10b981;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    }
+    
+    .btn-back {
+        background: #f8fafc;
+        border-color: #e2e8f0;
+        color: #64748b;
+    }
+    
+    .btn-back:hover {
+        background: white;
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+        transform: translateY(-2px);
+    }
+    
+    /* Carte d'informations */
+    .info-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+    
+    .info-card-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        padding: 1.5rem 2rem;
+        color: white;
+    }
+    
+    .info-card-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .info-card-body {
+        padding: 0;
+    }
+    
+    /* Liste d'informations */
+    .info-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .info-item {
+        display: flex;
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid #f1f5f9;
+        transition: all 0.2s ease;
+    }
+    
+    .info-item:last-child {
+        border-bottom: none;
+    }
+    
+    .info-item:hover {
+        background: #f8fafc;
+    }
+    
+    .info-label {
+        flex: 0 0 200px;
+        font-weight: 700;
+        color: #64748b;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .info-label i {
+        font-size: 1rem;
+        color: var(--primary-color);
+    }
+    
+    .info-value {
+        flex: 1;
+        color: #1e293b;
+        font-weight: 500;
+        font-size: 0.95rem;
+    }
+    
+    /* Badges modernes */
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .status-badge.active {
+        background: #d1fae5;
+        color: #065f46;
+    }
+    
+    .status-badge.inactive {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+    
+    .status-badge.verified {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+    
+    .status-badge.unverified {
+        background: #fef3c7;
+        color: #92400e;
+    }
+    
+    .status-badge.online {
+        background: #d1fae5;
+        color: #065f46;
+        animation: pulse 2s infinite;
+    }
+    
+    .status-badge.offline {
+        background: #f1f5f9;
+        color: #64748b;
+    }
+    
+    .status-badge i {
+        font-size: 0.7rem;
+    }
+    
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.7;
+        }
+    }
+    
+    /* Section de statistiques */
+    .stats-section {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        margin-bottom: 1.5rem;
+    }
+    
+    .stats-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+    
+    .stat-item {
+        background: #f8fafc;
+        padding: 1.25rem;
+        border-radius: 12px;
+        text-align: center;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+    
+    .stat-item:hover {
+        background: white;
+        border-color: var(--primary-color);
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(79, 70, 229, 0.15);
+    }
+    
+    .stat-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-value {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #1e293b;
+        margin: 0.5rem 0 0.25rem 0;
+    }
+    
+    .stat-label {
+        color: #64748b;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .profile-card {
+            position: static;
+            margin-bottom: 1.5rem;
+        }
+        
+        .info-item {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .info-label {
+            flex: 0 0 auto;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+
+<div class="container-fluid p-4">
+     
+    
+    <div class="row">
+        <!-- Colonne de profil -->
+        <div class="col-lg-4">
+            <div class="profile-card">
+                <div class="profile-photo-wrapper">
+                    <div class="profile-photo">
+                        {% if client.photos %}
+                            <img src="{{ client.photos.url }}" alt="Photo de profil">
+                        {% else %}
+                            <div class="profile-initials">
+                                {{ client.username|first|upper }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="online-indicator {% if not client.is_online %}offline{% endif %}"></div>
+                </div>
+                
+                <h2 class="profile-name">
+                    {{ client.get_full_name|default:client.username }}
+                </h2>
+                <div class="profile-role">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Client</span>
+                </div>
+                
+                <div class="status-badge {% if client.is_active %}active{% else %}inactive{% endif %}">
+                    <i class="fas fa-circle"></i>
+                    {% if client.is_active %}Compte Actif{% else %}Compte Inactif{% endif %}
+                </div>
+                
+                <div class="action-buttons">
+                    <a href="{% url 'Gestionnaire:activer_desactiver_client' client.pk %}" 
+                       class="btn btn-action {% if client.is_active %}btn-deactivate{% else %}btn-activate{% endif %}"
+                       onclick="return confirm('Êtes-vous sûr de vouloir {% if client.is_active %}désactiver{% else %}activer{% endif %} ce client ?')">
+                        {% if client.is_active %}
+                            <i class="fas fa-ban"></i> Désactiver le compte
+                        {% else %}
+                            <i class="fas fa-check-circle"></i> Activer le compte
+                        {% endif %}
+                    </a>
+                    
+                    <a href="{% url 'Gestionnaire:liste_clients' %}" class="btn btn-action btn-back">
+                        <i class="fas fa-arrow-left"></i> Retour à la liste
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Colonne d'informations -->
+        <div class="col-lg-8">
+            <!-- Informations principales -->
+            <div class="info-card">
+                <div class="info-card-header">
+                    <h3 class="info-card-title">
+                        <i class="fas fa-info-circle"></i>
+                        Informations du client
+                    </h3>
+                </div>
+                <div class="info-card-body">
+                    <ul class="info-list">
+                        <li class="info-item">
+                            <div class="info-label">
+                                <i class="fas fa-user"></i>
+                                Nom d'utilisateur
+                            </div>
+                            <div class="info-value">
+                                <strong>{{ client.username }}</strong>
+                            </div>
+                        </li>
+                        
+                        <li class="info-item">
+                            <div class="info-label">
+                                <i class="fas fa-envelope"></i>
+                                Email
+                            </div>
+                            <div class="info-value">
+                                {{ client.email }}
+                            </div>
+                        </li>
+                        
+                        <li class="info-item">
+                            <div class="info-label">
+                                <i class="fas fa-phone"></i>
+                                Téléphone
+                            </div>
+                            <div class="info-value">
+                                {{ client.Contact|default:"<span class='text-muted'>Non renseigné</span>" }}
+                            </div>
+                        </li>
+                        
+                        <li class="info-item">
+                            <div class="info-label">
+                                <i class="fas fa-calendar-plus"></i>
+                                Date d'inscription
+                            </div>
+                            <div class="info-value">
+                                {{ client.date_joined|date:"d/m/Y à H:i" }}
+                            </div>
+                        </li>
+                        
+                        <li class="info-item">
+                            <div class="info-label">
+                                <i class="fas fa-clock"></i>
+                                Dernière connexion
+                            </div>
+                            <div class="info-value">
+                                {% if client.last_login %}
+                                    {{ client.last_login|date:"d/m/Y à H:i" }}
+                                {% else %}
+                                    <span class="text-muted">Jamais connecté</span>
+                                {% endif %}
+                            </div>
+                        </li>
+                        
+                        <li class="info-item">
+                            <div class="info-label">
+                                <i class="fas fa-toggle-on"></i>
+                                Statut du compte
+                            </div>
+                            <div class="info-value">
+                                <span class="status-badge {% if client.is_active %}active{% else %}inactive{% endif %}">
+                                    <i class="fas fa-circle"></i>
+                                    {% if client.is_active %}Actif{% else %}Inactif{% endif %}
+                                </span>
+                            </div>
+                        </li>
+                        
+                        <li class="info-item">
+                            <div class="info-label">
+                                <i class="fas fa-shield-check"></i>
+                                Email vérifié
+                            </div>
+                            <div class="info-value">
+                                {% if client.is_verified %}
+                                    <span class="status-badge verified">
+                                        <i class="fas fa-check-circle"></i>
+                                        Vérifié
+                                    </span>
+                                {% else %}
+                                    <span class="status-badge unverified">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        Non vérifié
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </li>
+                        
+                        <li class="info-item">
+                            <div class="info-label">
+                                <i class="fas fa-circle"></i>
+                                Statut en ligne
+                            </div>
+                            <div class="info-value">
+                                {% if client.is_online %}
+                                    <span class="status-badge online">
+                                        <i class="fas fa-circle"></i>
+                                        En ligne
+                                    </span>
+                                {% else %}
+                                    <span class="status-badge offline">
+                                        <i class="fas fa-circle"></i>
+                                        Hors ligne
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Section statistiques (optionnelle) -->
+            <div class="stats-section">
+                <h3 class="stats-title">
+                    <i class="fas fa-chart-line"></i>
+                    Statistiques du client
+                </h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-icon">📦</div>
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Commandes</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Livrées</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon">⏳</div>
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">En cours</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon">❌</div>
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Annulées</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

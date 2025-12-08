@@ -1,0 +1,224 @@
+<!-- Modal d'assignation de livreur -->
+<div class="modal fade" id="assignerLivreurModal" tabindex="-1" role="dialog" aria-labelledby="assignerLivreurModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="assignerLivreurModalLabel">
+                    <i class="fas fa-user-tie mr-2"></i>Assigner un livreur
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Fermer">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="post" action="{% url 'gestionnaire:assigner_livreur' demande.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> 
+                        Sélectionnez un livreur disponible pour cette course. Les livreurs sont triés par disponibilité et par note.
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="livreur">Sélectionner un livreur :</label>
+                        <select class="form-control select2" id="livreur" name="livreur_id" required>
+                            <option value="">-- Sélectionnez un livreur --</option>
+                            {% for livreur in livreurs_disponibles %}
+                            <option value="{{ livreur.id }}" 
+                                    data-note="{{ livreur.note_moyenne|default:'0' }}"
+                                    data-distance="{{ livreur.distance_actuelle|default:'0' }} km"
+                                    data-courses-en-cours="{{ livreur.courses_en_cours }}">
+                                {{ livreur.get_full_name|default:livreur.username }} 
+                                (Note: {{ livreur.note_moyenne|default:'N/A' }}/5)
+                                {% if livreur.distance_actuelle %}
+                                    - À {{ livreur.distance_actuelle|floatformat:1 }} km
+                                {% endif %}
+                                {% if livreur.courses_en_cours %}
+                                    - {{ livreur.courses_en_cours }} coursier(s) en cours
+                                {% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="card mb-3" id="livreurDetails" style="display: none;">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3 text-center">
+                                    <img id="livreurPhoto" src="" class="img-fluid rounded-circle mb-2" style="width: 80px; height: 80px; object-fit: cover;">
+                                    <div class="mt-2">
+                                        <span class="badge bg-primary" id="livreurNote"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-9">
+                                    <h5 id="livreurNom" class="card-title"></h5>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p class="mb-1"><i class="fas fa-phone-alt text-muted mr-2"></i> <span id="livreurTelephone"></span></p>
+                                            <p class="mb-1"><i class="fas fa-motorcycle text-muted mr-2"></i> <span id="livreurVehicule"></span></p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p class="mb-1"><i class="fas fa-map-marker-alt text-muted mr-2"></i> <span id="livreurDistance"></span></p>
+                                            <p class="mb-1"><i class="fas fa-tasks text-muted mr-2"></i> <span id="livreurCourses"></span></p>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2" id="livreurCompetences">
+                                        <!-- Les compétences seront ajoutées ici par JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="commentaire">Instructions spéciales :</label>
+                        <textarea class="form-control" id="commentaire" name="commentaire" rows="2" 
+                                  placeholder="Ajoutez des instructions spécifiques pour le livreur"></textarea>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> 
+                        En assignant un livreur, vous confirmez que le client a accepté le prix de la course.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-user-check"></i> Assigner le livreur
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Style pour le select2 et la carte de détail -->
+<style>
+.select2-container--default .select2-selection--single {
+    height: calc(1.5em + 0.75rem + 2px);
+    padding: 0.375rem 0.75rem;
+    border: 1px solid #d1d3e2;
+    border-radius: 0.35rem;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 36px;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 36px;
+}
+
+/* Style pour la carte de détail du livreur */
+#livreurDetails .card {
+    border-left: 4px solid #4e73df;
+    transition: all 0.3s ease;
+}
+
+#livreurDetails .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.badge-note {
+    font-size: 0.9em;
+    padding: 0.35em 0.65em;
+}
+
+.competence-badge {
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+</style>
+
+<script>
+$(document).ready(function() {
+    // Initialisation de Select2
+    $('.select2').select2({
+        width: '100%',
+        placeholder: 'Rechercher un livreur...',
+        allowClear: true,
+        templateResult: formatLivreur,
+        templateSelection: formatLivreurSelection
+    });
+    
+    // Gestion du changement de sélection du livreur
+    $('#livreur').on('change', function() {
+        var livreurId = $(this).val();
+        var livreurDetails = $('#livreurDetails');
+        
+        if (!livreurId) {
+            livreurDetails.hide();
+            return;
+        }
+        
+        // Ici, vous devriez normalement faire un appel AJAX pour récupérer les détails du livreur
+        // Pour l'exemple, nous utilisons les données de l'option sélectionnée
+        var option = $(this).find('option:selected');
+        var note = option.data('note');
+        var distance = option.data('distance');
+        var coursesEnCours = option.data('courses-en-cours') || 0;
+        
+        // Mettre à jour les détails du livreur
+        $('#livreurNom').text(option.text().split('(')[0].trim());
+        
+        // Mettre à jour la note avec des étoiles
+        var noteHtml = '';
+        var noteArrondie = Math.round(note);
+        for (var i = 1; i <= 5; i++) {
+            if (i <= noteArrondie) {
+                noteHtml += '<i class="fas fa-star text-warning"></i>';
+            } else {
+                noteHtml += '<i class="far fa-star text-warning"></i>';
+            }
+        }
+        noteHtml += ' ' + note;
+        $('#livreurNote').html(noteHtml);
+        
+        // Mettre à jour les autres détails
+        $('#livreurDistance').text(distance ? 'À environ ' + distance + ' de la zone' : 'Distance non disponible');
+        $('#livreurCourses').text(coursesEnCours + ' course(s) en cours');
+        
+        // Afficher la carte de détail
+        livreurDetails.fadeIn();
+    });
+    
+    // Fonction pour formater l'affichage des options du select
+    function formatLivreur(livreur) {
+        if (!livreur.id) {
+            return livreur.text;
+        }
+        
+        var $livreur = $(
+            '<div class="d-flex justify-content-between align-items-center">' +
+                '<span>' + livreur.text.split('(')[0].trim() + '</span>' +
+                '<span class="badge bg-primary ml-2">' + 
+                    ($(livreur.element).data('note') || '0') + 
+                    '<i class="fas fa-star ml-1"></i>' +
+                '</span>' +
+            '</div>'
+        );
+        return $livreur;
+    }
+    
+    // Fonction pour formater l'affichage de la sélection
+    function formatLivreurSelection(livreur) {
+        if (!livreur.id) {
+            return livreur.text;
+        }
+        return $(livreur.element).text().split('(')[0].trim();
+    }
+    
+    // Validation du formulaire
+    $('form').on('submit', function(e) {
+        if (!$('#livreur').val()) {
+            e.preventDefault();
+            alert('Veuillez sélectionner un livreur.');
+            return false;
+        }
+        
+        // Vous pouvez ajouter d'autres validations ici si nécessaire
+        
+        return true;
+    });
+});
+</script>

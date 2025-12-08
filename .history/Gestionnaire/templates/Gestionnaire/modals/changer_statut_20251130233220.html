@@ -1,0 +1,113 @@
+<!-- Modal de changement de statut -->
+<div class="modal fade" id="changerStatutModal" tabindex="-1" role="dialog" aria-labelledby="changerStatutModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="changerStatutModalLabel">Changer le statut de la demande</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="post" action="{% url 'Gestionnaire:changer_statut' demande.pk 'STATUT' %}" id="changerStatutForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <input type="hidden" name="statut" id="statut" value="">
+                    <div id="confirmationText">
+                        Êtes-vous sûr de vouloir changer le statut de cette demande ?
+                    </div>
+                    <div class="form-group mt-3" id="commentaireGroup" style="display: none;">
+                        <label for="commentaire">Commentaire (optionnel) :</label>
+                        <textarea class="form-control" id="commentaire" name="commentaire" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary btn-confirm">Confirmer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Gestion dynamique du formulaire de changement de statut
+$(document).ready(function() {
+    $('#changerStatutModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var statut = button.data('statut');
+        var modal = $(this);
+        
+        // Mettre à jour le formulaire avec le statut sélectionné
+        modal.find('#statut').val(statut);
+        
+        // Mettre à jour l'action du formulaire avec l'URL correcte
+        var actionUrl = '{% url "Gestionnaire:changer_statut" demande.pk 0 %}'.replace('0', statut);
+        modal.find('form').attr('action', actionUrl);
+        
+        // Personnaliser le message en fonction du statut
+        var message = '';
+        var titre = '';
+        var boutonClasse = 'btn-primary';
+        var boutonIcone = 'fa-check';
+        var boutonTexte = 'Confirmer';
+        var showCommentaire = false;
+        
+        switch(statut) {
+            case 'TERMINEE':
+                titre = 'Marquer comme terminée';
+                message = 'Êtes-vous sûr de vouloir marquer cette demande comme terminée ?';
+                boutonClasse = 'btn-success';
+                boutonIcone = 'fa-check-circle';
+                boutonTexte = ' Confirmer comme terminée';
+                showCommentaire = true;
+                break;
+                
+            case 'ANNULEE':
+                titre = 'Annuler la demande';
+                message = 'Êtes-vous sûr de vouloir annuler cette demande ? Cette action est irréversible.';
+                boutonClasse = 'btn-danger';
+                boutonIcone = 'fa-times-circle';
+                boutonTexte = ' Confirmer l\'annulation';
+                showCommentaire = true;
+                break;
+                
+            default:
+                titre = 'Changer le statut';
+                message = 'Êtes-vous sûr de vouloir changer le statut de cette demande ?';
+                break;
+        }
+        
+        // Mettre à jour le modal
+        modal.find('.modal-title').text(titre);
+        modal.find('#confirmationText').text(message);
+        
+        // Afficher/masquer le champ de commentaire
+        if (showCommentaire) {
+            modal.find('#commentaireGroup').show();
+        } else {
+            modal.find('#commentaireGroup').hide();
+        }
+        
+        // Mettre à jour le bouton de confirmation
+        var boutonConfirmer = modal.find('.btn-confirm')
+            .removeClass('btn-primary btn-success btn-danger')
+            .addClass(boutonClasse)
+            .html('<i class="fas ' + boutonIcone + '"></i>' + boutonTexte);
+    });
+    
+    // Validation du formulaire
+    $('#changerStatutForm').on('submit', function(e) {
+        var statut = $('#statut').val();
+        var commentaire = $('#commentaire').val();
+        
+        if ((statut === 'ANNULEE' || statut === 'TERMINEE') && !commentaire.trim()) {
+            e.preventDefault();
+            alert('Veuillez saisir un commentaire pour ' + 
+                 (statut === 'ANNULEE' ? 'annuler' : 'terminer') + ' cette demande.');
+            return false;
+        }
+        
+        return true;
+    });
+});
+</script>

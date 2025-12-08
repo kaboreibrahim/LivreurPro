@@ -1,0 +1,403 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block page_name %}liste{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid px-4 py-4">
+    <!-- En-tête avec statistiques -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1">📦 Mes Demandes</h2>
+                    <p class="text-muted mb-0">Gérez et suivez toutes vos demandes de livraison</p>
+                </div>
+                <a href="{% url 'Client:creer_demande' %}" class="btn btn-primary btn-lg d-flex align-items-center">
+                    <i class='bx bx-plus-circle me-2'></i> Nouvelle Demande
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cartes de statistiques -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3 mb-md-0">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-uppercase text-muted mb-2">Total</h6>
+                            <h3 class="mb-0">{{ demandes|length }}</h3>
+                        </div>
+                        <div class="icon-shape icon-lg bg-light-primary text-primary rounded-3">
+                            <i class='bx bx-package fs-4'></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3 mb-md-0">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-uppercase text-muted mb-2">En cours</h6>
+                            <h3 class="mb-0">{{ demandes|length|default:0 }}</h3>
+                        </div>
+                        <div class="icon-shape icon-lg bg-light-warning text-warning rounded-3">
+                            <i class='bx bx-time fs-4'></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3 mb-md-0">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-uppercase text-muted mb-2">Terminées</h6>
+                            <h3 class="mb-0">0</h3>
+                        </div>
+                        <div class="icon-shape icon-lg bg-light-success text-success rounded-3">
+                            <i class='bx bx-check-circle fs-4'></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-uppercase text-muted mb-2">Annulées</h6>
+                            <h3 class="mb-0">0</h3>
+                        </div>
+                        <div class="icon-shape icon-lg bg-light-danger text-danger rounded-3">
+                            <i class='bx bx-x-circle fs-4'></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barre de recherche et filtres -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-3">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0">
+                            <i class='bx bx-search text-muted'></i>
+                        </span>
+                        <input type="text" class="form-control border-start-0" id="searchInput" placeholder="Rechercher une demande...">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="statusFilter">
+                        <option value="">Tous les statuts</option>
+                        <option value="EN_ATTENTE">En attente</option>
+                        <option value="EN_COURS">En cours</option>
+                        <option value="TERMINEE">Terminée</option>
+                        <option value="ANNULEE">Annulée</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="sortBy">
+                        <option value="newest">Plus récentes</option>
+                        <option value="oldest">Plus anciennes</option>
+                        <option value="price_asc">Prix croissant</option>
+                        <option value="price_desc">Prix décroissant</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des demandes -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if demandes %}
+        <div class="row g-4" id="demandesContainer">
+            {% for demande in demandes %}
+            <div class="col-12 col-md-6 col-xl-4">
+                <div class="card h-100 border-0 shadow-sm demande-card" 
+                     onclick="window.location.href='{% url 'Client:detail_demande' demande.id %}'"
+                     data-status="{{ demande.statut }}"
+                     data-date="{{ demande.date_demande|date:'U' }}"
+                     data-price="{{ demande.cout_livraison|default:0 }}">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <span class="badge bg-light text-dark mb-2">#{{ demande.ref }}</span>
+                                <h5 class="mb-1">{{ demande.get_type_course_display }}</h5>
+                                <p class="text-muted small mb-0">
+                                    <i class='bx bx-calendar me-1'></i> {{ demande.date_demande|date:"d M Y à H:i" }}
+                                </p>
+                            </div>
+                            <span class="status-badge status-{{ demande.statut }}">
+                                {{ demande.get_statut_display }}
+                            </span>
+                        </div>
+
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="flex-shrink-0">
+                                <div class="bg-light p-2 rounded-circle">
+                                    <i class='bx bx-map text-primary fs-4'></i>
+                                </div>
+                            </div>
+                            <div class="ms-3">
+                                <small class="text-muted d-block">De</small>
+                                <p class="mb-0 text-truncate" style="max-width: 250px;">{{ demande.adresse_depart }}</p>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="flex-shrink-0">
+                                <div class="bg-light p-2 rounded-circle">
+                                    <i class='bx bx-map-pin text-danger fs-4'></i>
+                                </div>
+                            </div>
+                            <div class="ms-3">
+                                <small class="text-muted d-block">À</small>
+                                <p class="mb-0 text-truncate" style="max-width: 250px;">{{ demande.adresse_destination }}</p>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                            <div>
+                                {% if demande.cout_livraison %}
+                                <span class="fw-bold text-primary fs-5">{{ demande.cout_livraison }} FCFA</span>
+                                {% else %}
+                                <span class="text-muted">Prix non défini</span>
+                                {% endif %}
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-light text-dark">
+                                    <i class='bx bx-package me-1'></i> {{ demande.poids_colis }} kg
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-5 my-5">
+            <div class="mb-4">
+                <i class='bx bx-package text-muted' style="font-size: 4rem; opacity: 0.5;"></i>
+            </div>
+            <h4 class="mb-3">Aucune demande pour le moment</h4>
+            <p class="text-muted mb-4">Créez votre première demande de livraison pour commencer</p>
+            <a href="{% url 'Client:creer_demande' %}" class="btn btn-primary px-4">
+                <i class='bx bx-plus me-2'></i>Créer une demande
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Modal d'aperçu rapide (à implémenter avec JavaScript) -->
+<div class="modal fade" id="quickViewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Détails de la demande</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Contenu dynamique chargé via JavaScript -->
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Chargement...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-EN_ATTENTE {
+        background-color: rgba(255, 193, 7, 0.15);
+        color: #ffc107;
+    }
+
+    .status-VALIDATION_CLIENT, .status-VALIDATION_LIVREUR {
+        background-color: rgba(23, 162, 184, 0.15);
+        color: #17a2b8;
+    }
+
+    .status-LIVREUR_ROUTE, .status-LIVRAISON_EN_ROUTE {
+        background-color: rgba(253, 126, 20, 0.15);
+        color: #fd7e14;
+    }
+
+    .status-RECEPTION_COLIS {
+        background-color: rgba(102, 16, 242, 0.15);
+        color: #6610f2;
+    }
+
+    .status-TERMINEE {
+        background-color: rgba(40, 167, 69, 0.15);
+        color: #28a745;
+    }
+
+    .status-ANNULEE {
+        background-color: rgba(220, 53, 69, 0.15);
+        color: #dc3545;
+    }
+
+    .demande-card {
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0,0,0,0.05);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .demande-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        border-color: rgba(0,0,0,0.1);
+    }
+
+    .icon-shape {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+    }
+
+    .bg-light-primary {
+        background-color: rgba(13, 110, 253, 0.1) !important;
+    }
+
+    .bg-light-warning {
+        background-color: rgba(255, 193, 7, 0.1) !important;
+    }
+
+    .bg-light-success {
+        background-color: rgba(25, 135, 84, 0.1) !important;
+    }
+
+    .bg-light-danger {
+        background-color: rgba(220, 53, 69, 0.1) !important;
+    }
+
+    /* Animation de chargement */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    /* Style pour les cartes vides */
+    .empty-state {
+        min-height: 400px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 2rem;
+        background: #f8f9fa;
+        border-radius: 12px;
+        border: 2px dashed #dee2e6;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Filtrage et recherche
+        const searchInput = document.getElementById('searchInput');
+        const statusFilter = document.getElementById('statusFilter');
+        const sortBy = document.getElementById('sortBy');
+        const demandesContainer = document.getElementById('demandesContainer');
+        
+        if (searchInput && statusFilter && sortBy && demandesContainer) {
+            const filterDemandes = () => {
+                const searchTerm = searchInput.value.toLowerCase();
+                const status = statusFilter.value;
+                const sortMethod = sortBy.value;
+                
+                const cards = Array.from(demandesContainer.getElementsByClassName('card'));
+                
+                cards.forEach(card => {
+                    const text = card.textContent.toLowerCase();
+                    const cardStatus = card.getAttribute('data-status');
+                    const isVisible = 
+                        (status === '' || cardStatus === status) &&
+                        (searchTerm === '' || text.includes(searchTerm));
+                    
+                    card.style.display = isVisible ? 'block' : 'none';
+                });
+                
+                // Trier les cartes visibles
+                const visibleCards = cards.filter(card => card.style.display !== 'none');
+                visibleCards.sort((a, b) => {
+                    if (sortMethod === 'newest') {
+                        return b.getAttribute('data-date') - a.getAttribute('data-date');
+                    } else if (sortMethod === 'oldest') {
+                        return a.getAttribute('data-date') - b.getAttribute('data-date');
+                    } else if (sortMethod === 'price_asc') {
+                        return parseFloat(a.getAttribute('data-price') || 0) - parseFloat(b.getAttribute('data-price') || 0);
+                    } else if (sortMethod === 'price_desc') {
+                        return parseFloat(b.getAttribute('data-price') || 0) - parseFloat(a.getAttribute('data-price') || 0);
+                    }
+                    return 0;
+                });
+                
+                // Réorganiser les cartes dans le DOM
+                const parent = demandesContainer;
+                visibleCards.forEach(card => {
+                    parent.appendChild(card.parentNode);
+                });
+            };
+            
+            searchInput.addEventListener('input', filterDemandes);
+            statusFilter.addEventListener('change', filterDemandes);
+            sortBy.addEventListener('change', filterDemandes);
+        }
+        
+        // Animation au survol des cartes
+        const cards = document.querySelectorAll('.demande-card');
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+        
+        // Initialiser les tooltips Bootstrap
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+{% endblock %}

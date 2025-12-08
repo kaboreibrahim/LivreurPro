@@ -1,0 +1,339 @@
+{% extends 'base_livreur.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Mes Demandes</h2>
+    
+    <!-- Cartes de statistiques -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>Total des demandes</h3>
+            <p class="stat-number">{{ total_demandes }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>En cours</h3>
+            <p class="stat-number">{{ demandes_en_cours }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Terminées</h3>
+            <p class="stat-number">{{ demandes_terminees }}</p>
+        </div>
+    </div>
+
+    <!-- Formulaire de filtrage et de recherche -->
+    <div class="filters-container">
+        <form method="get" class="filter-form">
+            <div class="form-group">
+                <label for="type_demande">Type de demande</label>
+                <select name="type_demande" id="type_demande" class="form-control">
+                    <option value="">Tous les types</option>
+                    {% for value, label in types_demande %}
+                        <option value="{{ value }}" {% if value == type_demande %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="statut">État</label>
+                <select name="statut" id="statut" class="form-control">
+                    <option value="">Tous les états</option>
+                    {% for value, label in statuts_demande %}
+                        <option value="{{ value }}" {% if value == statut %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group search-group">
+                <input type="text" 
+                       name="search" 
+                       value="{{ search_query }}" 
+                       placeholder="Rechercher..." 
+                       class="form-control">
+                <button type="submit" class="btn-search">
+                    <i class='bx bx-search'></i>
+                </button>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Filtrer</button>
+            <a href="{% url 'Livreur:livreur_demandes_liste' %}" class="btn btn-secondary">Réinitialiser</a>
+        </form>
+    </div>
+
+    <!-- Liste des demandes -->
+    <div class="demandes-list">
+        {% if demandes %}
+            {% for demande in demandes %}
+                <div class="demande-card">
+                    <div class="demande-header">
+                        <h4>Demande #{{ demande.id|stringformat:"06d" }}</h4>
+                        <span class="badge badge-{{ demande.statut|lower }}">
+                            {{ demande.get_statut_display }}
+                        </span>
+                    </div>
+                    
+                    <div class="demande-body">
+                        <div class="demande-info">
+                            <div class="info-item">
+                                <i class='bx bx-map-pin'></i>
+                                <span>{{ demande.adresse_depart }}</span>
+                            </div>
+                            <div class="info-item">
+                                <i class='bx bx-map'></i>
+                                <span>{{ demande.adresse_destination }}</span>
+                            </div>
+                            <div class="info-item">
+                                <i class='bx bx-time'></i>
+                                <span>{{ demande.date_creation|date:"d/m/Y H:i" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <i class='bx bx-category'></i>
+                                <span>{{ demande.get_type_demande_display }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="demande-actions">
+                            <a href="" class="btn btn-sm btn-primary">
+                                Voir les détails
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+            
+            <!-- Pagination -->
+            {% if is_paginated %}
+                <div class="pagination">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1" class="page-link">&laquo; Première</a>
+                        <a href="?page={{ page_obj.previous_page_number }}" class="page-link">Précédent</a>
+                    {% endif %}
+                    
+                    <span class="current-page">
+                        Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}
+                    </span>
+                    
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}" class="page-link">Suivant</a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}" class="page-link">Dernière &raquo;</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+            
+        {% else %}
+            <div class="no-results">
+                <i class='bx bx-package'></i>
+                <p>Aucune demande trouvée</p>
+                <p>Vous n'avez aucune demande correspondant à vos critères de recherche.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    /* Styles pour les cartes de statistiques */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+        margin: 0.5rem 0 0;
+        color: #3a7bd5;
+    }
+    
+    /* Styles pour le formulaire de filtrage */
+    .filters-container {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .filter-form {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        align-items: end;
+    }
+    
+    .form-group {
+        margin-bottom: 0;
+    }
+    
+    .search-group {
+        position: relative;
+        display: flex;
+    }
+    
+    .search-group input {
+        padding-right: 40px;
+    }
+    
+    .btn-search {
+        position: absolute;
+        right: 0;
+        top: 0;
+        height: 100%;
+        border: none;
+        background: transparent;
+        padding: 0 15px;
+        color: #666;
+        cursor: pointer;
+    }
+    
+    /* Styles pour la liste des demandes */
+    .demandes-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .demande-card {
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s;
+    }
+    
+    .demande-card:hover {
+        transform: translateY(-2px);
+    }
+    
+    .demande-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .demande-header h4 {
+        margin: 0;
+        color: #333;
+    }
+    
+    .badge {
+        padding: 0.35em 0.65em;
+        font-size: 0.75em;
+        font-weight: 700;
+        line-height: 1;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: baseline;
+        border-radius: 0.25rem;
+    }
+    
+    .badge-en_cours, .badge-en_attente {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    
+    .badge-termine {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .badge-annule, .badge-refuse {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .demande-body {
+        padding: 1.5rem;
+    }
+    
+    .demande-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #555;
+    }
+    
+    .info-item i {
+        color: #3a7bd5;
+        font-size: 1.2em;
+    }
+    
+    .demande-actions {
+        display: flex;
+        justify-content: flex-end;
+    }
+    
+    /* Styles pour la pagination */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+    }
+    
+    .page-link {
+        padding: 0.5rem 1rem;
+        border: 1px solid #dee2e6;
+        color: #3a7bd5;
+        text-decoration: none;
+        border-radius: 0.25rem;
+        transition: all 0.2s;
+    }
+    
+    .page-link:hover {
+        background-color: #e9ecef;
+    }
+    
+    .current-page {
+        padding: 0.5rem 1rem;
+    }
+    
+    /* Message quand il n'y a pas de résultats */
+    .no-results {
+        text-align: center;
+        padding: 3rem 1rem;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .no-results i {
+        font-size: 3rem;
+        color: #ccc;
+        margin-bottom: 1rem;
+    }
+    
+    .no-results p {
+        color: #666;
+        margin: 0.5rem 0;
+    }
+    
+    /* Styles responsifs */
+    @media (max-width: 768px) {
+        .filter-form {
+            grid-template-columns: 1fr;
+        }
+        
+        .demande-info {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}

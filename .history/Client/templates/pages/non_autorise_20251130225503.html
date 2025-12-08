@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block page_name %}Accès refusé{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Conteneur principal */
+    .error-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 70vh;
+        text-align: center;
+        padding: 2rem;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        max-width: 600px;
+        margin: 2rem auto;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Effet de vague décoratif */
+    .error-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 8px;
+        background: linear-gradient(90deg, #4f46e5, #6366f1);
+    }
+
+    /* Icône d'erreur */
+    .error-icon {
+        font-size: 5rem;
+        color: #ef4444;
+        margin-bottom: 1.5rem;
+        position: relative;
+        animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+        40% {transform: translateY(-20px);}
+        60% {transform: translateY(-10px);}
+    }
+
+    /* Titre */
+    .error-title {
+        color: #1f2937;
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        background: linear-gradient(90deg, #4f46e5, #6366f1);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    /* Message d'erreur */
+    .error-message {
+        color: #6b7280;
+        font-size: 1.1rem;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+        max-width: 80%;
+    }
+
+    /* Bouton de retour */
+    .btn-return {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.8rem 2rem;
+        background: linear-gradient(135deg, #4f46e5, #6366f1);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+    }
+
+    .btn-return:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+    }
+
+    .btn-return i {
+        margin-right: 8px;
+        font-size: 1.1rem;
+    }
+
+    /* Code d'erreur */
+    .error-code {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-size: 1rem;
+        color: #d1d5db;
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+        .error-container {
+            padding: 2rem 1.5rem;
+            margin: 1rem;
+        }
+        
+        .error-title {
+            font-size: 2rem;
+        }
+        
+        .error-message {
+            max-width: 100%;
+            font-size: 1rem;
+        }
+        
+        .error-icon {
+            font-size: 4rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <span class="error-code">ERREUR 403</span>
+    <div class="error-icon">
+        <i class='bx bxs-lock-alt'></i>
+    </div>
+    <h1 class="error-title">Accès refusé</h1>
+    <p class="error-message">
+        Désolé, vous n'avez pas les autorisations nécessaires pour accéder à cette page.
+        Si vous pensez qu'il s'agit d'une erreur, veuillez contacter l'administrateur.
+    </p>
+    <a href="{% url 'Accueil' %}" class="btn-return">
+        <i class='bx bx-home'></i>
+        Retour à l'accueil
+    </a>
+</div>
+{% endblock %}

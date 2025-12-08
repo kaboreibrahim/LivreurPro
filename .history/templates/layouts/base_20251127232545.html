@@ -1,0 +1,703 @@
+ {% load static %}
+{% load static i18n %}
+ <!DOCTYPE html>
+<html
+  lang="en"
+  class="light-style customizer-hide"
+  dir="ltr"
+  data-theme="theme-default"
+  data-assets-path="{% static 'assets/' %}"
+  data-template="vertical-menu-template-free"
+>
+<head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"
+    />
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <title>Mon Livreur Pro</title>
+ 
+    <!-- Ajouter l'API Yandex Maps dans le head de votre document HTML -->
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/boxicons/2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=256c2512-f04c-4d6f-832c-6f0ad8e1ecde&lang=fr_FR" type="text/javascript"></script>
+    <meta name="description" content="Mon Livreur Pro" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{% static 'assets/img/logo.png' %}" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="{% static 'assets/vendor/fonts/boxicons.css' %}" />
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="{% static 'assets/vendor/css/core.css' %}" class="template-customizer-core-css" />
+    <link rel="stylesheet" href="{% static 'assets/vendor/css/theme-default.css' %}" class="template-customizer-theme-css" />
+    <link rel="stylesheet" href="{% static 'assets/css/demo.css' %}" />
+
+    <!-- Vendors CSS -->
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css' %}" />
+
+    <!-- Page CSS -->
+    <link rel="stylesheet" href="{% static 'assets/vendor/css/pages/page-auth.css' %}" />
+
+    <!-- Helpers -->
+    <script src="{% static 'assets/vendor/js/helpers.js' %}"></script>
+
+    <!-- Config -->
+    <script src="{% static 'assets/js/config.js' %}"></script>
+
+    <!-- Custom Colors CSS -->
+    <style>
+        :root {
+            --primary: #000080;    /* Navy blue from logo */
+            --secondary: #FF6B00;  /* Orange from logo */
+            --light: #FFF9E5;     /* Light cream from logo */
+            --dark: #1A1A1A;      /* Dark gray */
+        }
+
+        /* Navigation and Menu Colors */
+        .layout-menu {
+            background-color: var(--primary) !important;
+        }
+
+        .menu-inner .menu-item .menu-link {
+            color: var(--light) !important;
+        }
+
+        .menu-inner .menu-item.active > .menu-link {
+            background-color: var(--secondary) !important;
+            color: white !important;
+        }
+
+        .menu-inner .menu-item .menu-link:hover {
+            background-color: rgba(255, 107, 0, 0.1) !important;
+            color: var(--secondary) !important;
+        }
+
+        .app-brand-text {
+            color: var(--light) !important;
+        }
+
+        .menu-header-text {
+            color: var(--light) !important;
+            opacity: 0.8;
+        }
+
+        /* Navbar Colors */
+        .layout-navbar {
+            background-color: var(--light) !important;
+            border-bottom: 2px solid var(--secondary);
+        }
+
+        .navbar-text {
+            color: var(--primary) !important;
+            font-weight: 600;
+        }
+
+        /* Dropdown Colors */
+        .dropdown-menu {
+            border: 1px solid var(--secondary);
+        }
+
+        .dropdown-item:hover {
+            background-color: var(--light) !important;
+            color: var(--primary) !important;
+        }
+
+        /* Notifications Badge */
+        .badge.bg-danger {
+            background-color: var(--secondary) !important;
+        }
+
+        /* Avatar and User Menu */
+        .avatar-online::after {
+            background-color: var(--secondary) !important;
+        }
+
+        /* Buttons and Interactive Elements */
+        .btn-primary {
+            background-color: var(--primary) !important;
+            border-color: var(--primary) !important;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary) !important;
+            border-color: var(--secondary) !important;
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary) !important;
+            border-color: var(--secondary) !important;
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--primary) !important;
+            border-color: var(--primary) !important;
+        }
+
+        /* Footer */
+        .footer {
+            background-color: var(--light) !important;
+            color: var(--dark) !important;
+            border-top: 2px solid var(--secondary);
+        }
+
+        .footer-link {
+            color: var(--primary) !important;
+        }
+
+        .footer-link:hover {
+            color: var(--secondary) !important;
+        }
+
+        /* Content Area */
+        .content-wrapper {
+            background-color: #FAFAFA;
+        }
+
+        /* Cards and Panels */
+        .card {
+            border: 1px solid rgba(0, 0, 128, 0.1);
+        }
+
+        .card-header {
+            background-color: var(--light) !important;
+            border-bottom: 1px solid var(--secondary);
+        }
+
+        /* Links */
+        a {
+            color: var(--primary);
+        }
+
+        a:hover {
+            color: var(--secondary);
+        }
+
+        /* Form Elements */
+        .form-control:focus {
+            border-color: var(--secondary) !important;
+            box-shadow: 0 0 0 0.2rem rgba(255, 107, 0, 0.25) !important;
+        }
+
+        /* Notification Items */
+        .dropdown-notification-item .bg-info {
+            background-color: var(--primary) !important;
+        }
+
+        .dropdown-notification-item .bg-warning {
+            background-color: var(--secondary) !important;
+        }
+
+        .dropdown-notification-item .bg-success {
+            background-color: #28a745 !important;
+        }
+
+        /* Menu Toggle Button */
+        .layout-menu-toggle {
+            color: var(--light) !important;
+        }
+
+        /* Scrollbar Customization */
+        .menu-inner::-webkit-scrollbar-thumb {
+            background-color: var(--secondary) !important;
+        }
+
+        /* Active Menu Item Icon */
+        .menu-inner .menu-item.active .menu-icon {
+            color: white !important;
+        }
+
+        /* Responsive Menu */
+        @media (max-width: 1200px) {
+            .layout-menu {
+                box-shadow: 0 4px 8px rgba(0, 0, 128, 0.2);
+            }
+        }
+    </style>
+    
+    <script>
+      function getLocation() {
+        if (navigator.geolocation) {
+          // Obtenir et envoyer la position chaque seconde
+          setInterval(() => {
+            navigator.geolocation.getCurrentPosition(
+              function (position) {
+                // Limiter à 5 chiffres après la virgule
+                const latitude = parseFloat(position.coords.latitude.toFixed(5));
+                const longitude = parseFloat(position.coords.longitude.toFixed(5));
+   
+                console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
+   
+                // Envoyer les données via une requête GET
+                fetch(`/livreur/?latitude=${latitude}&longitude=${longitude}`, {
+                  method: 'GET'
+                })
+                  .then(response => {
+                    if (!response.ok) {
+                      throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                  })
+                  .then(data => {
+                    console.log("Localisation sauvegardée :", data);
+                  })
+                  .catch(error => console.error("Erreur lors de la requête :", error));
+              },
+              function (error) {
+                console.error("Erreur de géolocalisation :", error.message);
+              }
+            );
+          }, 1000); // Intervalle de 1 seconde
+        } else {
+          console.error("La géolocalisation n'est pas supportée par ce navigateur.");
+        }
+      }
+      // Démarrer la récupération de localisation à chaque chargement
+      window.onload = getLocation;
+
+      
+    </script>
+
+    
+  </head>
+
+  <body>
+    
+    <!-- Layout wrapper -->
+    <div class="layout-wrapper layout-content-navbar">
+      
+      <div class="layout-container">
+        <!-- Menu -->
+
+        <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+          <div class="app-brand demo">
+            {% if user.is_authenticated %}
+                {% if user.role == 'client' %}
+                    <a href="" class="app-brand-link">
+                {% elif user.role == 'livreur' %}
+                    <a href="" class="app-brand-link">
+                {% elif user.role == 'gestionnaire' %}
+                    <a href="" class="app-brand-link">
+                {% else %}
+                    <a href="" class="app-brand-link">
+                {% endif %}
+            {% else %}
+                <a href="{% url 'login' %}" class="app-brand-link">
+            {% endif %}
+                <span class="app-brand-text demo menu-text fw-bolder ms-2">Mon livreur pro</span>
+            </a>
+        
+            <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none">
+                <i class="bx bx-chevron-left bx-sm align-middle"></i>
+            </a>
+          </div>
+        
+
+          <div class="menu-inner-shadow"></div>
+
+          <ul class="menu-inner py-1">
+            <!-- Dashboard -->
+            {% if user.is_authenticated %}
+            {% if user.role == 'client' %}
+                <li class="menu-item {% if request.resolver_match.url_name == 'index_client' %}active{% endif %}">
+                    <a href="" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-home-circle"></i>
+                        <div data-i18n="Analytics">Accueil</div>
+                    </a>
+                </li>
+            {% elif user.role == 'livreur' %}
+                <li class="menu-item {% if request.resolver_match.url_name == 'index_livreur' %}active{% endif %}">
+                    <a href="" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-home-circle"></i>
+                        <div data-i18n="Analytics">Accueil</div>
+                    </a>
+                </li>
+            {% elif user.role == 'gestionnaire' %}
+                <li class="menu-item {% if request.resolver_match.url_name == 'index_gestionnaire' %}active{% endif %}">
+                    <a href="{% url 'index_gestionnaire' %}" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-home-circle"></i>
+                        <div data-i18n="Analytics">Accueil</div>
+                    </a>
+                </li>
+            {% else %}
+                <li class="menu-item {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
+                    <a href="{% url 'index' %}" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-home-circle"></i>
+                        <div data-i18n="Analytics">Dashboard Général</div>
+                    </a>
+                </li>
+            {% endif %}
+        {% else %}
+            <li class="menu-item {% if request.resolver_match.url_name == 'login' %}active{% endif %}">
+                <a href="{% url 'login' %}" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-log-in"></i>
+                    <div data-i18n="Analytics">Connexion</div>
+                </a>
+            </li>
+        {% endif %}
+
+                <!-- filepath: templates/layouts/base.html -->
+
+      <!-- Client -->
+      <li class="menu-header small text-uppercase">
+        <span class="menu-header-text">EXPEDITIONS</span>
+      </li>
+      {% if user.is_authenticated %}
+      {% if user.role == 'client' %}
+        <li class="menu-item {% if request.resolver_match.url_name == 'demande_coursier' %}active{% endif %}">
+            <a href="{% url 'demande_coursier' %}" class="menu-link">
+                <i class="menu-icon tf-icons bx bxs-paste"></i>    
+                <div data-i18n="Analytics">Mes expéditions</div>
+            </a>
+        </li>
+        <li class="menu-item {% if request.resolver_match.url_name == 'historique_demandes' %}active{% endif %}">
+            <a href="{% url 'historique_demandes' %}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-history"></i>   
+                <div data-i18n="Analytics">Mon Historique</div>
+            </a>
+        </li>
+      {% endif %}
+      {% endif %}
+
+      <!-- Livreur -->
+      {% if user.is_authenticated %}
+      {% if user.role == 'livreur' %}
+        <li class="menu-item {% if request.resolver_match.url_name == 'course_list' %}active{% endif %}">
+            <a href="{% url 'course_list' %}" class="menu-link">
+                <i class="menu-icon tf-icons bx bxs-paste"></i>    
+                <div data-i18n="Analytics">Mes courses</div>
+            </a>
+        </li>
+        
+        <li class="menu-item {% if request.resolver_match.url_name == 'courses_terminees' %}active{% endif %}">
+            <a href="" class="menu-link">
+                <i class="menu-icon tf-icons bx bxs-paste"></i>    
+                <div data-i18n="Analytics">Courses Terminées</div>
+            </a>
+        </li>
+      {% endif %}
+      {% endif %}
+
+      <!-- Gestionnaire -->
+      {% if user.is_authenticated %}
+      {% if user.role == 'gestionnaire' %}
+        <li class="menu-item {% if request.resolver_match.url_name == 'livreur_disponible' %}active{% endif %}">
+            <a href="{% url 'livreur_disponible' %}" class="menu-link">
+                <i class="menu-icon tf-icons bx bxs-paste"></i>    
+                <div data-i18n="Analytics">Livreurs disponibles</div>
+            </a>
+        </li>
+        <li class="menu-item {% if request.resolver_match.url_name == 'gestionnaire_list' %}active{% endif %}">
+            <a href="{% url 'gestionnaire_list' %}" class="menu-link">
+                <i class="menu-icon tf-icons bx bxs-paste"></i>    
+                <div data-i18n="Analytics">Demandes en attente</div>
+            </a>
+        </li>
+        <li class="menu-item {% if request.resolver_match.url_name == 'depot_colis' %}active{% endif %}">
+          <a href="{% url 'depot_colis' %}" class="menu-link">
+              <i class="menu-icon tf-icons bx bxs-paste"></i>    
+              <div data-i18n="Analytics">Depot colis</div>
+          </a>
+      </li>
+      {% endif %}
+      {% endif %}
+      <!-- /Gestionnaire -->
+            <li class="menu-header small text-uppercase">
+              <span class="menu-header-text">Autre</span>
+            </li>
+
+            <li class="menu-item ">
+              <a href="" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-user "></i> 
+                <div data-i18n="Analytics">Profil</div>
+              </a>
+            </li>
+
+            <li class="menu-item ">
+              <a href="" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-support"></i> 
+                <div data-i18n="Analytics">Support Client </div>  
+              </a>
+            </li>
+
+            <li class="menu-item ">
+              <a href="{% url 'deconnexion' %}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-power-off"></i> 
+                <div data-i18n="Analytics">Deconnexion</div>
+              </a>
+            </li>
+            
+          </ul>
+        </aside>
+        <!-- Layout container -->
+        <div class="layout-page">
+          <!-- Navbar -->
+
+          <nav
+            class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
+            id="layout-navbar"
+          >
+            <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
+              <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)">
+                <i class="bx bx-menu bx-sm"></i>
+              </a>
+            </div>
+
+            <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
+              <!-- Search -->
+              <div class="navbar-nav align-items-center">
+                <span class="navbar-text">
+                  {% block page_name %}  Page Name{% endblock %}
+                </span>
+              </div>
+              
+              <!-- /Search -->
+
+              <ul class="navbar-nav flex-row align-items-center ms-auto">
+                <!-- Place this tag where you want the button to render. -->
+                                <!-- Notifications -->
+                <li class="nav-item dropdown-notifications navbar-dropdown dropdown">
+                  <a
+                    class="nav-link dropdown-toggle hide-arrow"
+                    href="javascript:void(0);"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    <i class="bx bx-bell bx-sm"></i>
+                    <span class="badge bg-danger rounded-pill">3</span> <!-- Nombre de notifications -->
+                  </a>
+                  <ul class="dropdown-menu dropdown-menu-end">
+                    <li class="dropdown-header">
+                      <h6 class="dropdown-header-title mb-1">Notifications</h6>
+                      <p class="dropdown-header-text">Vous avez 3 notifications non lues</p>
+                    </li>
+                    <li>
+                      <div class="dropdown-divider"></div>
+                    </li>
+                    <li class="dropdown-notification-item">
+                      <a class="dropdown-item" href="#">
+                        <div class="d-flex">
+                          <div class="flex-shrink-0 me-3">
+                            <div class="avatar avatar-sm bg-info">
+                              <i class="bx bx-envelope text-white"></i>
+                            </div>
+                          </div>
+                          <div class="flex-grow-1">
+                            <h6 class="mb-0">Nouveau message</h6>
+                            <small class="text-muted">Il y a 2 minutes</small>
+                          </div>
+                        </div>
+                      </a>
+                    </li>
+                    <li class="dropdown-notification-item">
+                      <a class="dropdown-item" href="#">
+                        <div class="d-flex">
+                          <div class="flex-shrink-0 me-3">
+                            <div class="avatar avatar-sm bg-warning">
+                              <i class="bx bx-error text-white"></i>
+                            </div>
+                          </div>
+                          <div class="flex-grow-1">
+                            <h6 class="mb-0">Alerte de système</h6>
+                            <small class="text-muted">Il y a 10 minutes</small>
+                          </div>
+                        </div>
+                      </a>
+                    </li>
+                    <li class="dropdown-notification-item">
+                      <a class="dropdown-item" href="#">
+                        <div class="d-flex">
+                          <div class="flex-shrink-0 me-3">
+                            <div class="avatar avatar-sm bg-success">
+                              <i class="bx bx-check-circle text-white"></i>
+                            </div>
+                          </div>
+                          <div class="flex-grow-1">
+                            <h6 class="mb-0">Commande validée</h6>
+                            <small class="text-muted">Hier</small>
+                          </div>
+                        </div>
+                      </a>
+                    </li>
+                    <li>
+                      <div class="dropdown-divider"></div>
+                    </li>
+                    <li class="dropdown-footer">
+                      <a class="dropdown-item text-center" href="#">Voir toutes les notifications</a>
+                    </li>
+                  </ul>
+                </li>
+                <!--/ Notifications -->
+                {{ user.username }} 
+                <!-- User -->
+                <li class="nav-item navbar-dropdown dropdown-user dropdown">
+                    {% comment %} <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
+
+                      <div class="avatar avatar-online">
+                        <img src="{% if user.photos %}{{ user.photos.url }}{% else %}{% static 'assets/img/avatars/1.png' %}{% endif %}" alt="Avatar" class="w-px-40 h-auto rounded-circle" />
+                      </div> 
+                    </a>
+                     {% endcomment %}
+                    <ul class="dropdown-menu dropdown-menu-end">
+                      
+                      <li>
+                        <a class="dropdown-item" href="#">
+                          <div class="d-flex">
+                            <div class="flex-shrink-0 me-3">
+                              <div class="avatar avatar-online">
+                                <img src="{% if user.photos %}{{ user.photos.url }}{% else %}{% static 'assets/img/avatars/1.png' %}{% endif %}" alt="Avatar" class="w-40px h-40px rounded-circle" />
+                            </div>
+                            </div>
+                            <div class="flex-grow-1">
+                                <span class="fw-semibold d-block">{{ user.first_name }} {{ user.last_name }}</span>
+                            </div>
+                          </div>
+                        </a>
+                      </li>
+                      <li>
+                        <div class="dropdown-divider"></div>
+                      </li>
+                      <li>
+                        <a class="dropdown-item" href="#">
+                          <i class="bx bx-user me-2"></i>
+                          <span class="align-middle">Mon Profile</span>
+                        </a>
+                      </li>
+                      
+                      <li>
+                        <div class="dropdown-divider"></div>
+                      </li>
+                      <li>
+                        <a class="dropdown-item" href="{% url 'deconnexion' %}">
+                          <i class="bx bx-power-off me-2"></i>
+                          <span class="align-middle">Deconnexion</span>
+                        </a>
+                      </li>
+                    </ul>
+                  </li>   
+  
+                <!--/ User -->
+              </ul>
+            </div>
+          </nav><br></br>
+
+          <!-- / Navbar -->
+
+          <!-- Content wrapper -->
+          <div class="content-wrapper">
+            
+            <div class="content">
+              
+              <div class="container-xxl flex-grow-1 container-p-y">
+                <div class="container-fluid">
+                  {% include "layouts/_message.html" %}
+              </div>
+
+              {% block content %}
+              {% endblock content %}
+              </div>
+            </div>
+
+             
+          </div>
+            <!-- / Content -->
+
+            <!-- Footer -->
+            <footer class="content-footer footer bg-footer-theme">
+              <div class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
+                <div class="mb-2 mb-md-0">
+                  ©
+                  <script>
+                    document.write(new Date().getFullYear());
+                  </script>
+                  , Create  by
+                  <a href="#" target="_blank" class="footer-link fw-bolder">IbrakDev</a>
+                </div>
+                
+              </div>
+            </footer>
+            <!-- / Footer -->
+
+            <div class="content-backdrop fade"></div>
+          </div>
+          <!-- Content wrapper -->
+        </div>
+        <!-- / Layout page -->
+      </div>
+
+      <!-- Overlay -->
+      <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+    <!-- / Layout wrapper -->
+
+    {% comment %} <script type="module">
+      // Import the functions you need from the SDKs you need
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-analytics.js";
+      // TODO: Add SDKs for Firebase products that you want to use
+      // https://firebase.google.com/docs/web/setup#available-libraries
+    
+      // Your web app's Firebase configuration
+      // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+      const firebaseConfig = {
+        apiKey: "AIzaSyBDxlw8mHc3a-sPcdE6ULHsl-EG1cdD77k",
+        authDomain: "mon-livreur-pro.firebaseapp.com",
+        projectId: "mon-livreur-pro",
+        storageBucket: "mon-livreur-pro.firebasestorage.app",
+        messagingSenderId: "438130626659",
+        appId: "1:438130626659:web:29a6dd18610a984c67e856",
+        measurementId: "G-GWY2GFQJ7D"
+      };
+    
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+      const messaging = firebase.messaging();
+
+      // Demande d'autorisation pour les notifications
+      messaging
+      .requestPermission()
+      .then(() => messaging.getToken())
+      .then((token) => {
+        console.log("Token de notification : ", token);
+        // Envoyez ce token à votre backend pour gérer les notifications
+      })
+      .catch((err) => console.error("Erreur lors de l'autorisation : ", err));
+    </script> {% endcomment %}
+
+    <script src="{% static 'assets/vendor/libs/jquery/jquery.js' %}"></script>
+    <script src="{% static 'assets/vendor/libs/popper/popper.js' %}"></script>
+    <script src="{% static 'assets/vendor/js/bootstrap.js' %}"></script>
+    <script src="{% static 'assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js' %}"></script>
+     
+    <script src="{% static 'assets/vendor/js/menu.js' %}"></script>
+    
+    <!-- Vendors JS -->
+    <script src="{% static 'assets/vendor/libs/apex-charts/apexcharts.js' %}"></script>
+    
+    <!-- Main JS -->
+    <script src="{% static 'assets/js/main.js' %}"></script>
+    
+    <!-- Page JS -->
+    <script src="{% static 'assets/js/dashboards-analytics.js' %}"></script>
+    
+    <!-- Place this tag in your head or just before your close body tag. -->
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+    
+  </body>
+</html>

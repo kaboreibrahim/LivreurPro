@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Navigation Demo</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/boxicons/2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #000080;
+            --secondary: #FF6B00;
+            --light: #FFF9E5;
+            --dark: #1A1A1A;
+        }
+
+        body {
+            font-family: 'Public Sans', sans-serif;
+            background-color: #FAFAFA;
+        }
+
+        /* Desktop: Header Navigation */
+        .desktop-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: linear-gradient(135deg, var(--primary) 0%, #000060 100%);
+            z-index: 1000;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            padding: 0 30px;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .header-logo {
+            color: var(--light);
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-logo i {
+            font-size: 2rem;
+            color: var(--secondary);
+        }
+
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .header-nav-item {
+            padding: 8px 16px;
+            color: var(--light);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            border-radius: 8px;
+            position: relative;
+            font-size: 0.95rem;
+        }
+
+        .header-nav-item i {
+            font-size: 1.3rem;
+        }
+
+        .header-nav-item:hover {
+            background-color: rgba(255, 107, 0, 0.15);
+            color: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        .header-nav-item.active {
+            background-color: var(--secondary);
+            color: white;
+        }
+
+        .header-nav-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 8px solid var(--secondary);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-notification {
+            position: relative;
+            cursor: pointer;
+            color: var(--light);
+            font-size: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .header-notification:hover {
+            color: var(--secondary);
+            transform: scale(1.1);
+        }
+
+        .header-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 15px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .header-user:hover {
+            background-color: rgba(255, 107, 0, 0.2);
+        }
+
+        .header-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background-color: var(--secondary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .header-user-info {
+            display: flex;
+            flex-direction: column;
+            color: var(--light);
+        }
+
+        .header-user-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .header-user-role {
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+
+        /* Top Navbar pour mobile */
+        .mobile-top-nav {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background-color: var(--light);
+            border-bottom: 2px solid var(--secondary);
+            z-index: 999;
+            padding: 0 15px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .mobile-logo {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .mobile-user {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .mobile-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .mobile-avatar:hover {
+            background-color: var(--secondary);
+            transform: scale(1.05);
+        }
+
+        .mobile-logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 12px;
+            background-color: var(--secondary);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .mobile-logout-btn i {
+            font-size: 1.1rem;
+        }
+
+        .mobile-logout-btn:hover {
+            background-color: var(--primary);
+            transform: scale(1.05);
+        }
+
+        .notification-badge {
+            position: relative;
+        }
+
+        .notification-badge i {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .badge-count {
+            position: absolute;
+            top: -5px;
+            right: -8px;
+            background-color: var(--secondary);
+            color: white;
+            border-radius: 10px;
+            padding: 2px 6px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        /* Bottom Navigation pour mobile */
+        .mobile-bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background-color: white;
+            border-top: 2px solid var(--secondary);
+            z-index: 1000;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .bottom-nav-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            height: 100%;
+            padding: 0 10px;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            flex: 1;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            padding: 8px;
+            position: relative;
+        }
+
+        .nav-item i {
+            font-size: 1.6rem;
+            transition: all 0.3s;
+        }
+
+        .nav-item span {
+            font-size: 0.7rem;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .nav-item.active {
+            color: var(--secondary);
+        }
+
+        .nav-item.active i {
+            transform: scale(1.1);
+        }
+
+        .nav-item:hover {
+            color: var(--secondary);
+        }
+
+        /* Indicateur actif */
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 3px;
+            background-color: var(--secondary);
+            border-radius: 0 0 3px 3px;
+        }
+
+        /* Content area */
+        .main-content {
+            margin-top: 70px;
+            padding: 30px;
+            min-height: calc(100vh - 70px);
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .desktop-header {
+                display: none;
+            }
+
+            .mobile-top-nav {
+                display: flex;
+            }
+
+            .mobile-bottom-nav {
+                display: block;
+            }
+
+            .main-content {
+                margin-top: 60px;
+                padding: 80px 15px 90px;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .mobile-top-nav {
+                display: none;
+            }
+
+            .mobile-bottom-nav {
+                display: none;
+            }
+        }
+
+        /* Animation pour le menu plus */
+        .more-menu {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            padding: 10px;
+            display: none;
+            animation: slideUp 0.3s ease;
+        }
+
+        .more-menu.show {
+            display: block;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .more-menu-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--dark);
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .more-menu-item:hover {
+            background-color: var(--light);
+            color: var(--secondary);
+        }
+
+        .more-menu-item i {
+            font-size: 1.3rem;
+        }
+
+        
+    </style>
+</head>
+<body>
+    <!-- Desktop Header Navigation -->
+    <div class="desktop-header">
+        <div class="header-left">
+            <a href="#" class="header-logo">
+                <i class='bx bxs-truck'></i>
+                <span>Mon Livreur Pro</span>
+            </a>
+            <nav class="header-nav">
+                <a href="#" class="header-nav-item active">
+                    <i class='bx bx-home-circle'></i>
+                    <span>Accueil</span>
+                </a>
+                <a href="#" class="header-nav-item">
+                    <i class='bx bxs-paste'></i>
+                    <span>Mes expéditions</span>
+                </a>
+                <a href="#" class="header-nav-item">
+                    <i class='bx bx-history'></i>
+                    <span>Historique</span>
+                </a>
+                <a href="#" class="header-nav-item">
+                    <i class='bx bx-support'></i>
+                    <span>Support</span>
+                </a>
+            </nav>
+        </div>
+        <div class="header-right">
+            <div class="header-notification">
+                <i class='bx bx-bell'></i>
+                <span class="badge-count">3</span>
+            </div>
+            <div class="header-user" id="userDropdown">
+                <div class="header-avatar">JD</div>
+                <div class="header-user-info">
+                    <span class="header-user-name">John Doe</span>
+                    <span class="header-user-role">Client</span>
+                </div>
+                <i class='bx bx-chevron-down'></i>
+            </div>
+
+
+            <div class="more-menu">
+                <div class="more-menu-item">
+                    <i class='bx bx-user-circle'></i>
+                    <span>Mon Profil</span>
+                </div>
+                <div class="more-menu-item">
+                    <i class='bx bx-cog'></i>
+                    <span>Paramètres</span>
+                </div>
+                <div class="more-menu-item">
+                    <i class='bx bx-power-off'></i>
+                    <span>Déconnexion</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Top Navigation -->
+    <div class="mobile-top-nav">
+        <div class="mobile-logo">Mon Livreur Pro</div>
+        <div class="mobile-user">
+            <div class="notification-badge">
+                <i class='bx bx-bell'></i>
+                <span class="badge-count">3</span>
+            </div>
+            <a href="#" class="mobile-logout-btn">
+                <i class='bx bx-power-off'></i>
+                <span>Quitter</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="content-card">
+            <h2 style="color: var(--primary); margin-bottom: 15px;">Bienvenue sur Mon Livreur Pro</h2>
+            <p style="color: #666; line-height: 1.6;">
+                Cette interface s'adapte automatiquement à votre écran. Sur mobile, la navigation principale 
+                se trouve en bas de l'écran pour un accès facile avec le pouce.
+            </p>
+        </div>
+
+        <div class="content-card">
+            <h3 style="color: var(--primary); margin-bottom: 10px;">Statistiques</h3>
+            <p style="color: #666;">Vos courses récentes apparaîtront ici...</p>
+        </div>
+
+        <div class="content-card">
+            <h3 style="color: var(--primary); margin-bottom: 10px;">Activité récente</h3>
+            <p style="color: #666;">Historique de vos dernières actions...</p>
+        </div>
+    </div>
+
+    <!-- Mobile Bottom Navigation -->
+    <div class="mobile-bottom-nav">
+        <div class="bottom-nav-container">
+            <a href="#" class="nav-item active">
+                <i class='bx bx-home-circle'></i>
+                <span>Accueil</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class='bx bxs-paste'></i>
+                <span>Courses</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class='bx bx-history'></i>
+                <span>Historique</span>
+            </a>
+            <a href="#" class="nav-item" id="moreBtn">
+                <i class='bx bx-menu'></i>
+                <span>Plus</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- More Menu -->
+    <div class="more-menu" id="moreMenu">
+        <div class="more-menu-item">
+            <i class='bx bx-user'></i>
+            <span>Mon Profil</span>
+        </div>
+        <div class="more-menu-item">
+            <i class='bx bx-support'></i>
+            <span>Support Client</span>
+        </div>
+        <div class="more-menu-item">
+            <i class='bx bx-cog'></i>
+            <span>Paramètres</span>
+        </div>
+        <div class="more-menu-item">
+            <i class='bx bx-power-off'></i>
+            <span>Déconnexion</span>
+        </div>
+    </div>
+
+    <script>
+        // Gestion du menu "Plus"
+        const moreBtn = document.getElementById('moreBtn');
+        const moreMenu = document.getElementById('moreMenu');
+
+        moreBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            moreMenu.classList.toggle('show');
+        });
+
+        // Fermer le menu si on clique ailleurs
+        document.addEventListener('click', (e) => {
+            if (!moreBtn.contains(e.target) && !moreMenu.contains(e.target)) {
+                moreMenu.classList.remove('show');
+            }
+        });
+
+        // Gestion des items actifs - Header
+        const headerNavItems = document.querySelectorAll('.header-nav-item');
+        headerNavItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                headerNavItems.forEach(nav => nav.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Gestion des items actifs - Mobile Bottom Nav
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                if (this.id !== 'moreBtn') {
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+                }
+            });
+        });
+
+        // Fermer le menu more lors du clic sur un item
+        const moreMenuItems = document.querySelectorAll('.more-menu-item');
+        moreMenuItems.forEach(item => {
+            item.addEventListener('click', () => {
+                moreMenu.classList.remove('show');
+            });
+        });
+    </script>
+</body>
+</html>

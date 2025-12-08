@@ -1,0 +1,267 @@
+{% extends 'base_gestionnaire.html' %}
+{% load static %}
+
+{% block title %}Gestion des Clients | LivreurPro{% endblock %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+    <!-- En-tête de la page -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">Gestion des Clients</h4>
+                    <div class="d-flex gap-2">
+                        <a href="#" class="btn btn-primary">
+                            <i class="bx bx-plus me-1"></i> Nouveau Client
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cartes de statistiques -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar">
+                                <span class="avatar-initial rounded bg-label-primary">
+                                    <i class="bx bx-group"></i>
+                                </span>
+                            </div>
+                            <div class="ms-3">
+                                <h5 class="mb-0">{{ total_clients }}</h5>
+                                <small class="text-muted">Total Clients</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar">
+                                <span class="avatar-initial rounded bg-label-success">
+                                    <i class="bx bx-user-check"></i>
+                                </span>
+                            </div>
+                            <div class="ms-3">
+                                <h5 class="mb-0">{{ clients_actifs }}</h5>
+                                <small class="text-muted">Clients Actifs</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar">
+                                <span class="avatar-initial rounded bg-label-warning">
+                                    <i class="bx bx-user-x"></i>
+                                </span>
+                            </div>
+                            <div class="ms-3">
+                                <h5 class="mb-0">{{ clients_inactifs }}</h5>
+                                <small class="text-muted">Clients Inactifs</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar">
+                                <span class="avatar-initial rounded bg-label-info">
+                                    <i class="bx bx-user-plus"></i>
+                                </span>
+                            </div>
+                            <div class="ms-3">
+                                <h5 class="mb-0">{{ clients_nouveaux }}</h5>
+                                <small class="text-muted">Nouveaux Aujourd'hui</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barre de recherche et filtres -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bx bx-search"></i></span>
+                        <input type="text" 
+                               name="q" 
+                               class="form-control" 
+                               placeholder="Rechercher un client..." 
+                               value="{{ search_query|default:'' }}">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <select name="is_active" class="form-select">
+                        <option value="">Tous les statuts</option>
+                        <option value="true" {% if is_active_filter == 'true' %}selected{% endif %}>Actifs</option>
+                        <option value="false" {% if is_active_filter == 'false' %}selected{% endif %}>Inactifs</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Filtrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tableau des clients -->
+    <div class="card">
+        <div class="table-responsive text-nowrap">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Client</th>
+                        <th>Email</th>
+                        <th>Téléphone</th>
+                        <th>Inscrit le</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="table-border-bottom-0">
+                    {% for client in clients %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar avatar-sm me-3">
+                                    <span class="avatar-initial rounded-circle bg-label-primary">
+                                        {{ client.first_name|first|upper }}{{ client.last_name|first|upper }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">{{ client.get_full_name|default:client.username }}</h6>
+                                    <small class="text-muted">@{{ client.username }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ client.email }}</td>
+                        <td>{{ client.telephone|default:"-" }}</td>
+                        <td>{{ client.date_joined|date:"d/m/Y" }}</td>
+                        <td>
+                            <span class="badge {% if client.is_active %}bg-label-success{% else %}bg-label-danger{% endif %}">
+                                {% if client.is_active %}Actif{% else %}Inactif{% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="dropdown">
+                                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                    <i class="bx bx-dots-vertical-rounded"></i>
+                                </button>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item" href="#">
+                                        <i class="bx bx-show me-1"></i> Voir
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                        <i class="bx bx-edit-alt me-1"></i> Modifier
+                                    </a>
+                                    <a class="dropdown-item" 
+                                       href="{% url 'Gestionnaire:activer_desactiver_client' pk=client.pk %}">
+                                        {% if client.is_active %}
+                                            <i class="bx bx-user-x me-1"></i> Désactiver
+                                        {% else %}
+                                            <i class="bx bx-user-check me-1"></i> Activer
+                                        {% endif %}
+                                    </a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <div class="d-flex flex-column align-items-center">
+                                <i class="bx bx-user-x bx-lg text-muted mb-2"></i>
+                                <p class="mb-0">Aucun client trouvé</p>
+                                {% if search_query %}
+                                <a href="{% url 'Gestionnaire:liste_clients' %}" class="btn btn-sm btn-outline-primary mt-2">
+                                    Réinitialiser les filtres
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        <div class="text-muted">
+            Affichage de {{ page_obj.start_index }} à {{ page_obj.end_index }} sur {{ page_obj.paginator.count }} clients
+        </div>
+        <nav aria-label="Page navigation">
+            <ul class="pagination mb-0">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if is_active_filter %}&is_active={{ is_active_filter }}{% endif %}" aria-label="Précédent">
+                        <i class="bx bx-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item"><a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if is_active_filter %}&is_active={{ is_active_filter }}{% endif %}">{{ num }}</a></li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if is_active_filter %}&is_active={{ is_active_filter }}{% endif %}" aria-label="Suivant">
+                        <i class="bx bx-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Script pour confirmer la désactivation d'un client
+document.addEventListener('DOMContentLoaded', function() {
+    const desactiverBtns = document.querySelectorAll('.desactiver-client');
+    
+    desactiverBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            if (!confirm('Êtes-vous sûr de vouloir désactiver ce client ?')) {
+                e.preventDefault();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

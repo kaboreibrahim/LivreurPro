@@ -1,0 +1,747 @@
+{% extends 'base_gestionnaire.html' %}
+{% load static %}
+
+{% block title %}Liste des Demandes de Coursier{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+<style>
+    :root {
+        --primary-color: #4f46e5;
+        --secondary-color: #6366f1;
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --info-color: #3b82f6;
+    }
+    
+    body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+        min-height: 100vh;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    
+    .page-header {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+    }
+    
+    .page-subtitle {
+        color: #64748b;
+        margin-top: 0.5rem;
+        font-size: 0.95rem;
+    }
+    
+    .btn-primary-custom {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    }
+    
+    .btn-primary-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+        color: white;
+    }
+    
+    /* Stats cards */
+    .stats-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+    }
+    
+    .stat-card.primary::before {
+        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    }
+    
+    .stat-card.warning::before {
+        background: var(--warning-color);
+    }
+    
+    .stat-card.info::before {
+        background: var(--info-color);
+    }
+    
+    .stat-card.success::before {
+        background: var(--success-color);
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    
+    .stat-icon {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #1e293b;
+        margin: 0.5rem 0;
+    }
+    
+    .stat-label {
+        color: #64748b;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    
+    /* Filtres */
+    .filters-section {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    
+    .filter-group {
+        margin-bottom: 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .filter-btn {
+        padding: 0.6rem 1.2rem;
+        border-radius: 10px;
+        border: 2px solid #e2e8f0;
+        background: white;
+        color: #64748b;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+    
+    .filter-btn:hover {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+        background: rgba(79, 70, 229, 0.05);
+    }
+    
+    .filter-btn.active {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        color: white;
+    }
+    
+    .search-box {
+        position: relative;
+    }
+    
+    .search-box input {
+        padding: 0.75rem 1rem 0.75rem 2.75rem;
+        border-radius: 12px;
+        border: 2px solid #e2e8f0;
+        transition: all 0.2s ease;
+        width: 100%;
+    }
+    
+    .search-box input:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        outline: none;
+    }
+    
+    .search-box i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+    }
+    
+    /* Cartes de demandes */
+    .demande-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        cursor: pointer;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    
+    .demande-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+    
+    .demande-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+        border-color: var(--primary-color);
+    }
+    
+    .demande-card:hover::before {
+        transform: scaleX(1);
+    }
+    
+    .card-header-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 1.5rem;
+    }
+    
+    .demande-ref {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+    }
+    
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .status-EN_ATTENTE {
+        background: #fef3c7;
+        color: #92400e;
+    }
+    
+    .status-VALIDATION_CLIENT {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+    
+    .status-VALIDATION_LIVREUR {
+        background: #e0e7ff;
+        color: #4338ca;
+    }
+    
+    .status-LIVREUR_ROUTE {
+        background: #fed7aa;
+        color: #9a3412;
+    }
+    
+    .status-RECEPTION_COLIS {
+        background: #e9d5ff;
+        color: #6b21a8;
+    }
+    
+    .status-LIVRAISON_EN_ROUTE {
+        background: #fce7f3;
+        color: #9f1239;
+    }
+    
+    .status-TERMINEE {
+        background: #d1fae5;
+        color: #065f46;
+    }
+    
+    .status-ANNULEE {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+    
+    .location-section {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .location-item {
+        display: flex;
+        align-items: start;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .location-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .location-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 1rem;
+    }
+    
+    .location-icon.departure {
+        background: #dcfce7;
+        color: #166534;
+    }
+    
+    .location-icon.destination {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+    
+    .location-text {
+        flex: 1;
+    }
+    
+    .location-label {
+        font-size: 0.75rem;
+        color: #64748b;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .location-address {
+        color: #1e293b;
+        font-weight: 500;
+        margin: 0.25rem 0 0 0;
+        font-size: 0.9rem;
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin: 1rem 0;
+    }
+    
+    .info-item {
+        background: #f8fafc;
+        padding: 0.75rem;
+        border-radius: 8px;
+    }
+    
+    .info-label {
+        font-size: 0.75rem;
+        color: #64748b;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.25rem;
+    }
+    
+    .info-value {
+        color: #1e293b;
+        font-weight: 700;
+        font-size: 0.95rem;
+        margin: 0;
+    }
+    
+    .card-footer-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 1rem;
+        border-top: 2px solid #f1f5f9;
+    }
+    
+    .date-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #64748b;
+        font-size: 0.85rem;
+    }
+    
+    .view-details {
+        color: var(--primary-color);
+        font-weight: 600;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    /* Empty state */
+    .empty-state {
+        background: white;
+        border-radius: 16px;
+        padding: 4rem 2rem;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+    
+    .empty-state h3 {
+        color: #1e293b;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .empty-state p {
+        color: #64748b;
+        margin-bottom: 2rem;
+    }
+    
+    /* Pagination */
+    .pagination-custom {
+        margin-top: 2rem;
+    }
+    
+    .pagination-custom .page-link {
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        margin: 0 0.25rem;
+        color: #64748b;
+        font-weight: 600;
+        padding: 0.6rem 1rem;
+        transition: all 0.2s ease;
+    }
+    
+    .pagination-custom .page-item.active .page-link {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        color: white;
+    }
+    
+    .pagination-custom .page-link:hover {
+        background: rgba(79, 70, 229, 0.05);
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1rem;
+        }
+        
+        .page-title {
+            font-size: 1.5rem;
+        }
+        
+        .stats-cards {
+            display: flex;
+            overflow-x: auto;
+            gap: 0.75rem;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .stats-cards::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .stat-card {
+            min-width: 140px;
+            scroll-snap-align: start;
+        }
+        
+        .filter-group {
+            overflow-x: auto;
+            flex-wrap: nowrap;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .filter-group::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .filter-btn {
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- En-tête -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h1 class="page-title">📦 Gestion des Demandes de Coursier</h1>
+                <p class="page-subtitle">Vue d'ensemble et gestion de toutes les demandes de livraison</p>
+            </div>
+            <a href="#" class="btn btn-primary-custom">
+                <i class="bi bi-plus-circle me-2"></i>
+                Nouvelle Demande
+            </a>
+        </div>
+    </div>
+    
+    <!-- Statistiques -->
+    <div class="stats-cards">
+        <div class="stat-card primary">
+            <i class="bi bi-box-seam text-primary stat-icon"></i>
+            <div class="stat-value">{{ total_demandes }}</div>
+            <div class="stat-label">Total demandes</div>
+        </div>
+        <div class="stat-card warning">
+            <i class="bi bi-clock-history text-warning stat-icon"></i>
+            <div class="stat-value">{{ demandes_en_attente }}</div>
+            <div class="stat-label">En attente</div>
+        </div>
+        <div class="stat-card info">
+            <i class="bi bi-arrow-repeat text-info stat-icon"></i>
+            <div class="stat-value">{{ demandes_en_cours }}</div>
+            <div class="stat-label">En cours</div>
+        </div>
+        <div class="stat-card success">
+            <i class="bi bi-check-circle text-success stat-icon"></i>
+            <div class="stat-value">{{ demandes_terminees }}</div>
+            <div class="stat-label">Terminées</div>
+        </div>
+    </div>
+    
+    <!-- Filtres et recherche -->
+    <div class="filters-section">
+        <form method="get" id="filterForm">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-8">
+                    <div class="filter-group">
+                        <button type="button" class="filter-btn {% if not selected_statut %}active{% endif %}" data-filter="">
+                            <i class="bi bi-list-ul me-1"></i> Toutes
+                        </button>
+                        {% for statut in statut_choices %}
+                        <button type="button" class="filter-btn {% if selected_statut == statut.0 %}active{% endif %}" data-filter="{{ statut.0 }}">
+                            <i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> {{ statut.1 }}
+                        </button>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="search-box">
+                        <i class="bi bi-search"></i>
+                        <input type="text" name="q" class="form-control" id="searchInput" 
+                               placeholder="Rechercher par référence..." 
+                               value="{{ search_query }}">
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" name="statut" id="statutInput" value="{{ selected_statut }}">
+            <input type="hidden" name="type_course" value="{{ selected_type }}">
+        </form>
+    </div>
+    
+    <!-- Liste des demandes -->
+    {% if demandes %}
+    <div class="row" id="demandesContainer">
+        {% for demande in demandes %}
+        <div class="col-md-6 col-lg-4 mb-4 demande-item">
+            <div class="demande-card" onclick="window.location.href='{% url 'Gestionnaire:detail_demande' demande.pk %}'">
+                <div class="card-header-section">
+                    <h3 class="demande-ref">{{ demande.ref }}</h3>
+                    <span class="status-badge status-{{ demande.statut }}">
+                        <i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i>
+                        {{ demande.get_statut_display }}
+                    </span>
+                </div>
+                
+                <div class="location-section">
+                    <div class="location-item">
+                        <div class="location-icon departure">
+                            <i class="bi bi-geo-alt-fill"></i>
+                        </div>
+                        <div class="location-text">
+                            <div class="location-label">Départ</div>
+                            <p class="location-address">{{ demande.adresse_depart|truncatewords:5 }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="location-item">
+                        <div class="location-icon destination">
+                            <i class="bi bi-geo-fill"></i>
+                        </div>
+                        <div class="location-text">
+                            <div class="location-label">Destination</div>
+                            <p class="location-address">{{ demande.adresse_destination|truncatewords:5 }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Type</div>
+                        <p class="info-value">{{ demande.get_type_course_display }}</p>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Client</div>
+                        <p class="info-value">{{ demande.client.get_full_name|default:demande.client.username|truncatewords:2 }}</p>
+                    </div>
+                </div>
+                
+                <div class="card-footer-section">
+                    <div class="date-info">
+                        <i class="bi bi-calendar-check"></i>
+                        {{ demande.date_demande|date:"d/m/Y à H:i" }}
+                    </div>
+                    <div class="view-details">
+                        Détails
+                        <i class="bi bi-arrow-right"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <nav aria-label="Page navigation" class="pagination-custom">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_statut %}&statut={{ selected_statut }}{% endif %}{% if selected_type %}&type_course={{ selected_type }}{% endif %}">
+                        <i class="bi bi-chevron-double-left"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_statut %}&statut={{ selected_statut }}{% endif %}{% if selected_type %}&type_course={{ selected_type }}{% endif %}">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_statut %}&statut={{ selected_statut }}{% endif %}{% if selected_type %}&type_course={{ selected_type }}{% endif %}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_statut %}&statut={{ selected_statut }}{% endif %}{% if selected_type %}&type_course={{ selected_type }}{% endif %}">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_statut %}&statut={{ selected_statut }}{% endif %}{% if selected_type %}&type_course={{ selected_type }}{% endif %}">
+                        <i class="bi bi-chevron-double-right"></i>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+    
+    {% else %}
+    <!-- État vide -->
+    <div class="empty-state">
+        <div class="empty-state-icon">📦</div>
+        <h3>Aucune demande trouvée</h3>
+        <p>Aucune demande ne correspond à vos critères de recherche</p>
+        <a href="{% url 'Gestionnaire:liste_demandes' %}" class="btn btn-primary-custom">
+            <i class="bi bi-arrow-clockwise me-2"></i>
+            Réinitialiser les filtres
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Filtrage par statut
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const statutInput = document.getElementById('statutInput');
+    const filterForm = document.getElementById('filterForm');
+    
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Mise à jour des boutons actifs
+            filterBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Mise à jour du champ caché et soumission
+            statutInput.value = this.dataset.filter;
+            filterForm.submit();
+        });
+    });
+    
+    // Recherche avec délai
+    let searchTimeout;
+    const searchInput = document.getElementById('searchInput');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                filterForm.submit();
+            }, 500);
+        });
+    }
+    
+    // Animation au chargement
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.demande-card, .stat-card');
+        cards.forEach((card, index) => {
+            setTimeout(() => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'all 0.4s ease';
+                
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 50);
+            }, index * 50);
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,1216 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Nouvelle demande de livraison{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+<!-- Mapbox CSS -->
+<link href='https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css' rel='stylesheet' />
+{% endblock %}
+
+{% block content %}
+{% load static %}
+
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --secondary-color: #6366f1;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            min-height: 100vh;
+            color: #1e293b;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+        
+        /* Header */
+        .page-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .page-header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-header p {
+            color: #64748b;
+            font-size: 1rem;
+        }
+        
+        /* Progress Steps */
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        
+        .step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+        
+        .step::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: #e2e8f0;
+            z-index: 0;
+        }
+        
+        .step:last-child::after {
+            display: none;
+        }
+        
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.5rem;
+            font-weight: 700;
+            color: #94a3b8;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s;
+        }
+        
+        .step.active .step-circle {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+        
+        .step.completed .step-circle {
+            background: var(--success-color);
+            color: white;
+        }
+        
+        .step-label {
+            font-size: 0.85rem;
+            color: #64748b;
+            font-weight: 600;
+        }
+        
+        .step.active .step-label {
+            color: var(--primary-color);
+        }
+        
+         /* Remplacer l'ancien .main-content par : */
+        .form-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Centrer tous les éléments */
+        .page-header,
+        .progress-steps,
+        .alert {
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Mobile */
+        @media (max-width: 992px) {
+            .form-layout {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+        }
+        
+        /* Form Section */
+        .form-section {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f1f5f9;
+        }
+        
+        .section-header i {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+        
+        .section-header h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0;
+        }
+        
+        /* Form Groups */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+        
+        .form-label .required {
+            color: var(--danger-color);
+            margin-left: 2px;
+        }
+        
+        .input-wrapper {
+            position: relative;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background: #f8fafc;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        
+        .input-with-btn {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .input-with-btn .form-control {
+            flex: 1;
+        }
+        
+        .icon-btn {
+            width: 48px;
+            height: 48px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            font-size: 1.25rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .icon-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+        
+        .icon-btn:active {
+            transform: scale(0.95);
+        }
+        
+        textarea.form-control {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        /* Search Results */
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid var(--primary-color);
+            border-top: none;
+            border-radius: 0 0 12px 12px;
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            display: none;
+        }
+        
+        .search-result-item {
+            padding: 0.875rem 1rem;
+            cursor: pointer;
+            border-bottom: 1px solid #f1f5f9;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+        
+        .search-result-item:hover {
+            background: #f8fafc;
+            color: var(--primary-color);
+        }
+        
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+        
+        /* Type Course */
+        .type-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        .type-option {
+            position: relative;
+        }
+        
+        .type-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+        
+        .type-card {
+            display: block;
+            padding: 1.25rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            background: #f8fafc;
+        }
+        
+        .type-option input[type="radio"]:checked + .type-card {
+            border-color: var(--primary-color);
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(99, 102, 241, 0.1));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+        }
+        
+        .type-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .type-title {
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+            font-size: 1rem;
+        }
+        
+        .type-desc {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+        
+        /* Photos Upload */
+        .photos-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        .photo-upload {
+            position: relative;
+            height: 150px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8fafc;
+            overflow: hidden;
+        }
+        
+        .photo-upload:hover {
+            border-color: var(--primary-color);
+            background: rgba(79, 70, 229, 0.05);
+        }
+        
+        .photo-upload input[type="file"] {
+            display: none;
+        }
+        
+        .upload-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .upload-text {
+            font-size: 0.9rem;
+            color: #64748b;
+            font-weight: 600;
+        }
+        
+        .photo-preview {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* Map Section */
+        .map-section {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            position: sticky;
+            top: 1.5rem;
+        }
+        
+        #map {
+            height: 400px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+        }
+        
+        .map-info {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .map-info-item {
+            display: flex;
+            align-items: start;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+        }
+        
+        .map-info-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .map-info-item i {
+            color: var(--primary-color);
+            font-size: 1.1rem;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        
+        .map-info-label {
+            font-weight: 700;
+            color: #1e293b;
+        }
+        
+        .map-info-value {
+            color: #64748b;
+            word-break: break-word;
+        }
+        
+        /* Submit Button */
+        .btn-submit {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1.5rem;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+        }
+        
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+        
+        /* Alert */
+        .alert {
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+        
+        .alert-danger {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+        
+        /* Markers */
+        .custom-marker {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            cursor: move;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            border: 3px solid white;
+        }
+        
+        .marker-depart {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        
+        .marker-destination {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 992px) {
+            body {
+                background: white;
+            }
+            
+            .container {
+                padding: 0;
+            }
+            
+            .page-header {
+                background: white;
+                padding: 1rem;
+                margin-bottom: 0;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            }
+            
+            .page-header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .page-header p {
+                font-size: 0.9rem;
+            }
+            
+            .progress-steps {
+                border-radius: 0;
+                padding: 1rem;
+                margin-bottom: 0;
+            }
+            
+            .step-circle {
+                width: 36px;
+                height: 36px;
+                font-size: 0.9rem;
+            }
+            
+            .step-label {
+                font-size: 0.75rem;
+            }
+            
+             
+            
+            .form-section {
+                border-radius: 0;
+                padding: 1rem;
+                box-shadow: none;
+                border-bottom: 8px solid #f1f5f9;
+            }
+            
+            .section-header {
+                margin-bottom: 1rem;
+                padding-bottom: 0.75rem;
+            }
+            
+            .section-header h2 {
+                font-size: 1.1rem;
+            }
+            
+            .form-group {
+                margin-bottom: 1.25rem;
+            }
+            
+            .type-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .photos-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .photo-upload {
+                height: 180px;
+            }
+            
+            .map-section {
+                position: static;
+                border-radius: 0;
+                padding: 1rem;
+                box-shadow: none;
+            }
+            
+            #map {
+                height: 300px;
+            }
+            
+            .btn-submit {
+                position: sticky;
+                bottom: 0;
+                z-index: 100;
+                border-radius: 0;
+                box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+                margin-top: 0;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .page-header h1 {
+                font-size: 1.25rem;
+            }
+            
+            .step-label {
+                display: none;
+            }
+            
+            .icon-btn {
+                width: 44px;
+                height: 44px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="page-header">
+            <h1>📦 Nouvelle Demande de Livraison</h1>
+            <p>Remplissez le formulaire et positionnez vos points sur la carte</p>
+        </div>
+        
+        <!-- Progress Steps -->
+        <div class="progress-steps">
+            <div class="step active">
+                <div class="step-circle">1</div>
+                <div class="step-label">Adresses</div>
+            </div>
+            <div class="step">
+                <div class="step-circle">2</div>
+                <div class="step-label">Colis</div>
+            </div>
+            <div class="step">
+                <div class="step-circle">3</div>
+                <div class="step-label">Confirmation</div>
+            </div>
+        </div>
+        
+        <!-- Alert -->
+        <div class="alert alert-info" id="locationAlert" style="display: none; margin: 1rem;">
+            <i class="bi bi-info-circle me-2"></i>
+            <span id="alertText">Message</span>
+        </div>
+        
+        <div class="form-layout">
+            <!-- Form Section -->
+            <div>
+                <form id="deliveryForm" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <!-- Addresses Section -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <i class="bi bi-geo-alt-fill"></i>
+                            <h2>Adresses de livraison</h2>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">
+                                Adresse de départ
+                                <span class="required">*</span>
+                            </label>
+                            <div class="input-wrapper">
+                                <div class="input-with-btn">
+                                    <input type="text" class="form-control" id="adresse_depart" name="adresse_depart" 
+                                           placeholder="Entrez l'adresse de départ" required autocomplete="off">
+                                    <button type="button" class="icon-btn" onclick="getMyLocation('depart')" title="Ma position">
+                                        <i class="bi bi-crosshair"></i>
+                                    </button>
+                                </div>
+                                <div id="search-results-depart" class="search-results"></div>
+                            </div>
+                            <input type="hidden" id="latitude_depart" name="latitude_depart">
+                            <input type="hidden" id="longitude_depart" name="longitude_depart">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">
+                                Adresse de destination
+                                <span class="required">*</span>
+                            </label>
+                            <div class="input-wrapper">
+                                <div class="input-with-btn">
+                                    <input type="text" class="form-control" id="adresse_destination" name="adresse_destination" 
+                                           placeholder="Entrez l'adresse de destination" required autocomplete="off">
+                                    <button type="button" class="icon-btn" onclick="searchLocation('destination')" title="Rechercher">
+                                        <i class="bi bi-search"></i>
+                                    </button>
+                                </div>
+                                <div id="search-results-destination" class="search-results"></div>
+                            </div>
+                            <input type="hidden" id="latitude_destination" name="latitude_destination">
+                            <input type="hidden" id="longitude_destination" name="longitude_destination">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Contact du destinataire</label>
+                            <input type="tel" class="form-control" id="Contact_destinateur" name="Contact_destinateur" 
+                                   placeholder="+225 XX XX XX XX XX">
+                        </div>
+                    </div>
+                    
+                    <!-- Package Section -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <i class="bi bi-box-seam"></i>
+                            <h2>Informations du colis</h2>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">
+                                Description du colis
+                                <span class="required">*</span>
+                            </label>
+                            <textarea class="form-control" id="description_colis" name="description_colis" 
+                                      placeholder="Décrivez le contenu de votre colis..." required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">
+                                Poids (kg)
+                                <span class="required">*</span>
+                            </label>
+                            <input type="number" class="form-control" id="poids_colis" name="poids_colis" 
+                                   step="0.01" min="0.01" placeholder="Ex: 2.5" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">
+                                Valeur (FCFA)
+                                <span class="required">*</span>
+                            </label>
+                            <input type="number" class="form-control" id="valeur_colis" name="valeur_colis" 
+                                   step="0.01" min="0" placeholder="Ex: 50000" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">
+                                Date de récupération
+                                <span class="required">*</span>
+                            </label>
+                            <input type="datetime-local" class="form-control" id="date_recuperation" name="date_recuperation" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">
+                                Type de course
+                                <span class="required">*</span>
+                            </label>
+                            <div class="type-grid">
+                                <div class="type-option">
+                                    <input type="radio" id="classique" name="type_course" value="CLASSIQUE" checked>
+                                    <label for="classique" class="type-card">
+                                        <div class="type-icon">🚴</div>
+                                        <div class="type-title">Classique</div>
+                                        <div class="type-desc">Livraison standard</div>
+                                    </label>
+                                </div>
+                                <div class="type-option">
+                                    <input type="radio" id="expresse" name="type_course" value="EXPRESSE">
+                                    <label for="expresse" class="type-card">
+                                        <div class="type-icon">⚡</div>
+                                        <div class="type-title">Express</div>
+                                        <div class="type-desc">Livraison rapide</div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Photos Section -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <i class="bi bi-camera"></i>
+                            <h2>Photos du colis</h2>
+                        </div>
+                        
+                        <div class="photos-grid">
+                            <label class="photo-upload" for="photo_colis1" id="photoLabel1">
+                                <input type="file" id="photo_colis1" name="photo_colis1" accept="image/*" onchange="previewPhoto(this, 1)">
+                                <div class="upload-icon">📷</div>
+                                <div class="upload-text">Photo 1</div>
+                            </label>
+                            <label class="photo-upload" for="photo_colis2" id="photoLabel2">
+                                <input type="file" id="photo_colis2" name="photo_colis2" accept="image/*" onchange="previewPhoto(this, 2)">
+                                <div class="upload-icon">📷</div>
+                                <div class="upload-text">Photo 2</div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Instructions Section -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <i class="bi bi-chat-left-text"></i>
+                            <h2>Instructions supplémentaires</h2>
+                        </div>
+                        
+                        <div class="form-group">
+                            <textarea class="form-control" id="instructions" name="instructions" 
+                                      placeholder="Ajoutez des instructions spécifiques pour le livreur..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn-submit">
+                        <i class="bi bi-rocket-takeoff"></i>
+                        Créer la demande
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Map Section -->
+            <div class="map-section">
+                <div class="section-header">
+                    <i class="bi bi-map"></i>
+                    <h2>Carte de livraison</h2>
+                </div>
+                
+                <div id="map"></div>
+                
+                <div class="map-info">
+                    <div class="map-info-item">
+                        <i class="bi bi-geo-alt-fill"></i>
+                        <div>
+                            <div class="map-info-label">Départ</div>
+                            <div class="map-info-value" id="info-depart">Non défini</div>
+                        </div>
+                    </div>
+                    <div class="map-info-item">
+                        <i class="bi bi-geo-fill"></i>
+                        <div>
+                            <div class="map-info-label">Destination</div>
+                            <div class="map-info-value" id="info-destination">Non défini</div>
+                        </div>
+                    </div>
+                    <div class="map-info-item">
+                        <i class="bi bi-rulers"></i>
+                        <div>
+                            <div class="map-info-label">Distance</div>
+                            <div class="map-info-value" id="info-distance">--</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        const API_KEY = 'pk.73485bb1846f5a96d8a0dd24fc100f13';
+        mapboxgl.accessToken = 'pk.eyJ1IjoiaWJyYWsiLCJhIjoiY21oYnV4M3M5MDZqMTJyc2E0enFpbTlwaCJ9.OH_RYh--XO3vn363pKRlRg';
+
+        let map, departMarker, destinationMarker;
+        let searchTimeout;
+
+        // Initialisation de la carte avec Mapbox
+        map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v12',
+            center: [-4.0083, 5.3600], // Abidjan par défaut
+            zoom: 12
+        });
+
+        // Ajouter les contrôles de navigation
+        map.addControl(new mapboxgl.NavigationControl());
+
+        // Créer des éléments HTML pour les marqueurs personnalisés
+        function createMarkerElement(type) {
+            const el = document.createElement('div');
+            el.className = 'custom-marker';
+            el.style.width = '40px';
+            el.style.height = '40px';
+            el.style.borderRadius = '50%';
+            el.style.cursor = 'pointer';
+            el.style.display = 'flex';
+            el.style.alignItems = 'center';
+            el.style.justifyContent = 'center';
+            el.style.fontSize = '24px';
+            el.style.boxShadow = '0 4px 10px rgba(0,0,0,0.3)';
+
+            if (type === 'depart') {
+                el.style.background = '#000080';
+                el.innerHTML = '📍';
+            } else {
+                el.style.background = '#FF6B00';
+                el.innerHTML = '🎯';
+            }
+
+            return el;
+        }
+
+        // Obtenir la position actuelle
+        function getMyLocation(type) {
+            const alert = document.getElementById('locationAlert');
+            alert.style.display = 'block';
+            alert.textContent = '📍 Recherche de votre position...';
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+
+                        // Géocodage inversé
+                        fetch(`https://us1.locationiq.com/v1/reverse.php?key=${API_KEY}&lat=${lat}&lon=${lng}&format=json`)
+                            .then(response => response.json())
+                            .then(data => {
+                                document.getElementById(`adresse_${type}`).value = data.display_name;
+                                document.getElementById(`latitude_${type}`).value = lat;
+                                document.getElementById(`longitude_${type}`).value = lng;
+
+                                updateMarker(type, lat, lng, data.display_name);
+
+                                alert.className = 'alert alert-success';
+                                alert.textContent = '✅ Position obtenue avec succès !';
+                                setTimeout(() => alert.style.display = 'none', 3000);
+                            });
+                    },
+                    (error) => {
+                        alert.className = 'alert alert-info';
+                        alert.textContent = '❌ Impossible d\'obtenir votre position';
+                        setTimeout(() => alert.style.display = 'none', 3000);
+                    }
+                );
+            }
+        }
+
+        // Recherche d'adresse avec suggestions
+        function setupSearch(type) {
+            const input = document.getElementById(`adresse_${type}`);
+            const resultsDiv = document.getElementById(`search-results-${type}`);
+
+            input.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                const query = this.value.trim();
+
+                if (query.length < 3) {
+                    resultsDiv.style.display = 'none';
+                    return;
+                }
+
+                searchTimeout = setTimeout(() => {
+                    fetch(`https://us1.locationiq.com/v1/autocomplete.php?key=${API_KEY}&q=${encodeURIComponent(query)}&limit=5&countrycodes=ci`)
+                        .then(response => response.json())
+                        .then(data => {
+                            resultsDiv.innerHTML = '';
+                            if (data.length > 0) {
+                                data.forEach(item => {
+                                    const div = document.createElement('div');
+                                    div.className = 'search-result-item';
+                                    div.textContent = item.display_name;
+                                    div.onclick = () => {
+                                        input.value = item.display_name;
+                                        document.getElementById(`latitude_${type}`).value = item.lat;
+                                        document.getElementById(`longitude_${type}`).value = item.lon;
+                                        updateMarker(type, item.lat, item.lon, item.display_name);
+                                        resultsDiv.style.display = 'none';
+                                    };
+                                    resultsDiv.appendChild(div);
+                                });
+                                resultsDiv.style.display = 'block';
+                            } else {
+                                resultsDiv.style.display = 'none';
+                            }
+                        });
+                }, 500);
+            });
+
+            // Fermer les résultats en cliquant ailleurs
+            document.addEventListener('click', function(e) {
+                if (!input.contains(e.target) && !resultsDiv.contains(e.target)) {
+                    resultsDiv.style.display = 'none';
+                }
+            });
+        }
+
+        setupSearch('depart');
+        setupSearch('destination');
+
+        // Mettre à jour les marqueurs
+        function updateMarker(type, lat, lng, address) {
+            const lngLat = [lng, lat];
+
+            if (type === 'depart') {
+                if (departMarker) departMarker.remove();
+
+                const el = createMarkerElement('depart');
+                departMarker = new mapboxgl.Marker({
+                    element: el,
+                    draggable: true
+                })
+                .setLngLat(lngLat)
+                .addTo(map);
+
+                departMarker.on('dragend', function() {
+                    const lngLat = departMarker.getLngLat();
+                    reverseGeocode(lngLat.lat, lngLat.lng, 'depart');
+                });
+
+                document.getElementById('info-depart').textContent = address;
+            } else {
+                if (destinationMarker) destinationMarker.remove();
+
+                const el = createMarkerElement('destination');
+                destinationMarker = new mapboxgl.Marker({
+                    element: el,
+                    draggable: true
+                })
+                .setLngLat(lngLat)
+                .addTo(map);
+
+                destinationMarker.on('dragend', function() {
+                    const lngLat = destinationMarker.getLngLat();
+                    reverseGeocode(lngLat.lat, lngLat.lng, 'destination');
+                });
+
+                document.getElementById('info-destination').textContent = address;
+            }
+
+            // Centrer la carte
+            if (departMarker && destinationMarker) {
+                const bounds = new mapboxgl.LngLatBounds();
+                bounds.extend(departMarker.getLngLat());
+                bounds.extend(destinationMarker.getLngLat());
+                map.fitBounds(bounds, { padding: 80 });
+                calculateDistance();
+            } else {
+                map.flyTo({ center: lngLat, zoom: 13 });
+            }
+        }
+
+        // Géocodage inversé
+        function reverseGeocode(lat, lng, type) {
+            fetch(`https://us1.locationiq.com/v1/reverse.php?key=${API_KEY}&lat=${lat}&lon=${lng}&format=json`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById(`adresse_${type}`).value = data.display_name;
+                    document.getElementById(`latitude_${type}`).value = lat;
+                    document.getElementById(`longitude_${type}`).value = lng;
+                    document.getElementById(`info-${type}`).textContent = data.display_name;
+                    calculateDistance();
+                });
+        }
+
+        // Calculer la distance à vol d'oiseau
+        function calculateHaversineDistance(from, to) {
+            const R = 6371; // Rayon de la Terre en km
+            const dLat = (to.lat - from.lat) * Math.PI / 180;
+            const dLon = (to.lng - from.lng) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                     Math.cos(from.lat * Math.PI / 180) * Math.cos(to.lat * Math.PI / 180) *
+                     Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return (R * c).toFixed(2);
+        }
+
+        // Obtenir l'itinéraire et calculer la distance routière
+        function getRoute() {
+            if (!departMarker || !destinationMarker) return;
+            
+            const start = departMarker.getLngLat();
+            const end = destinationMarker.getLngLat();
+            
+            // Construction de l'URL pour l'API Directions de Mapbox
+            const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${start.lng},${start.lat};${end.lng},${end.lat}?geometries=geojson&access_token=${mapboxgl.accessToken}`;
+            
+            // Calcul de la distance à vol d'oiseau
+            const directDistance = calculateHaversineDistance(start, end);
+            
+            // Requête à l'API Directions
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.routes && data.routes[0]) {
+                        const route = data.routes[0];
+                        const routeDistance = (route.distance / 1000).toFixed(2); // Conversion en km
+                        
+                        // Mise à jour de l'affichage avec les deux distances
+                        document.getElementById('info-distance').innerHTML = 
+                            `<div>Distance routière: <strong>${routeDistance} km</strong></div>
+                             <div style="font-size: 0.9em; color: #666;">(À vol d'oiseau: ${directDistance} km)</div>`;
+                        
+                        // Mise à jour de la ligne sur la carte avec l'itinéraire
+                        updateRouteOnMap(data.routes[0].geometry);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur lors du calcul de l\'itinéraire:', error);
+                    // En cas d'erreur, on affiche uniquement la distance à vol d'oiseau
+                    document.getElementById('info-distance').textContent = 
+                        `Distance à vol d'oiseau: ${directDistance} km`;
+                });
+        }
+        
+        // Mettre à jour la ligne sur la carte avec l'itinéraire
+        function updateRouteOnMap(geometry) {
+            // Supprimer l'ancienne route si elle existe
+            if (map.getSource('route')) {
+                map.removeLayer('route');
+                map.removeSource('route');
+            }
+
+            // Ajouter la nouvelle source et le calque pour l'itinéraire
+            map.addSource('route', {
+                'type': 'geojson',
+                'data': {
+                    'type': 'Feature',
+                    'properties': {},
+                    'geometry': geometry
+                }
+            });
+
+            map.addLayer({
+                'id': 'route',
+                'type': 'line',
+                'source': 'route',
+                'layout': {
+                    'line-join': 'round',
+                    'line-cap': 'round'
+                },
+                'paint': {
+                    'line-color': '#4f46e5',
+                    'line-width': 4,
+                    'line-opacity': 0.8
+                }
+            });
+            
+            // Ajuster la vue pour afficher tout l'itinéraire
+            const coordinates = geometry.coordinates;
+            const bounds = coordinates.reduce((bounds, coord) => {
+                return bounds.extend(coord);
+            }, new mapboxgl.LngLatBounds(coordinates[0], coordinates[0]));
+            
+            map.fitBounds(bounds, {
+                padding: 80,
+                maxZoom: 15
+            });
+        }
+
+        // Calculer la distance
+        function calculateDistance() {
+            if (departMarker && destinationMarker) {
+                getRoute();
+            }
+        }
+
+        // Prévisualisation des photos
+        function previewPhoto(input, num) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const label = input.parentElement;
+                    label.style.backgroundImage = `url(${e.target.result})`;
+                    label.style.backgroundSize = 'cover';
+                    label.style.backgroundPosition = 'center';
+                    label.innerHTML = '';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Initialisation au chargement
+        window.onload = function() {
+            getMyLocation('depart');
+
+            // Date minimale = maintenant
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('date_recuperation').min = now.toISOString().slice(0, 16);
+        };
+    </script>
+</body>
+</html>
+ 
+ {% endblock %}

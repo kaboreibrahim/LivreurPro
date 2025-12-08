@@ -1,0 +1,89 @@
+<!-- Modal d'assignation de livreur -->
+<div class="modal fade" id="assignerLivreurModal" tabindex="-1" aria-labelledby="assignerLivreurModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="assignerLivreurModalLabel">
+                    <i class="bi bi-person-plus-fill me-2"></i>Assigner un livreur
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <form id="assignerLivreurForm" action="{% url 'assigner_livreur' demande_id=demande_id %}" method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="livreurSelect" class="form-label">Sélectionnez un livreur disponible</label>
+                        <select class="form-select" id="livreurSelect" name="livreur_id" required>
+                            <option value="" selected disabled>-- Sélectionner un livreur --</option>
+                            {% for livreur in livreurs_disponibles %}
+                                <option value="{{ livreur.id }}">
+                                    {{ livreur.user.get_full_name|default:livreur.user.username }} 
+                                    ({{ livreur.user.telephone|default:'Téléphone non renseigné' }})
+                                </option>
+                            {% empty %}
+                                <option value="" disabled>Aucun livreur disponible</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Seuls les livreurs marqués comme disponibles sont affichés</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i> Annuler
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="btnAssigner" {% if not livreurs_disponibles %}disabled{% endif %}>
+                        <i class="bi bi-check-circle me-1"></i> Assigner
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Gestion de la soumission du formulaire en AJAX
+$(document).ready(function() {
+    $('#assignerLivreurForm').on('submit', function(e) {
+        e.preventDefault();
+        const form = $(this);
+        const url = form.attr('action');
+        const submitBtn = form.find('button[type="submit"]');
+        
+        // Désactiver le bouton pendant le traitement
+        submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Traitement...');
+        
+        $.ajax({
+            type: 'POST',
+            url: url,
+            data: form.serialize(),
+            success: function(response) {
+                if (response.success) {
+                    // Mettre à jour l'interface utilisateur
+                    $('#livreurAssignation').html(`
+                        <i class="bi bi-person-check-fill text-success me-2"></i>
+                        ${response.livreur_nom}
+                    `);
+                    $('#statutDemande').text(response.statut);
+                    
+                    // Afficher un message de succès
+                    showToast('Succès', 'Le livreur a été assigné avec succès', 'success');
+                    
+                    // Fermer le modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('assignerLivreurModal'));
+                    modal.hide();
+                } else {
+                    showToast('Erreur', response.message || 'Une erreur est survenue', 'error');
+                }
+            },
+            error: function(xhr) {
+                const response = xhr.responseJSON || {};
+                showToast('Erreur', response.message || 'Une erreur est survenue lors de l\'assignation', 'error');
+            },
+            complete: function() {
+                // Réactiver le bouton
+                submitBtn.prop('disabled', false).html('<i class="bi bi-check-circle me-1"></i> Assigner');
+            }
+        });
+    });
+});
+</script>

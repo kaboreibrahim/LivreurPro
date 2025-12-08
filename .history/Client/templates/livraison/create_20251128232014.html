@@ -1,0 +1,414 @@
+{% extends 'base.html' %}
+{% block page_name %}Nouvelle Demande de Livraison{% endblock %}
+{% block content %}
+{% load static %}
+ 
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nouvelle Demande de Livraison</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Mapbox CSS -->
+    <link href='https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css' rel='stylesheet' />
+    
+    <style>
+        #map {
+            height: 400px;
+            width: 100%;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .search-container {
+            position: relative;
+            margin-bottom: 15px;
+        }
+        
+        .suggestions-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: none;
+        }
+        
+        .suggestion-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .suggestion-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .marker-depart {
+            background-color: #28a745;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .marker-destination {
+            background-color: #dc3545;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .info-distance {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-12">
+                <h2 class="mb-4">📦 Nouvelle Demande de Livraison</h2>
+                
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                <form method="post" enctype="multipart/form-data" id="dcl-form">
+                    {% csrf_token %}
+                    
+                    <!-- Carte Mapbox -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5>📍 Localisation</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="map"></div>
+                            
+                            <div id="info-distance" class="info-distance" style="display: none;">
+                                Distance estimée: <span id="distance-value">-</span> km
+                            </div>
+                            
+                            <!-- Recherche Départ -->
+                            <div class="search-container mb-3">
+                                <label class="form-label">🟢 Adresse de départ</label>
+                                <input type="text" 
+                                       id="search-depart" 
+                                       class="form-control" 
+                                       placeholder="Rechercher un lieu en Côte d'Ivoire...">
+                                <div id="suggestions-depart" class="suggestions-list"></div>
+                                {{ form.adresse_depart }}
+                                {{ form.latitude_depart }}
+                                {{ form.longitude_depart }}
+                            </div>
+                            
+                            <!-- Recherche Destination -->
+                            <div class="search-container">
+                                <label class="form-label">🔴 Adresse de destination</label>
+                                <input type="text" 
+                                       id="search-destination" 
+                                       class="form-control" 
+                                       placeholder="Rechercher un lieu en Côte d'Ivoire...">
+                                <div id="suggestions-destination" class="suggestions-list"></div>
+                                {{ form.adresse_destination }}
+                                {{ form.latitude_destination }}
+                                {{ form.longitude_destination }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Informations du colis -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5>📦 Informations du Colis</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Contact Destinataire</label>
+                                    {{ form.Contact_destinateur }}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Type de course</label>
+                                    {{ form.type_course }}
+                                </div>
+                                
+                                <div class="col-12 mb-3">
+                                    <label class="form-label">Description du colis</label>
+                                    {{ form.description_colis }}
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Poids (kg)</label>
+                                    {{ form.poids_colis }}
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Valeur (FCFA)</label>
+                                    {{ form.valeur_colis }}
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Date de récupération</label>
+                                    {{ form.date_recuperation }}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Photo du colis 1</label>
+                                    {{ form.photo_colis1 }}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Photo du colis 2 (optionnel)</label>
+                                    {{ form.photo_colis2 }}
+                                </div>
+                                
+                                <div class="col-12 mb-3">
+                                    <label class="form-label">Instructions supplémentaires</label>
+                                    {{ form.instructions }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            🚀 Créer la demande
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Mapbox JS -->
+    <script src='https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js'></script>
+    
+    <script>
+        mapboxgl.accessToken = '{{ mapbox_token }}';
+        
+        // Initialiser la carte centrée sur Abidjan
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v12',
+            center: [-4.0305, 5.3599], // Abidjan
+            zoom: 11
+        });
+        
+        // Ajouter les contrôles de navigation
+        map.addControl(new mapboxgl.NavigationControl());
+        
+        // Markers pour départ et destination
+        let markerDepart = null;
+        let markerDestination = null;
+        let routeLayer = null;
+        
+        // Fonction pour rechercher des lieux avec Mapbox Geocoding
+        async function searchPlace(query, type) {
+            if (query.length < 3) return;
+            
+            try {
+                const response = await fetch(
+                    `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?` +
+                    `access_token=${mapboxgl.accessToken}&` +
+                    `country=CI&` +
+                    `limit=5&` +
+                    `language=fr`
+                );
+                
+                const data = await response.json();
+                displaySuggestions(data.features, type);
+            } catch (error) {
+                console.error('Erreur de recherche:', error);
+            }
+        }
+        
+        // Afficher les suggestions
+        function displaySuggestions(features, type) {
+            const suggestionsList = document.getElementById(`suggestions-${type}`);
+            suggestionsList.innerHTML = '';
+            
+            if (features.length === 0) {
+                suggestionsList.style.display = 'none';
+                return;
+            }
+            
+            features.forEach(feature => {
+                const div = document.createElement('div');
+                div.className = 'suggestion-item';
+                div.textContent = feature.place_name;
+                div.onclick = () => selectPlace(feature, type);
+                suggestionsList.appendChild(div);
+            });
+            
+            suggestionsList.style.display = 'block';
+        }
+        
+        // Sélectionner un lieu
+        function selectPlace(feature, type) {
+            const [lng, lat] = feature.center;
+            const address = feature.place_name;
+            
+            // Mettre à jour les champs du formulaire
+            document.getElementById(`adresse-${type}`).value = address;
+            document.getElementById(`latitude-${type}`).value = lat;
+            document.getElementById(`longitude-${type}`).value = lng;
+            
+            // Cacher les suggestions
+            document.getElementById(`suggestions-${type}`).style.display = 'none';
+            document.getElementById(`search-${type}`).value = '';
+            
+            // Ajouter/Mettre à jour le marker
+            if (type === 'depart') {
+                if (markerDepart) markerDepart.remove();
+                const el = document.createElement('div');
+                el.className = 'marker-depart';
+                markerDepart = new mapboxgl.Marker(el)
+                    .setLngLat([lng, lat])
+                    .setPopup(new mapboxgl.Popup().setHTML(`<strong>Départ</strong><br>${address}`))
+                    .addTo(map);
+            } else {
+                if (markerDestination) markerDestination.remove();
+                const el = document.createElement('div');
+                el.className = 'marker-destination';
+                markerDestination = new mapboxgl.Marker(el)
+                    .setLngLat([lng, lat])
+                    .setPopup(new mapboxgl.Popup().setHTML(`<strong>Destination</strong><br>${address}`))
+                    .addTo(map);
+            }
+            
+            // Centrer la carte
+            map.flyTo({
+                center: [lng, lat],
+                zoom: 14
+            });
+            
+            // Calculer l'itinéraire si les deux points sont définis
+            if (markerDepart && markerDestination) {
+                calculateRoute();
+            }
+        }
+        
+        // Calculer l'itinéraire entre départ et destination
+        async function calculateRoute() {
+            const departLng = document.getElementById('longitude-depart').value;
+            const departLat = document.getElementById('latitude-depart').value;
+            const destLng = document.getElementById('longitude-destination').value;
+            const destLat = document.getElementById('latitude-destination').value;
+            
+            if (!departLng || !destLng) return;
+            
+            try {
+                const response = await fetch(
+                    `https://api.mapbox.com/directions/v5/mapbox/driving/${departLng},${departLat};${destLng},${destLat}?` +
+                    `geometries=geojson&` +
+                    `access_token=${mapboxgl.accessToken}`
+                );
+                
+                const data = await response.json();
+                const route = data.routes[0];
+                const distance = (route.distance / 1000).toFixed(2); // Convertir en km
+                
+                // Afficher la distance
+                document.getElementById('distance-value').textContent = distance;
+                document.getElementById('info-distance').style.display = 'block';
+                
+                // Dessiner l'itinéraire sur la carte
+                if (map.getSource('route')) {
+                    map.getSource('route').setData({
+                        type: 'Feature',
+                        properties: {},
+                        geometry: route.geometry
+                    });
+                } else {
+                    map.addLayer({
+                        id: 'route',
+                        type: 'line',
+                        source: {
+                            type: 'geojson',
+                            data: {
+                                type: 'Feature',
+                                properties: {},
+                                geometry: route.geometry
+                            }
+                        },
+                        layout: {
+                            'line-join': 'round',
+                            'line-cap': 'round'
+                        },
+                        paint: {
+                            'line-color': '#007bff',
+                            'line-width': 5,
+                            'line-opacity': 0.75
+                        }
+                    });
+                }
+                
+                // Ajuster la vue pour voir tout l'itinéraire
+                const coordinates = route.geometry.coordinates;
+                const bounds = coordinates.reduce((bounds, coord) => {
+                    return bounds.extend(coord);
+                }, new mapboxgl.LngLatBounds(coordinates[0], coordinates[0]));
+                
+                map.fitBounds(bounds, {
+                    padding: 50
+                });
+                
+            } catch (error) {
+                console.error('Erreur calcul itinéraire:', error);
+            }
+        }
+        
+        // Événements de recherche avec debounce
+        let searchTimeout;
+        
+        document.getElementById('search-depart').addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                searchPlace(e.target.value, 'depart');
+            }, 500);
+        });
+        
+        document.getElementById('search-destination').addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                searchPlace(e.target.value, 'destination');
+            }, 500);
+        });
+        
+        // Fermer les suggestions si on clique ailleurs
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-container')) {
+                document.getElementById('suggestions-depart').style.display = 'none';
+                document.getElementById('suggestions-destination').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

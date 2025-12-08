@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block page_title %}Mon Livreur Pro{% endblock %}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/boxicons/2.1.4/css/boxicons.min.css" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #000080;
+            --secondary: #FF6B00;
+            --light: #FFF9E5;
+            --dark: #1A1A1A;
+        }
+
+        body {
+            font-family: 'Public Sans', sans-serif;
+            background-color: #FAFAFA;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        .main-content {
+            flex: 1;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 90px 20px 100px;
+        }
+
+        /* Desktop: Header Navigation */
+        .desktop-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: linear-gradient(135deg, var(--primary) 0%, #000060 100%);
+            z-index: 1000;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            padding: 0 30px;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+        
+        .desktop-header.blurred {
+            backdrop-filter: blur(10px);
+            background: rgba(0, 0, 0, 0.7);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .header-logo {
+            color: var(--light);
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-logo i {
+            font-size: 2rem;
+            color: var(--secondary);
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 10px;
+        }
+
+        .header-nav-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .header-nav-btn:hover {
+            background-color: rgba(8, 54, 179, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 88, 74, 0.1);
+        }
+
+        .header-nav-btn.active {
+            background-color: var(--secondary);
+            border-color: var(--secondary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(255, 107, 0, 0.3);
+        }
+
+        .header-nav-btn i {
+            font-size: 1.2rem;
+        }
+
+        .header-nav-item {
+            padding: 8px 16px;
+            color: var(--light);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            border-radius: 8px;
+            position: relative;
+            font-size: 0.95rem;
+        }
+
+        .header-nav-item i {
+            font-size: 1.3rem;
+        }
+
+        .header-nav-item:hover {
+            background-color: rgba(255, 107, 0, 0.15);
+            color: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        .header-nav-item.active {
+            background-color: var(--secondary);
+            color: white;
+        }
+
+        .header-nav-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 8px solid var(--secondary);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-notification {
+            position: relative;
+            cursor: pointer;
+            color: var(--light);
+            font-size: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .header-notification:hover {
+            color: var(--secondary);
+            transform: scale(1.1);
+        }
+
+        .header-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 15px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .header-user:hover {
+            background-color: rgba(255, 107, 0, 0.2);
+        }
+
+        .header-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background-color: var(--secondary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .header-user-info {
+            display: flex;
+            flex-direction: column;
+            color: var(--light);
+        }
+
+        .header-user-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .header-user-role {
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+
+        /* Top Navbar pour mobile */
+        .mobile-top-nav {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background-color: var(--light);
+            border-bottom: 2px solid var(--secondary);
+            z-index: 999;
+            padding: 0 15px;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+        
+        .mobile-top-nav.blurred {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .mobile-logo {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .mobile-user {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .mobile-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .mobile-avatar:hover {
+            background-color: var(--secondary);
+            transform: scale(1.05);
+        }
+
+        .mobile-logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 12px;
+            background-color: var(--secondary);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .mobile-logout-btn i {
+            font-size: 1.1rem;
+        }
+
+        .mobile-logout-btn:hover {
+            background-color: var(--primary);
+            transform: scale(1.05);
+        }
+
+        .notification-badge {
+            position: relative;
+        }
+
+        .notification-badge i {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .badge-count {
+            position: absolute;
+            top: -5px;
+            right: -8px;
+            background-color: var(--secondary);
+            color: white;
+            border-radius: 10px;
+            padding: 2px 6px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        /* Bottom Navigation pour mobile */
+        .mobile-bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background-color: white;
+            border-top: 2px solid var(--secondary);
+            z-index: 1000;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .bottom-nav-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            height: 100%;
+            padding: 0 10px;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            flex: 1;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            padding: 8px;
+            position: relative;
+        }
+
+        .nav-item i {
+            font-size: 1.6rem;
+            transition: all 0.3s;
+        }
+
+        .nav-item span {
+            font-size: 0.7rem;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .nav-item.active {
+            color: var(--secondary);
+        }
+
+        .nav-item.active i {
+            transform: scale(1.1);
+        }
+
+        .nav-item:hover {
+            color: var(--secondary);
+        }
+
+        /* Indicateur actif */
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 3px;
+            background-color: var(--secondary);
+            border-radius: 0 0 3px 3px;
+        }
+
+        /* Content area */
+        .content-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .desktop-header {
+                display: none;
+            }
+
+            .mobile-top-nav {
+                display: flex;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 1000;
+            }
+
+            .mobile-bottom-nav {
+                display: block;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                z-index: 1000;
+            }
+
+            .main-content {
+                padding: 60px 15px 80px !important;
+                margin-top: 0 !important;
+            }
+            
+            .container {
+                padding: 0 10px !important;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .mobile-top-nav {
+                display: none;
+            }
+
+            .mobile-bottom-nav {
+                display: none;
+            }
+        }
+
+        /* Animation pour le menu plus */
+        .more-menu {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            padding: 10px;
+            display: none;
+            animation: slideUp 0.3s ease;
+        }
+
+        .more-menu.show {
+            display: block;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .more-menu-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--dark);
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+            white-space: nowrap;
+            text-decoration: none;
+        }
+
+        .more-menu-item:hover {
+            background-color: var(--light);
+            color: var(--secondary);
+        }
+
+        .more-menu-item i {
+            font-size: 1.3rem;
+        }
+
+        .user-dropdown-menu {
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            padding: 10px 0;
+            display: none;
+            min-width: 200px;
+            z-index: 1001;
+            animation: slideDown 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .user-menu-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 20px;
+            color: var(--dark);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .user-menu-item:hover {
+            background-color: #f5f5f5;
+            color: var(--secondary);
+        }
+
+        .user-menu-item i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        .header-user {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .header-user:hover {
+            opacity: 0.9;
+        }
+
+        .header-user.active #userMenuArrow {
+            transform: rotate(180deg);
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Desktop Header Navigation -->
+    <div class="desktop-header">
+        <div class="header-left">
+            <a href="{% url 'Client:Dashbord_client' %}" class="header-logo">
+                <i class='bx bxs-truck'></i>
+                <span>Mon Livreur Pro</span>
+            </a>
+            
+            <nav class="header-nav">
+                <a href="{% url 'Client:Dashbord_client' %}" class="header-nav-btn active">
+                    <i class='bx bx-home-circle'></i>
+                    <span>Accueil</span>
+                </a>
+                <a href="{% url 'Client:liste_demandes' %}" class="header-nav-btn">
+                    <i class='bx bxs-paste'></i>
+                    <span>Mes Courses</span>
+                </a>
+                <a href="#" class="header-nav-btn">
+                    <i class='bx bx-history'></i>
+                    <span>Historique</span>
+                </a>
+                <a href="#" class="header-nav-btn">
+                    <i class='bx bx-support'></i>
+                    <span>Support</span>
+                </a>
+            </nav>
+        </div>
+        <div class="header-right">
+            <div class="header-notification">
+                <i class='bx bx-bell'></i>
+                <span class="badge-count">3</span>
+            </div>
+            <div class="header-user" id="userMenuBtn">
+                <div class="header-avatar">{{ request.user.first_name|first|default:request.user.username|first|upper }}{{ request.user.last_name|first|default:''|upper }}</div>
+                <div class="header-user-info">
+                    <span class="header-user-name">{% if request.user.first_name %}{{ request.user.first_name }} {{ request.user.last_name|default:'' }}{% else %}{{ request.user.username }}{% endif %}</span>
+                    <span class="header-user-role">{{ request.user.get_role_display }}</span>
+                </div>
+                <i class='bx bx-chevron-down' id="userMenuArrow"></i>
+            </div>
+
+            <div class="user-dropdown-menu" id="userDropdownMenu">
+                <a href="#" class="user-menu-item">
+                    <i class='bx bx-user-circle'></i>
+                    <span>Mon Profil</span>
+                </a>
+                <a href="#" class="user-menu-item">
+                    <i class='bx bx-cog'></i>
+                    <span>Paramètres</span>
+                </a>
+                <a href="{% url 'deconnexion' %}" class="user-menu-item">
+                    <i class='bx bx-power-off'></i>
+                    <span>Déconnexion</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Top Navigation -->
+    <div class="mobile-top-nav">
+        <div class="mobile-logo">Mon Livreur Pro</div>
+        <div class="mobile-user">
+            <div class="mobile-avatar">
+                {{ request.user.first_name|first|default:request.user.username|first|upper }}{{ request.user.last_name|first|default:''|upper }}
+            </div>
+            <div class="notification-badge">
+                <i class='bx bx-bell'></i>
+                <span class="badge-count">3</span>
+            </div>
+            <a href="{% url 'deconnexion' %}" class="mobile-logout-btn">
+                <i class='bx bx-power-off'></i>
+                <span>Quitter</span>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container">
+            <main>
+                {% block content %}
+                {% endblock content %}
+            </main>
+        </div>
+        <!-- Notifications/Messages -->
+        <div class="container-fluid">
+            {% include "layouts/_message.html" %}
+        </div>
+    </div>
+        {% include "layouts/_message.html" %}
+    </div>
+</div>
+
+    <!-- Mobile Bottom Navigation -->
+    <div class="mobile-bottom-nav">
+        <div class="bottom-nav-container">
+            <a href="{% url 'Client:Dashbord_client' %}" class="nav-item{% if request.resolver_match.url_name == 'Dashbord_client' %} active{% endif %}">
+                <i class='bx bx-home-circle'></i>
+                <span>Accueil</span>
+            </a>
+            <a href="{% url 'Client:liste_demandes' %}" class="nav-item{% if request.resolver_match.url_name == 'liste_demandes' %} active{% endif %}">
+                <i class='bx bxs-paste'></i>
+                <span>Courses</span>
+            </a>
+            <a href="#" class="nav-item{% if request.resolver_match.url_name == 'Historique' %} active{% endif %}">
+                <i class='bx bx-history'></i>
+                <span>Historique</span>
+            </a>
+            <a href="#" class="nav-item" id="moreBtn">
+                <i class='bx bx-menu'></i>
+                <span>Plus</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- More Menu -->
+    <div class="more-menu" id="moreMenu">
+      <a href=" " class="more-menu-item">
+          <i class='bx bx-user'></i>
+          <span>Mon Profil</span>
+      </a>
+      <a href=" " class="more-menu-item">
+          <i class='bx bx-support'></i>
+          <span>Support Client</span>
+      </a>
+      <a href="" class="more-menu-item">
+          <i class='bx bx-cog'></i>
+          <span>Paramètres</span>
+      </a>
+      <a href="{% url 'deconnexion' %}" class="more-menu-item">
+          <i class='bx bx-power-off'></i>
+          <span>Déconnexion</span>
+      </a>
+    </div>
+      <!-- Notifications/Messages -->
+    <div class="container-fluid">
+        {% include "layouts/_message.html" %}
+    </div>
+    <script>
+        // Gestion du menu utilisateur
+        const userMenuBtn = document.getElementById('userMenuBtn');
+        const userDropdownMenu = document.getElementById('userDropdownMenu');
+        const userMenuArrow = document.getElementById('userMenuArrow');
+
+        // Gestion du menu utilisateur
+        userMenuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            userDropdownMenu.style.display = userDropdownMenu.style.display === 'block' ? 'none' : 'block';
+            userMenuBtn.classList.toggle('active');
+        });
+
+        // Fermer le menu si on clique ailleurs
+        document.addEventListener('click', (e) => {
+            if (!userMenuBtn.contains(e.target) && !userDropdownMenu.contains(e.target)) {
+                userDropdownMenu.style.display = 'none';
+                userMenuBtn.classList.remove('active');
+            }
+        });
+
+        // Gestion du menu "Plus" mobile
+        const moreBtn = document.getElementById('moreBtn');
+        const moreMenu = document.getElementById('moreMenu');
+
+        moreBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            moreMenu.classList.toggle('show');
+        });
+
+        // Fermer le menu plus si on clique ailleurs
+        document.addEventListener('click', (e) => {
+            if (!moreBtn.contains(e.target) && !moreMenu.contains(e.target)) {
+                moreMenu.classList.remove('show');
+            }
+        });
+
+        // Gestion des boutons de navigation actifs
+        const navButtons = document.querySelectorAll('.header-nav-btn');
+        navButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Retirer la classe active de tous les boutons
+                navButtons.forEach(btn => btn.classList.remove('active'));
+                // Ajouter la classe active au bouton cliqué
+                this.classList.add('active');
+            });
+        });
+
+        // Gestion des items actifs - Mobile Bottom Nav
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                if (this.id !== 'moreBtn') {
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+                }
+            });
+        });
+
+        // Fermer le menu more lors du clic sur un item
+        const moreMenuItems = document.querySelectorAll('.more-menu-item');
+        moreMenuItems.forEach(item => {
+            item.addEventListener('click', () => {
+                moreMenu.classList.remove('show');
+            });
+        });
+
+        // Mettre à jour l'état actif au chargement de la page
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname;
+            navButtons.forEach(button => {
+                if (button.getAttribute('href') === currentPath) {
+                    button.classList.add('active');
+                } else {
+                    button.classList.remove('active');
+                }
+            });
+            
+            // Effet de flou au scroll
+            const desktopHeader = document.querySelector('.desktop-header');
+            const mobileHeader = document.querySelector('.mobile-top-nav');
+            
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 20) {
+                    desktopHeader?.classList.add('blurred');
+                    mobileHeader?.classList.add('blurred');
+                } else {
+                    desktopHeader?.classList.remove('blurred');
+                    mobileHeader?.classList.remove('blurred');
+                }
+            });
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

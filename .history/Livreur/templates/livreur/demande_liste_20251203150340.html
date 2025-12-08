@@ -1,0 +1,452 @@
+{% extends 'base_livreur.html' %}
+{% load static %}
+
+{% block title %}Mes Demandes de Livraison{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-stats {
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        text-align: center;
+        transition: transform 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .stat-card .stat-icon {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+    }
+    
+    .stat-card.total .stat-icon {
+        color: #0d6efd;
+    }
+    
+    .stat-card.en-cours .stat-icon {
+        color: #ffc107;
+    }
+    
+    .stat-card.terminees .stat-icon {
+        color: #198754;
+    }
+    
+    .stat-card h3 {
+        font-size: 2rem;
+        margin: 10px 0;
+        font-weight: bold;
+    }
+    
+    .stat-card p {
+        color: #6c757d;
+        margin: 0;
+    }
+    
+    .filters-section {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .demande-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+    }
+    
+    .demande-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .demande-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .demande-ref {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #212529;
+    }
+    
+    .demande-type {
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    
+    .type-expresse {
+        background-color: #ffc107;
+        color: #000;
+    }
+    
+    .type-classique {
+        background-color: #0d6efd;
+        color: white;
+    }
+    
+    .demande-info {
+        margin-bottom: 15px;
+    }
+    
+    .info-row {
+        display: flex;
+        align-items: start;
+        margin-bottom: 10px;
+    }
+    
+    .info-row i {
+        margin-right: 10px;
+        color: #6c757d;
+        min-width: 20px;
+    }
+    
+    .info-row .info-label {
+        font-weight: 600;
+        color: #495057;
+        margin-right: 5px;
+    }
+    
+    .demande-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 15px;
+        border-top: 1px solid #e9ecef;
+    }
+    
+    .statut-badge {
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    
+    .statut-en-attente {
+        background-color: #ffc107;
+        color: #000;
+    }
+    
+    .statut-validation-client {
+        background-color: #17a2b8;
+        color: white;
+    }
+    
+    .statut-validation-livreur {
+        background-color: #6f42c1;
+        color: white;
+    }
+    
+    .statut-livreur-route {
+        background-color: #fd7e14;
+        color: white;
+    }
+    
+    .statut-reception-colis {
+        background-color: #20c997;
+        color: white;
+    }
+    
+    .statut-livraison-en-route {
+        background-color: #0dcaf0;
+        color: #000;
+    }
+    
+    .statut-terminee {
+        background-color: #198754;
+        color: white;
+    }
+    
+    .statut-annulee {
+        background-color: #dc3545;
+        color: white;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        color: #dee2e6;
+        margin-bottom: 20px;
+    }
+    
+    .pagination {
+        justify-content: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">
+        <i class="bi bi-box-seam"></i> Mes Demandes de Livraison
+    </h1>
+    
+    <!-- Statistiques -->
+    <div class="dashboard-stats">
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <div class="stat-card total">
+                    <div class="stat-icon">
+                        <i class="bi bi-box-seam"></i>
+                    </div>
+                    <h3>{{ total_demandes }}</h3>
+                    <p>Total des demandes</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="stat-card en-cours">
+                    <div class="stat-icon">
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+                    <h3>{{ demandes_en_cours }}</h3>
+                    <p>En cours</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="stat-card terminees">
+                    <div class="stat-icon">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                    <h3>{{ demandes_terminees }}</h3>
+                    <p>Terminées</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filtres -->
+    <div class="filters-section">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">
+                    <i class="bi bi-search"></i> Rechercher
+                </label>
+                <input type="text" 
+                       class="form-control" 
+                       name="search" 
+                       placeholder="Référence, adresse, client..."
+                       value="{{ search_query }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">
+                    <i class="bi bi-funnel"></i> Type de course
+                </label>
+                <select class="form-select" name="type_course">
+                    <option value="">Tous les types</option>
+                    {% for value, label in type_course_choices %}
+                    <option value="{{ value }}" {% if type_course == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">
+                    <i class="bi bi-flag"></i> Statut
+                </label>
+                <select class="form-select" name="statut">
+                    <option value="">Tous les statuts</option>
+                    {% for value, label in statuts_demande %}
+                    <option value="{{ value }}" {% if statut == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i> Filtrer
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Liste des demandes -->
+    {% if demandes %}
+        <div class="demandes-list">
+            {% for demande in demandes %}
+            <div class="demande-card">
+                <div class="demande-header">
+                    <div>
+                        <span class="demande-ref">{{ demande.ref }}</span>
+                        <br>
+                        <small class="text-muted">
+                            <i class="bi bi-calendar"></i> 
+                            {{ demande.date_demande|date:"d/m/Y à H:i" }}
+                        </small>
+                    </div>
+                    <span class="demande-type {% if demande.type_course == 'EXPRESSE' %}type-expresse{% else %}type-classique{% endif %}">
+                        {{ demande.get_type_course_display }}
+                    </span>
+                </div>
+                
+                <div class="demande-info">
+                    <div class="info-row">
+                        <i class="bi bi-person"></i>
+                        <div>
+                            <span class="info-label">Client:</span>
+                            {{ demande.client.get_full_name|default:demande.client.username }}
+                        </div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <i class="bi bi-geo-alt-fill text-success"></i>
+                        <div>
+                            <span class="info-label">Départ:</span>
+                            {{ demande.adresse_depart }}
+                        </div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <i class="bi bi-geo-alt text-danger"></i>
+                        <div>
+                            <span class="info-label">Destination:</span>
+                            {{ demande.adresse_destination }}
+                        </div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <i class="bi bi-box"></i>
+                        <div>
+                            <span class="info-label">Description:</span>
+                            {{ demande.description_colis|truncatewords:10 }}
+                        </div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <i class="bi bi-clock"></i>
+                        <div>
+                            <span class="info-label">Récupération prévue:</span>
+                            {{ demande.date_recuperation|date:"d/m/Y à H:i" }}
+                        </div>
+                    </div>
+                    
+                    {% if demande.cout_livraison %}
+                    <div class="info-row">
+                        <i class="bi bi-cash"></i>
+                        <div>
+                            <span class="info-label">Coût:</span>
+                            {{ demande.cout_livraison }} FCFA
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if demande.distance %}
+                    <div class="info-row">
+                        <i class="bi bi-signpost"></i>
+                        <div>
+                            <span class="info-label">Distance:</span>
+                            {{ demande.distance }} km
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="demande-footer">
+                    <span class="statut-badge statut-{{ demande.statut}}">
+                        {{ demande.get_statut_display }}
+                    </span>
+                    <a href="{% url 'livreur:demande_detail' demande.id %}" 
+                       class="btn btn-primary btn-sm">
+                        <i class="bi bi-eye"></i> Voir détails
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <nav aria-label="Navigation des pages">
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if type_course %}&type_course={{ type_course }}{% endif %}{% if statut %}&statut={{ statut }}{% endif %}">
+                        <i class="bi bi-chevron-double-left"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if type_course %}&type_course={{ type_course }}{% endif %}{% if statut %}&statut={{ statut }}{% endif %}">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+                
+                <li class="page-item active">
+                    <span class="page-link">
+                        Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}
+                    </span>
+                </li>
+                
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if type_course %}&type_course={{ type_course }}{% endif %}{% if statut %}&statut={{ statut }}{% endif %}">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if type_course %}&type_course={{ type_course }}{% endif %}{% if statut %}&statut={{ statut }}{% endif %}">
+                        <i class="bi bi-chevron-double-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+    {% else %}
+        <!-- État vide -->
+        <div class="empty-state">
+            <i class="bi bi-inbox"></i>
+            <h3>Aucune demande trouvée</h3>
+            <p class="text-muted">
+                {% if search_query or type_course or statut %}
+                    Aucune demande ne correspond à vos critères de recherche.
+                    <br>
+                    <a href="{% url 'livreur:demande_liste' %}" class="btn btn-link">
+                        Réinitialiser les filtres
+                    </a>
+                {% else %}
+                    Vous n'avez pas encore de demandes assignées.
+                {% endif %}
+            </p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Fonction pour actualiser automatiquement la page toutes les 30 secondes
+    // (utile pour voir les nouvelles demandes en temps réel)
+    // setTimeout(function() {
+    //     location.reload();
+    // }, 30000);
+</script>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% load static %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <img src="{{ logo_url }}" alt="Logo" class="img-fluid" style="max-width: 100px; height: auto;">                        </div>
+                        <div class="col-md-6">
+                            <h2>Contactez-nous</h2>
+                            <p>Un visiteur a envoyé un message via le formulaire de contact.</p>
+                            <p><strong>Nom complet:</strong>{{ name }}</p>
+                            <p><strong>Contact:</strong>  {{countrycode}} {{ phone }}</p>
+                            <p><strong>Email:</strong> {{ email }}</p>
+                            <p><strong>Sujet:</strong> {{ subject }}</p>
+                            <p><strong>Message:</strong> {{ message }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

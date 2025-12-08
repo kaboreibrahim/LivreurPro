@@ -1,0 +1,261 @@
+{% extends 'base_gestionnaire.html' %}
+{% load static %}
+
+{% block title %}Liste des Demandes de Coursier{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-0 text-gray-800">Gestion des Demandes de Coursier</h1>
+        </div>
+    </div>
+
+    <!-- Cartes de statistiques -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total des demandes</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_demandes }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                En attente</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ demandes_en_attente }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                En cours</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ demandes_en_cours }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-sync fa-spin fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Terminées</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ demandes_terminees }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulaire de recherche et filtres -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Filtres de recherche</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" class="form-inline">
+                <div class="form-group mx-sm-3 mb-2">
+                    <input type="text" name="q" class="form-control" placeholder="Rechercher..." value="{{ search_query }}">
+                </div>
+                <div class="form-group mx-sm-3 mb-2">
+                    <select name="statut" class="form-control">
+                        <option value="">Tous les statuts</option>
+                        {% for statut in statut_choices %}
+                            <option value="{{ statut.0 }}" {% if selected_statut == statut.0 %}selected{% endif %}>
+                                {{ statut.1 }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group mx-sm-3 mb-2">
+                    <select name="type_course" class="form-control">
+                        <option value="">Tous les types</option>
+                        {% for type in type_course_choices %}
+                            <option value="{{ type.0 }}" {% if selected_type == type.0 %}selected{% endif %}>
+                                {{ type.1 }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary mb-2">
+                    <i class="fas fa-search"></i> Filtrer
+                </button>
+                <a href="{% url 'Gestionnaire:liste_demandes' %}" class="btn btn-secondary mb-2 ml-2">
+                    <i class="fas fa-sync-alt"></i> Réinitialiser
+                </a>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tableau des demandes -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Liste des demandes</h6>
+            <a href="#" class="btn btn-success btn-sm">
+                <i class="fas fa-plus"></i> Nouvelle demande
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Référence</th>
+                            <th>Date</th>
+                            <th>Client</th>
+                            <th>Adresse de départ</th>
+                            <th>Adresse d'arrivée</th>
+                            <th>Type</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for demande in demandes %}
+                        <tr>
+                            <td>{{ demande.ref }}</td>
+                            <td>{{ demande.date_demande|date:"d/m/Y H:i" }}</td>
+                            <td>{{ demande.client.get_full_name|default:demande.client.username }}</td>
+                            <td>{{ demande.adresse_depart|truncatechars:30 }}</td>
+                            <td>{{ demande.adresse_destination|truncatechars:30 }}</td>
+                            <td>
+                                <span class="badge {% if demande.type_course == 'EXPRESSE' %}bg-warning{% else %}bg-info{% endif %}">
+                                    {{ demande.get_type_course_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge 
+                                    {% if demande.statut == 'EN_ATTENTE' %}bg-secondary
+                                    {% elif demande.statut == 'TERMINEE' %}bg-success
+                                    {% elif demande.statut == 'ANNULEE' %}bg-danger
+                                    {% else %}bg-primary{% endif %}">
+                                    {{ demande.get_statut_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{% url 'gestionnaire:detail_demande' demande.pk %}" class="btn btn-info btn-sm" title="Voir les détails">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="#" class="btn btn-primary btn-sm" title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center">Aucune demande trouvée</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <div class="mt-3">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_statut %}&statut={{ selected_statut }}{% endif %}{% if selected_type %}&type_course={{ selected_type }}{% endif %}" aria-label="First">
+                                    <span aria-hidden="true">&laquo;&laquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_statut %}&statut={{ selected_statut }}{% endif %}{% if selected_type %}&type_course={{ selected_type }}{% endif %}" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                        {% endif %}
+                        
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_statut %}&statut={{ selected_statut }}{% endif %}{% if selected_type %}&type_course={{ selected_type }}{% endif %}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_statut %}&statut={{ selected_statut }}{% endif %}{% if selected_type %}&type_course={{ selected_type }}{% endif %}" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_statut %}&statut={{ selected_statut }}{% endif %}{% if selected_type %}&type_course={{ selected_type }}{% endif %}" aria-label="Last">
+                                    <span aria-hidden="true">&raquo;&raquo;</span>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Page level plugins -->
+<script src="{% static 'vendor/datatables/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>
+
+<!-- Page level custom scripts -->
+<script>
+    $(document).ready(function() {
+        // Initialisation de DataTables
+        var table = $('#dataTable').DataTable({
+            "paging": false,
+            "info": false,
+            "searching": false,
+            "order": [[1, "desc"]] // Tri par défaut sur la colonne date
+        });
+        
+        // Gestion des filtres
+        $('select[name="statut"], select[name="type_course"]').on('change', function() {
+            $('form').submit();
+        });
+    });
+</script>
+{% endblock %}

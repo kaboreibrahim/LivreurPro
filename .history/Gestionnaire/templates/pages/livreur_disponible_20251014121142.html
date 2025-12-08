@@ -1,0 +1,647 @@
+{% extends 'layouts/base.html' %}
+{% block page_name %}Liste des Livreurs{% endblock %}
+{% block content %}
+{% load custom_filters %}
+{% load static %}
+
+<!-- Yandex Maps API -->
+ 
+<style>
+    .container-fluid { padding: 20px; }
+    .course-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 15px;
+    }
+    .card-header {
+        padding: 15px;
+        background: #f8f9fa;
+        border-bottom: 1px solid #eee;
+    }
+    .info-item {
+        margin-bottom: 10px;
+    }
+    .info-label {
+        color: #666;
+        font-size: 0.85rem;
+    }
+    .info-value {
+        color: #333;
+        font-weight: 500;
+    }
+    #map {
+        height: 600px;
+        width: 100%;
+        margin-bottom: 20px;
+        border-radius: 10px;
+    }
+    .online-status {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 5px;
+    }
+    .online {
+        background-color: #28a745;
+    }
+    .offline {
+        background-color: #dc3545;
+    }
+    @media (max-width: 768px) {
+        .desktop-view { display: none; }
+        .mobile-view { display: block; }
+    }
+    @media (min-width: 769px) {
+        .mobile-view { display: none; }
+        .desktop-view { display: block; }
+    }
+    .location-status {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+    }
+    .location-status.updating {
+        background-color: #fff3cd;
+        border: 1px solid #ffeeba;
+    }
+    .location-status.success {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+    }
+    .location-status.error {
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+    }
+    
+    /* Styles pour les marqueurs personnalisés */
+    .custom-marker-card {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        z-index: 100;
+    }
+    
+    .custom-marker-card:hover {
+        transform: translate(-50%, -100%) scale(1.05);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.25) !important;
+        z-index: 1000;
+    }
+    
+    .marker-photo-container {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .marker-photo-container img {
+        transition: transform 0.2s ease;
+    }
+    
+    .custom-marker-card:hover .marker-photo-container img {
+        transform: scale(1.1);
+    }
+    
+    .status-indicator {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.6; }
+        100% { opacity: 1; }
+    }
+    .livreur-balloon {
+        text-align: center;
+        padding: 15px;
+        max-width: 250px;
+    }
+    
+    .livreur-photo {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        border: 3px solid #ffffff;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        object-fit: cover;
+        margin: 10px 0;
+    }
+    
+    .livreur-name {
+        font-size: 1.1em;
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #333;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.9em;
+        margin: 5px 0;
+    }
+    
+    .status-available {
+        background-color: #e3f2e6;
+        color: #2da44e;
+    }
+    
+    .status-busy {
+        background-color: #ffebe6;
+        color: #cf222e;
+    }
+    
+    .adresse-container {
+        margin-top: 10px;
+        padding: 8px;
+        background-color: #f5f5f5;
+        border-radius: 4px;
+        border-left: 4px solid #4a90e2;
+        text-align: left;
+    }
+    
+    .adresse-titre {
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 5px;
+        font-size: 0.9em;
+    }
+    
+    .adresse-texte {
+        color: #666;
+        font-size: 0.8em;
+        margin: 0;
+        word-wrap: break-word;
+    }
+</style>
+
+<div class="container-fluid">
+    <h4 class="mb-4">Disponibilité Des Livreurs</h4>
+    
+    <!-- Contrôles de la carte -->
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <label for="mapType" class="form-label">Type de carte:</label>
+                    <select id="mapType" class="form-select">
+                        <option value="map">Plan</option>
+                        <option value="satellite">Satellite</option>
+                        <option value="hybrid">Hybride</option>
+                    </select>
+                </div>
+                <div class="col-md-6 d-flex align-items-end">
+                    <button id="refreshPositions" class="btn btn-primary">
+                        <i class="bx bx-refresh"></i> Actualiser les positions
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="map"></div>
+
+    <!-- Vue Mobile -->
+    <div class="mobile-view">
+        {% for livreur in livreur_disponible %}
+            <div class="course-card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="online-status {% if livreur.user.is_online %}online{% else %}offline{% endif %}"></span>
+                            <strong>{{ livreur.user.username }}</strong>
+                        </div>
+                        <span class="badge {% if livreur.is_available == 'LIBRE' %}bg-label-success{% else %}bg-label-danger{% endif %}">
+                            {{ livreur.is_available }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <div class="info-label">Email</div>
+                        <div class="info-value">{{ livreur.user.email }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Contact</div>
+                        <div class="info-value">{{ livreur.user.Contact }}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Dernière connexion</div>
+                        <div class="info-value">{{ livreur.user.last_login|date:"d/m/Y H:i" }}</div>
+                    </div>
+                     
+                    <div class="action-buttons mt-3">
+                        <a href="#" class="btn btn-primary btn-sm">
+                            <i class="bx bx-detail"></i> Détails
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="text-center py-4">
+                <p>Aucun livreur disponible</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Vue Desktop -->
+    <div class="desktop-view">
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Photo</th>
+                            <th>Nom</th>
+                            <th>Contact</th>
+                            <th>Dernière connexion</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for livreur in livreur_disponible %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>
+                                    <ul class="list-unstyled users-list m-0 avatar-group d-flex align-items-center">
+                                        <li data-bs-toggle="tooltip"
+                                            data-popup="tooltip-custom"
+                                            data-bs-placement="top"
+                                            class="avatar avatar-xs pull-up"
+                                            title="{{ livreur.user.username }}">
+                                            {% if livreur.user.photos %}
+                                                <img src="{{ livreur.user.photos.url }}" 
+                                                    alt="Avatar de {{ livreur.user.username }}" 
+                                                    class="rounded-circle" />
+                                            {% else %}
+                                                <img src="{% static 'images/default-avatar.png' %}" 
+                                                    alt="Avatar par défaut" 
+                                                    class="rounded-circle" />
+                                            {% endif %}
+                                        </li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <span class="online-status {% if livreur.user.is_online %}online{% else %}offline{% endif %}"></span>
+                                    {{ livreur.user.username }}
+                                </td>
+                                <td>{{ livreur.user.Contact }}</td>
+                                <td>{{ livreur.user.last_login|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    <span class="badge {% if livreur.is_available == 'LIBRE' %}bg-label-success{% else %}bg-label-danger{% endif %}">
+                                        {{ livreur.is_available }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="#" class="btn btn-primary btn-sm">
+                                        <i class="bx bx-detail"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center">Aucun livreur disponible</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Variables globales
+let yandexMap;
+let clusterer;
+const placemarks = [];
+
+// Initialisation de Yandex Maps
+ymaps.ready(function () {
+    // Créer la carte avec une position par défaut (Abidjan)
+    yandexMap = new ymaps.Map('map', {
+        center: [5.3364, -4.0267], // Coordonnées d'Abidjan
+        zoom: 10,
+        controls: ['zoomControl', 'searchControl', 'typeSelector', 'fullscreenControl', 'geolocationControl']
+    });
+
+    // Créer un clusterer pour regrouper les marqueurs proches
+    clusterer = new ymaps.Clusterer({
+        preset: 'islands#invertedVioletClusterIcons',
+        groupByCoordinates: false,
+        clusterDisableClickZoom: false,
+        clusterHideIconOnBalloonOpen: false,
+        geoObjectHideIconOnBalloonOpen: false
+    });
+
+    // Ajouter le clusterer à la carte
+    yandexMap.geoObjects.add(clusterer);
+
+    // Charger les positions des livreurs
+    loadLivreurPositions();
+
+    // Gérer le changement de type de carte
+    document.getElementById('mapType').addEventListener('change', function(e) {
+        const mapType = e.target.value;
+        yandexMap.setType('yandex#' + mapType);
+    });
+
+    // Gérer le bouton d'actualisation
+    document.getElementById('refreshPositions').addEventListener('click', function() {
+        loadLivreurPositions();
+    });
+});
+
+// Fonction pour obtenir l'adresse à partir des coordonnées avec Yandex Geocoder
+async function getAddress(lat, lon) {
+    try {
+        const geocoder = ymaps.geocode([lat, lon]);
+        const result = await geocoder;
+        const firstGeoObject = result.geoObjects.get(0);
+        return firstGeoObject ? firstGeoObject.getAddressLine() : "Adresse non disponible";
+    } catch (error) {
+        console.error("Erreur lors de la récupération de l'adresse :", error);
+        return "Adresse non disponible";
+    }
+}
+
+// Fonction pour créer un ballon personnalisé
+function createCustomBalloon(livreur, adresse) {
+  const iconUrl = livreur.photo ? livreur.photo : '{% static "images/default-avatar.png" %}';
+  console.log(livreur.is_available);
+  return `
+      <div class="livreur-balloon">
+          <div class="livreur-name">${livreur.username}</div>
+          <img src="${iconUrl}" alt="Photo de ${livreur.username}" class="livreur-photo">
+          <div class="status-badge ${livreur.is_available == 'LIBRE' ? 'bg-success' : 'bg-danger'}">
+              ${livreur.is_available == 'LIBRE' ? '🟢 LIBRE' : '🔴 OCCUPER'}
+          </div>
+          <div class="adresse-container">
+              <div class="adresse-titre">📍 Adresse actuelle</div>
+              <div class="adresse-texte">${adresse}</div>
+          </div>
+      </div>
+  `;
+}
+// Version améliorée de la fonction createCustomIcon avec gestion d'erreur
+function createCustomIcon(livreur) {
+  try {
+      const iconUrl = livreur.photo ? livreur.photo : '{% static "assets/img/avatars/1.png" %}';
+      const username = livreur.user ? livreur.user.username : (livreur.username || 'Livreur');
+      const isAvailable = livreur.is_available === 'LIBRE';
+      const statusColor = isAvailable ? '#28a745' : '#dc3545';
+      const statusIcon = isAvailable ? '🟢' : '🔴';
+      
+      // Créer le layout HTML personnalisé
+      const htmlLayout = ymaps.templateLayoutFactory.createClass(`
+          <div class="custom-marker-card" style="
+              position: relative;
+              background: white;
+              border-radius: 12px;
+              box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+              padding: 8px;
+              min-width: 120px;
+              text-align: center;
+              border: 2px solid ${statusColor};
+              transform: translate(-50%, -100%);
+              margin-top: -5px;
+          ">
+              <div class="marker-photo-container" style="
+                  position: relative;
+                  margin-bottom: 8px;
+              ">
+                  <img src="${iconUrl}" alt="${username}" style="
+                      width: 50px;
+                      height: 50px;
+                      border-radius: 50%;
+                      object-fit: cover;
+                      border: 2px solid white;
+                      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+                  " onerror="this.src='{% static "images/default-avatar.png" %}'">
+                  <div class="status-indicator" style="
+                      position: absolute;
+                      top: -2px;
+                      right: 8px;
+                      width: 16px;
+                      height: 16px;
+                      background: ${statusColor};
+                      border: 2px solid white;
+                      border-radius: 50%;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      font-size: 8px;
+                  ">
+                      ${statusIcon}
+                  </div>
+              </div>
+              <div class="marker-info" style="
+                  font-size: 11px;
+                  font-weight: bold;
+                  color: #333;
+                  margin-bottom: 4px;
+                  white-space: nowrap;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  max-width: 100px;
+              ">
+                  ${username}
+              </div>
+              <div class="marker-status" style="
+                  font-size: 9px;
+                  color: ${statusColor};
+                  font-weight: 600;
+                  text-transform: uppercase;
+              ">
+                  ${isAvailable ? 'Libre' : 'Occupé'}
+              </div>
+              <div class="marker-arrow" style="
+                  position: absolute;
+                  bottom: -8px;
+                  left: 50%;
+                  transform: translateX(-50%);
+                  width: 0;
+                  height: 0;
+                  border-left: 8px solid transparent;
+                  border-right: 8px solid transparent;
+                  border-top: 8px solid ${statusColor};
+              "></div>
+          </div>
+      `);
+      
+      return {
+          iconLayout: htmlLayout,
+          iconShape: {
+              type: 'Rectangle',
+              coordinates: [[-60, -80], [60, 0]]
+          }
+      };
+  } catch (error) {
+      console.error("Erreur lors de la création de l'icône personnalisée:", error);
+      // Retourner une icône par défaut en cas d'erreur
+      return {
+          preset: 'islands#darkGreenCircleDotIcon'
+      };
+  }
+}
+// Fonction pour récupérer et afficher les positions des livreurs (VERSION CORRIGÉE)
+async function loadLivreurPositions() {
+  try {
+      // Afficher un indicateur de chargement
+      const refreshBtn = document.getElementById('refreshPositions');
+      refreshBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Chargement...';
+      refreshBtn.disabled = true;
+
+      const response = await fetch('/api/livreur-positions/');
+      const data = await response.json();
+
+      // Nettoyer les anciens marqueurs
+      clusterer.removeAll();
+      placemarks.length = 0;
+
+      if (data.length === 0) {
+          console.log("Aucun livreur trouvé");
+          alert("Aucun livreur disponible actuellement");
+          return;
+      }
+
+      // Créer les marqueurs pour chaque livreur AVANT de calculer les limites
+      for (const livreur of data) {
+          try {
+              // Vérifier que les coordonnées sont valides
+              if (!livreur.latitude || !livreur.longitude || 
+                  isNaN(livreur.latitude) || isNaN(livreur.longitude)) {
+                  console.warn(`Coordonnées invalides pour ${livreur.username}`);
+                  continue;
+              }
+
+              // Obtenir l'adresse
+              const adresse = livreur.adresse || await getAddress(livreur.latitude, livreur.longitude);
+              
+              // Créer les options d'icône personnalisée
+              const customIconOptions = createCustomIcon(livreur);
+              
+              // Créer le marqueur avec l'icône personnalisée
+              const placemark = new ymaps.Placemark(
+                  [parseFloat(livreur.latitude), parseFloat(livreur.longitude)],
+                  {
+                      balloonContent: createCustomBalloon(livreur, adresse),
+                      hintContent: `${livreur.username} - ${livreur.is_available === 'LIBRE' ? 'Libre' : 'Occupé'}`
+                  },
+                  customIconOptions
+              );
+
+              // Ajouter des événements au marqueur
+              placemark.events.add('click', function() {
+                  yandexMap.setCenter([livreur.latitude, livreur.longitude], 16);
+              });
+
+              // Ajouter un effet de survol
+              placemark.events.add('mouseenter', function() {
+                  placemark.options.set('zIndex', 1000);
+              });
+
+              placemark.events.add('mouseleave', function() {
+                  placemark.options.set('zIndex', 100);
+              });
+
+              placemarks.push(placemark);
+              
+          } catch (error) {
+              console.error(`Erreur lors de la création du marqueur pour ${livreur.username}:`, error);
+          }
+      }
+
+      // Ajouter tous les marqueurs au clusterer
+      if (placemarks.length > 0) {
+          clusterer.add(placemarks);
+
+          // Ajuster la vue selon le nombre de livreurs
+          if (placemarks.length === 1) {
+              // Un seul livreur : centrer dessus
+              const coords = placemarks[0].geometry.getCoordinates();
+              yandexMap.setCenter(coords, 15);
+          } else {
+              // Plusieurs livreurs : calculer les limites avec gestion d'erreur
+              try {
+                  const bounds = clusterer.getBounds();
+                  if (bounds) {
+                      yandexMap.setBounds(bounds, {
+                          checkZoomRange: true,
+                          zoomMargin: [50, 50, 50, 50]
+                      });
+                  } else {
+                      // Fallback : calculer manuellement les limites
+                      const coordinates = placemarks.map(p => p.geometry.getCoordinates());
+                      const manualBounds = ymaps.util.bounds.fromPoints(coordinates);
+                      yandexMap.setBounds(manualBounds, {
+                          checkZoomRange: true,
+                          zoomMargin: [50, 50, 50, 50]
+                      });
+                  }
+              } catch (boundsError) {
+                  console.warn("Erreur lors du calcul des limites, utilisation du centre par défaut", boundsError);
+                  // En cas d'erreur, centrer sur Abidjan avec un zoom adapté
+                  yandexMap.setCenter([5.3364, -4.0267], 11);
+              }
+          }
+      } else {
+          console.warn("Aucun marqueur valide créé");
+          // Centrer sur Abidjan par défaut
+          yandexMap.setCenter([5.3364, -4.0267], 10);
+      }
+
+      console.log(`${placemarks.length} livreur(s) chargé(s) avec succès sur ${data.length} total`);
+
+  } catch (error) {
+      console.error("Erreur lors du chargement des positions :", error);
+      alert("Erreur lors du chargement des positions des livreurs");
+      
+      // En cas d'erreur générale, revenir à la vue par défaut
+      if (yandexMap) {
+          yandexMap.setCenter([5.3364, -4.0267], 10);
+      }
+  } finally {
+      // Restaurer le bouton
+      const refreshBtn = document.getElementById('refreshPositions');
+      refreshBtn.innerHTML = '<i class="bx bx-refresh"></i> Actualiser les positions';
+      refreshBtn.disabled = false;
+  }
+}
+
+// Fonction auxiliaire pour valider les coordonnées
+function isValidCoordinate(lat, lon) {
+  return lat !== null && lon !== null && 
+         !isNaN(lat) && !isNaN(lon) && 
+         lat >= -90 && lat <= 90 && 
+         lon >= -180 && lon <= 180;
+}
+
+// Fonction utilitaire pour centrer la carte sur un livreur spécifique
+function centerOnLivreur(latitude, longitude) {
+    if (yandexMap) {
+        yandexMap.setCenter([latitude, longitude], 16);
+    }
+}
+
+// Fonction pour afficher/masquer les livreurs selon leur statut
+function filterLivreurs(showAvailable = true, showBusy = true) {
+    placemarks.forEach(placemark => {
+        const isAvailable = placemark.properties.get('hintContent').includes('Libre');
+        if ((isAvailable && showAvailable) || (!isAvailable && showBusy)) {
+            placemark.options.set('visible', true);
+        } else {
+            placemark.options.set('visible', false);
+        }
+    });
+}
+
+// Actualiser automatiquement les positions toutes les 30 secondes
+setInterval(loadLivreurPositions, 30000);
+</script>
+
+{% endblock %}

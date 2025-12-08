@@ -1,0 +1,757 @@
+{% extends 'base.html' %}
+{% block page_name %}creation   de demande{% endblock %}
+{% block content %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nouvelle Demande de Livraison</title>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+    <style>
+        :root {
+            --primary: #000080;
+            --secondary: #FF6B00;
+            --light: #FFF9E5;
+            --dark: #1A1A1A;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--light) 0%, #fff 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--primary);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .form-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 128, 0.1);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: var(--dark);
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .form-group label .required {
+            color: var(--secondary);
+        }
+
+        .input-with-icon {
+            position: relative;
+        }
+
+        .input-with-icon input,
+        .input-with-icon textarea,
+        .input-with-icon select {
+            width: 100%;
+            padding: 12px 45px 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .input-with-icon input:focus,
+        .input-with-icon textarea:focus,
+        .input-with-icon select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 0, 128, 0.1);
+        }
+
+        .input-with-icon .icon-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--secondary);
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .input-with-icon .icon-btn:hover {
+            background: var(--primary);
+            transform: translateY(-50%) scale(1.05);
+        }
+
+        .input-with-icon textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .map-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 128, 0.1);
+            position: sticky;
+            top: 20px;
+        }
+
+        #map {
+            height: 500px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .map-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: var(--light);
+            border-radius: 10px;
+            border-left: 4px solid var(--secondary);
+        }
+
+        .map-info p {
+            margin: 5px 0;
+            color: var(--dark);
+            font-size: 0.9rem;
+        }
+
+        .map-info strong {
+            color: var(--primary);
+        }
+
+        .type-course {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .type-option {
+            position: relative;
+        }
+
+        .type-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+
+        .type-option label {
+            display: block;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .type-option input[type="radio"]:checked + label {
+            border-color: var(--secondary);
+            background: var(--light);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 0, 0.2);
+        }
+
+        .type-option label .type-title {
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+
+        .type-option label .type-desc {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .photos-upload {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .photo-upload {
+            position: relative;
+            height: 150px;
+            border: 2px dashed #e0e0e0;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #fafafa;
+        }
+
+        .photo-upload:hover {
+            border-color: var(--secondary);
+            background: var(--light);
+        }
+
+        .photo-upload input[type="file"] {
+            display: none;
+        }
+
+        .photo-upload .upload-icon {
+            font-size: 2rem;
+            color: var(--secondary);
+            margin-bottom: 10px;
+        }
+
+        .photo-upload .upload-text {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .photo-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 128, 0.3);
+        }
+
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 45px;
+            background: white;
+            border: 2px solid var(--primary);
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-result-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: all 0.2s;
+        }
+
+        .search-result-item:hover {
+            background: var(--light);
+            color: var(--primary);
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert-info {
+            background: #e3f2fd;
+            color: #1976d2;
+            border-left: 4px solid #1976d2;
+        }
+
+        .alert-success {
+            background: #e8f5e9;
+            color: #388e3c;
+            border-left: 4px solid #388e3c;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .map-container {
+                position: relative;
+                top: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📦 Nouvelle Demande de Livraison</h1>
+            <p>Remplissez le formulaire et positionnez vos points sur la carte</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Formulaire -->
+            <div class="form-section">
+                <form id="deliveryForm" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="alert alert-info" id="locationAlert">
+                        📍 Recherche de votre position en cours...
+                    </div>
+
+                    <h2 class="section-title">📍 Informations de livraison</h2>
+
+                    <div class="form-group">
+                        <label for="adresse_depart">Adresse de départ <span class="required">*</span></label>
+                        <div class="input-with-icon">
+                            <input type="text" id="adresse_depart" name="adresse_depart" placeholder="Entrez l'adresse de départ" required autocomplete="off">
+                            <button type="button" class="icon-btn" onclick="getMyLocation('depart')" title="Ma position">📍</button>
+                            <div id="search-results-depart" class="search-results" style="display: none;"></div>
+                        </div>
+                        <input type="hidden" id="latitude_depart" name="latitude_depart">
+                        <input type="hidden" id="longitude_depart" name="longitude_depart">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="adresse_destination">Adresse de destination <span class="required">*</span></label>
+                        <div class="input-with-icon">
+                            <input type="text" id="adresse_destination" name="adresse_destination" placeholder="Entrez l'adresse de destination" required autocomplete="off">
+                            <button type="button" class="icon-btn" onclick="searchLocation('destination')" title="Rechercher">🔍</button>
+                            <div id="search-results-destination" class="search-results" style="display: none;"></div>
+                        </div>
+                        <input type="hidden" id="latitude_destination" name="latitude_destination">
+                        <input type="hidden" id="longitude_destination" name="longitude_destination">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="Contact_destinateur">Contact du destinataire</label>
+                        <input type="tel" id="Contact_destinateur" name="Contact_destinateur" placeholder="+225 XX XX XX XX XX">
+                    </div>
+
+                    <h2 class="section-title">📦 Informations du colis</h2>
+
+                    <div class="form-group">
+                        <label for="description_colis">Description du colis <span class="required">*</span></label>
+                        <textarea id="description_colis" name="description_colis" placeholder="Décrivez le contenu de votre colis..." required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="poids_colis">Poids (kg) <span class="required">*</span></label>
+                        <input type="number" id="poids_colis" name="poids_colis" step="0.01" min="0.01" placeholder="Ex: 2.5" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="valeur_colis">Valeur (FCFA) <span class="required">*</span></label>
+                        <input type="number" id="valeur_colis" name="valeur_colis" step="0.01" min="0" placeholder="Ex: 50000" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="date_recuperation">Date de récupération <span class="required">*</span></label>
+                        <input type="datetime-local" id="date_recuperation" name="date_recuperation" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Type de course <span class="required">*</span></label>
+                        <div class="type-course">
+                            <div class="type-option">
+                                <input type="radio" id="classique" name="type_course" value="CLASSIQUE" checked>
+                                <label for="classique">
+                                    <div class="type-title">🚴 Classique</div>
+                                    <div class="type-desc">Livraison standard</div>
+                                </label>
+                            </div>
+                            <div class="type-option">
+                                <input type="radio" id="expresse" name="type_course" value="EXPRESSE">
+                                <label for="expresse">
+                                    <div class="type-title">⚡ Express</div>
+                                    <div class="type-desc">Livraison rapide</div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2 class="section-title">📸 Photos du colis</h2>
+
+                    <div class="photos-upload">
+                        <label class="photo-upload" for="photo_colis1">
+                            <input type="file" id="photo_colis1" name="photo_colis1" accept="image/*" onchange="previewPhoto(this, 1)">
+                            <div class="upload-icon">📷</div>
+                            <div class="upload-text">Photo 1</div>
+                        </label>
+                        <label class="photo-upload" for="photo_colis2">
+                            <input type="file" id="photo_colis2" name="photo_colis2" accept="image/*" onchange="previewPhoto(this, 2)">
+                            <div class="upload-icon">📷</div>
+                            <div class="upload-text">Photo 2</div>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="instructions">Instructions supplémentaires</label>
+                        <textarea id="instructions" name="instructions" placeholder="Ajoutez des instructions spécifiques pour le livreur..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-submit">🚀 Créer la demande</button>
+                </form>
+            </div>
+
+            <!-- Carte -->
+            <div class="map-container">
+                <h2 class="section-title">🗺️ Carte de livraison</h2>
+                <div id="map"></div>
+                <div class="map-info">
+                    <p><strong>📍 Départ:</strong> <span id="info-depart">Non défini</span></p>
+                    <p><strong>🎯 Destination:</strong> <span id="info-destination">Non défini</span></p>
+                    <p><strong>📏 Distance:</strong> <span id="info-distance">--</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+    <script>
+        const API_KEY = 'pk.73485bb1846f5a96d8a0dd24fc100f13';
+        let map, departMarker, destinationMarker;
+        let searchTimeout;
+
+        // Initialisation de la carte avec Mapbox
+        mapboxgl.accessToken = 'pk.eyJ1IjoiaWJyYWsiLCJhIjoiY21oYnV4M3M5MDZqMTJyc2E0enFpbTlwaCJ9.OH_RYh--XO3vn363pKRlRg';
+        
+        map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v12',
+            center: [-4.0083, 5.3600], // Abidjan par défaut
+            zoom: 12
+        });
+
+        // Ajouter les contrôles de navigation
+        map.addControl(new mapboxgl.NavigationControl());
+
+        // Créer des éléments HTML pour les marqueurs personnalisés
+        function createMarkerElement(type) {
+            const el = document.createElement('div');
+            el.className = 'custom-marker';
+            el.style.width = '40px';
+            el.style.height = '40px';
+            el.style.borderRadius = '50%';
+            el.style.cursor = 'pointer';
+            el.style.display = 'flex';
+            el.style.alignItems = 'center';
+            el.style.justifyContent = 'center';
+            el.style.fontSize = '24px';
+            el.style.boxShadow = '0 4px 10px rgba(0,0,0,0.3)';
+            
+            if (type === 'depart') {
+                el.style.background = '#000080';
+                el.innerHTML = '📍';
+            } else {
+                el.style.background = '#FF6B00';
+                el.innerHTML = '🎯';
+            }
+            
+            return el;
+        }
+
+        // Obtenir la position actuelle
+        function getMyLocation(type) {
+            const alert = document.getElementById('locationAlert');
+            alert.style.display = 'block';
+            alert.textContent = '📍 Recherche de votre position...';
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        
+                        // Géocodage inversé
+                        fetch(`https://us1.locationiq.com/v1/reverse.php?key=${API_KEY}&lat=${lat}&lon=${lng}&format=json`)
+                            .then(response => response.json())
+                            .then(data => {
+                                document.getElementById(`adresse_${type}`).value = data.display_name;
+                                document.getElementById(`latitude_${type}`).value = lat;
+                                document.getElementById(`longitude_${type}`).value = lng;
+                                
+                                updateMarker(type, lat, lng, data.display_name);
+                                
+                                alert.className = 'alert alert-success';
+                                alert.textContent = '✅ Position obtenue avec succès !';
+                                setTimeout(() => alert.style.display = 'none', 3000);
+                            });
+                    },
+                    (error) => {
+                        alert.className = 'alert alert-info';
+                        alert.textContent = '❌ Impossible d\'obtenir votre position';
+                        setTimeout(() => alert.style.display = 'none', 3000);
+                    }
+                );
+            }
+        }
+
+        // Recherche d'adresse avec suggestions
+        function setupSearch(type) {
+            const input = document.getElementById(`adresse_${type}`);
+            const resultsDiv = document.getElementById(`search-results-${type}`);
+
+            input.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                const query = this.value.trim();
+
+                if (query.length < 3) {
+                    resultsDiv.style.display = 'none';
+                    return;
+                }
+
+                searchTimeout = setTimeout(() => {
+                    fetch(`https://us1.locationiq.com/v1/autocomplete.php?key=${API_KEY}&q=${encodeURIComponent(query)}&limit=5&countrycodes=ci`)
+                        .then(response => response.json())
+                        .then(data => {
+                            resultsDiv.innerHTML = '';
+                            if (data.length > 0) {
+                                data.forEach(item => {
+                                    const div = document.createElement('div');
+                                    div.className = 'search-result-item';
+                                    div.textContent = item.display_name;
+                                    div.onclick = () => {
+                                        input.value = item.display_name;
+                                        document.getElementById(`latitude_${type}`).value = item.lat;
+                                        document.getElementById(`longitude_${type}`).value = item.lon;
+                                        updateMarker(type, item.lat, item.lon, item.display_name);
+                                        resultsDiv.style.display = 'none';
+                                    };
+                                    resultsDiv.appendChild(div);
+                                });
+                                resultsDiv.style.display = 'block';
+                            } else {
+                                resultsDiv.style.display = 'none';
+                            }
+                        });
+                }, 500);
+            });
+
+            // Fermer les résultats en cliquant ailleurs
+            document.addEventListener('click', function(e) {
+                if (!input.contains(e.target) && !resultsDiv.contains(e.target)) {
+                    resultsDiv.style.display = 'none';
+                }
+            });
+        }
+
+        setupSearch('depart');
+        setupSearch('destination');
+
+        // Mettre à jour les marqueurs
+        function updateMarker(type, lat, lng, address) {
+            const lngLat = [lng, lat];
+            
+            if (type === 'depart') {
+                if (departMarker) departMarker.remove();
+                
+                const el = createMarkerElement('depart');
+                departMarker = new mapboxgl.Marker({
+                    element: el,
+                    draggable: true
+                })
+                .setLngLat(lngLat)
+                .addTo(map);
+                
+                departMarker.on('dragend', function() {
+                    const lngLat = departMarker.getLngLat();
+                    reverseGeocode(lngLat.lat, lngLat.lng, 'depart');
+                });
+                
+                document.getElementById('info-depart').textContent = address;
+            } else {
+                if (destinationMarker) destinationMarker.remove();
+                
+                const el = createMarkerElement('destination');
+                destinationMarker = new mapboxgl.Marker({
+                    element: el,
+                    draggable: true
+                })
+                .setLngLat(lngLat)
+                .addTo(map);
+                
+                destinationMarker.on('dragend', function() {
+                    const lngLat = destinationMarker.getLngLat();
+                    reverseGeocode(lngLat.lat, lngLat.lng, 'destination');
+                });
+                
+                document.getElementById('info-destination').textContent = address;
+            }
+
+            // Centrer la carte
+            if (departMarker && destinationMarker) {
+                const bounds = new mapboxgl.LngLatBounds();
+                bounds.extend(departMarker.getLngLat());
+                bounds.extend(destinationMarker.getLngLat());
+                map.fitBounds(bounds, { padding: 80 });
+                calculateDistance();
+            } else {
+                map.flyTo({ center: lngLat, zoom: 13 });
+            }
+        }
+
+        // Géocodage inversé
+        function reverseGeocode(lat, lng, type) {
+            fetch(`https://us1.locationiq.com/v1/reverse.php?key=${API_KEY}&lat=${lat}&lon=${lng}&format=json`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById(`adresse_${type}`).value = data.display_name;
+                    document.getElementById(`latitude_${type}`).value = lat;
+                    document.getElementById(`longitude_${type}`).value = lng;
+                    document.getElementById(`info-${type}`).textContent = data.display_name;
+                    calculateDistance();
+                });
+        }
+
+        // Calculer la distance
+        function calculateDistance() {
+            if (departMarker && destinationMarker) {
+                const from = departMarker.getLngLat();
+                const to = destinationMarker.getLngLat();
+                
+                // Calcul de distance (formule de Haversine)
+                const R = 6371; // Rayon de la Terre en km
+                const dLat = (to.lat - from.lat) * Math.PI / 180;
+                const dLon = (to.lng - from.lng) * Math.PI / 180;
+                const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                         Math.cos(from.lat * Math.PI / 180) * Math.cos(to.lat * Math.PI / 180) *
+                         Math.sin(dLon/2) * Math.sin(dLon/2);
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                const distance = (R * c).toFixed(2);
+                
+                document.getElementById('info-distance').textContent = `${distance} km`;
+
+                // Tracer la ligne
+                if (map.getSource('route')) {
+                    map.removeLayer('route');
+                    map.removeSource('route');
+                }
+
+                map.addSource('route', {
+                    'type': 'geojson',
+                    'data': {
+                        'type': 'Feature',
+                        'properties': {},
+                        'geometry': {
+                            'type': 'LineString',
+                            'coordinates': [
+                                [from.lng, from.lat],
+                                [to.lng, to.lat]
+                            ]
+                        }
+                    }
+                });
+
+                map.addLayer({
+                    'id': 'route',
+                    'type': 'line',
+                    'source': 'route',
+                    'layout': {
+                        'line-join': 'round',
+                        'line-cap': 'round'
+                    },
+                    'paint': {
+                        'line-color': '#FF6B00',
+                        'line-width': 4,
+                        'line-opacity': 0.7,
+                        'line-dasharray': [2, 2]
+                    }
+                });
+            }
+        }
+
+        // Prévisualisation des photos
+        function previewPhoto(input, num) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const label = input.parentElement;
+                    label.style.backgroundImage = `url(${e.target.result})`;
+                    label.style.backgroundSize = 'cover';
+                    label.style.backgroundPosition = 'center';
+                    label.innerHTML = '';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Initialisation au chargement
+        window.onload = function() {
+            getMyLocation('depart');
+            
+            // Date minimale = maintenant
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('date_recuperation').min = now.toISOString().slice(0, 16);
+        };
+    </script>
+</body>
+</html>
+{% endblock %}

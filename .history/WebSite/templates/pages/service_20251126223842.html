@@ -1,0 +1,671 @@
+{% extends 'layouts/base_site.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-color: #000080;
+        --primary-gradient: linear-gradient(135deg, #000080, #1e3c72, #2a5298);
+        --secondary-color: rgb(255, 172, 7);
+        --text-light: #f5f5dc;
+        --font-primary: 'Inter', sans-serif;
+        --font-secondary: 'Poppins', sans-serif;
+        --border-radius: 12px;
+        --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Hero Section */
+    .hero-header {
+        background: var(--primary-gradient) !important;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+        opacity: 0.3;
+    }
+
+    .hero-header .container {
+        position: relative;
+        z-index: 1;
+    }
+
+    .breadcrumb-item a {
+        text-decoration: none;
+        transition: var(--transition);
+    }
+
+    .breadcrumb-item a:hover {
+        color: var(--secondary-color) !important;
+    }
+
+    /* Section Title */
+    .section-title-badge {
+        background: var(--primary-gradient);
+        color: white !important;
+        border: none !important;
+        box-shadow: 0 4px 10px rgba(0, 0, 128, 0.2);
+    }
+
+    /* Service Cards */
+    .service-item {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+        height: 100%;
+        padding: 30px 20px;
+    }
+
+    .service-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: var(--primary-gradient);
+        transform: scaleX(0);
+        transition: var(--transition);
+    }
+
+    .service-item:hover::before {
+        transform: scaleX(1);
+    }
+
+    .service-item:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0, 0, 128, 0.2);
+    }
+
+    .service-icon {
+        background: var(--primary-gradient);
+        color: white;
+        width: 70px;
+        height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        margin: 0 auto 20px;
+        transition: var(--transition);
+    }
+
+    .service-item:hover .service-icon {
+        background: var(--secondary-color);
+        transform: rotate(360deg) scale(1.1);
+    }
+
+    .service-item .btn {
+        background: var(--primary-color);
+        color: white;
+        border-radius: 25px;
+        border: none;
+        padding: 10px 30px;
+        transition: var(--transition);
+    }
+
+    .service-item .btn:hover {
+        background: var(--secondary-color);
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(255, 172, 7, 0.4);
+    }
+
+    /* Modal Styling */
+    .modal-content {
+        border-radius: var(--border-radius);
+        border: none;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-header {
+        background: var(--primary-gradient);
+        color: white;
+        border-radius: var(--border-radius) var(--border-radius) 0 0;
+        border-bottom: 3px solid var(--secondary-color);
+    }
+
+    .modal-header .btn-close {
+        filter: brightness(0) invert(1);
+    }
+
+    .modal-body {
+        padding: 30px;
+        font-size: 1.05rem;
+        line-height: 1.7;
+    }
+
+    .modal-footer {
+        border-top: 1px solid #e0e0e0;
+        padding: 20px 30px;
+    }
+
+    .modal-footer .btn-secondary {
+        background: var(--primary-color);
+        border: none;
+        padding: 10px 30px;
+        border-radius: 25px;
+        transition: var(--transition);
+    }
+
+    .modal-footer .btn-secondary:hover {
+        background: var(--secondary-color);
+        transform: translateY(-2px);
+    }
+
+    /* Tarifs Section */
+    .tarifs-section {
+        padding: 80px 0;
+        background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
+    }
+
+    .tarifs-section h2 {
+        text-align: center;
+        color: var(--primary-color);
+        font-family: var(--font-secondary);
+        font-size: 2.5rem;
+        margin-bottom: 20px;
+        font-weight: 700;
+    }
+
+    .tarifs-section > .container > p {
+        text-align: center;
+        color: #666;
+        font-size: 1.1rem;
+        margin-bottom: 50px;
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .tarifs-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin: 40px 0;
+        background: white;
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: var(--box-shadow);
+    }
+
+    .tarifs-table thead {
+        background: var(--primary-gradient) !important;
+    }
+
+    .tarifs-table thead th {
+        padding: 20px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 1.1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .tarifs-table tbody tr {
+        transition: var(--transition);
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .tarifs-table tbody tr:hover {
+        background: rgba(0, 0, 128, 0.05);
+        transform: scale(1.01);
+    }
+
+    .tarifs-table tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    .tarifs-table tbody td {
+        padding: 18px 20px;
+        color: #333;
+        font-size: 1rem;
+    }
+
+    .tarifs-table tbody td:last-child {
+        font-weight: 700;
+        color: var(--secondary-color);
+        font-size: 1.1rem;
+    }
+
+    .tarifs-infos {
+        background: white;
+        padding: 35px;
+        border-radius: var(--border-radius);
+        margin: 30px 0;
+        box-shadow: var(--box-shadow);
+        border-left: 5px solid var(--secondary-color);
+    }
+
+    .tarifs-infos p strong {
+        color: var(--primary-color);
+        font-size: 1.2rem;
+        display: block;
+        margin-bottom: 15px;
+    }
+
+    .tarifs-infos ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .tarifs-infos ul li {
+        padding: 12px 0;
+        color: #555;
+        font-size: 1.05rem;
+        line-height: 1.6;
+    }
+
+    .tarifs-contact {
+        background: var(--primary-gradient) !important;
+        padding: 30px !important;
+        border-radius: var(--border-radius);
+        text-align: center;
+        box-shadow: var(--box-shadow);
+        margin-top: 40px !important;
+    }
+
+    .tarifs-contact p {
+        margin: 10px 0;
+        font-size: 1.1rem;
+    }
+
+    .tarifs-contact a {
+        color: var(--secondary-color);
+        text-decoration: none;
+        font-weight: 600;
+        transition: var(--transition);
+    }
+
+    .tarifs-contact a:hover {
+        color: white;
+        text-decoration: underline;
+    }
+
+    /* Testimonial Section */
+    .testimonial-item {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 30px;
+        box-shadow: var(--box-shadow);
+        border-left: 4px solid var(--secondary-color);
+        transition: var(--transition);
+    }
+
+    .testimonial-item:hover {
+        box-shadow: 0 15px 40px rgba(0, 0, 128, 0.15);
+        transform: translateY(-5px);
+    }
+
+    .testimonial-item .fa-quote-left {
+        color: var(--secondary-color);
+    }
+
+    .testimonial-item img {
+        border: 3px solid var(--secondary-color);
+    }
+
+    /* Buttons */
+    .btn-primary {
+        background: var(--primary-gradient);
+        border: none;
+        transition: var(--transition);
+    }
+
+    .btn-primary:hover {
+        background: var(--secondary-color);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 172, 7, 0.4);
+    }
+
+    /* Animations */
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    .animated {
+        animation-duration: 1s;
+        animation-fill-mode: both;
+    }
+
+    .slideInRight {
+        animation-name: slideInRight;
+    }
+
+    .fadeIn {
+        animation-name: fadeIn;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .tarifs-section h2 {
+            font-size: 2rem;
+        }
+
+        .tarifs-table {
+            font-size: 0.9rem;
+        }
+
+        .tarifs-table thead th,
+        .tarifs-table tbody td {
+            padding: 12px 10px;
+        }
+
+        .tarifs-infos {
+            padding: 25px;
+        }
+    }
+</style>
+
+<!-- Hero Start -->
+<div class="container-fluid pt-5 hero-header mb-5">
+    <div class="container pt-5">
+        <div class="row g-5 pt-5">
+            <div class="col-lg-6 align-self-center text-center text-lg-start mb-lg-5">
+                <h1 class="display-4 text-white mb-4 animated slideInRight fw-bold" id="typingTextTitle"></h1>                     
+                <script>
+                    const text = "Nos services";
+                    let index = 0;
+                
+                    function typeText() {
+                        if (index < text.length) {
+                            document.getElementById("typingTextTitle").innerHTML += text.charAt(index);
+                            index++;
+                            setTimeout(typeText, 50);
+                        }
+                    }
+                
+                    window.onload = typeText;
+                </script>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb justify-content-center justify-content-lg-start mb-0">
+                        <li class="breadcrumb-item"><a class="text-white" href="{% url 'Accueil' %}">Accueil</a></li>
+                        <li class="breadcrumb-item text-white active" aria-current="page">Nos Services</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="col-lg-6 align-self-end text-center text-lg-end">
+                <img class="img-fluid animated fadeIn" src="{% static 'site/img/livreur.png' %}" alt="Livreur professionnel" style="max-height: 500px;">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Service Start -->
+<div class="container-fluid bg-light mt-5 py-5">
+    <div class="container py-5">
+        <div class="row g-5 align-items-center">
+            <div class="col-lg-5 wow fadeIn" data-wow-delay="0.1s">
+                <div class="btn btn-sm section-title-badge rounded-pill px-4 mb-3">Nos Services</div>
+                <h1 class="mb-4">Des solutions de livraison rapides et fiables</h1>
+                <p class="mb-4">Mon Livreur Pro vous propose des services de livraison adaptés à vos besoins professionnels : documents administratifs, commandes e-commerce et livraisons pour restaurants.</p>
+            </div>
+            <div class="col-lg-7">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="row g-4">
+                            <div class="col-12 wow fadeIn" data-wow-delay="0.1s">
+                                <div class="service-item d-flex flex-column justify-content-center text-center rounded">
+                                    <div class="service-icon">
+                                        <i class="fa fa-file-alt fa-2x"></i>
+                                    </div>
+                                    <h5 class="mb-3">Livraison de documents</h5>
+                                    <p>Transport sécurisé et rapide de vos documents administratifs et professionnels.</p>
+                                    <a class="btn px-3 mt-auto mx-auto" href="#" data-bs-toggle="modal" data-bs-target="#modalLivraisonDocuments">Voir plus</a>
+                                </div>
+                            </div>
+                            <div class="col-12 wow fadeIn" data-wow-delay="0.5s">
+                                <div class="service-item d-flex flex-column justify-content-center text-center rounded">
+                                    <div class="service-icon">
+                                        <i class="fa fa-shopping-cart fa-2x"></i>
+                                    </div>
+                                    <h5 class="mb-3">Livraison e-commerce</h5>
+                                    <p>Expéditions rapides pour vos commandes en ligne avec suivi en temps réel.</p>
+                                    <a class="btn px-3 mt-auto mx-auto" href="#" data-bs-toggle="modal" data-bs-target="#modalLivraisonEcommerce">Voir plus</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 pt-md-4">
+                        <div class="row g-4">
+                            <div class="col-12 wow fadeIn" data-wow-delay="0.3s">
+                                <div class="service-item d-flex flex-column justify-content-center text-center rounded">
+                                    <div class="service-icon">
+                                        <i class="fa fa-utensils fa-2x"></i>
+                                    </div>
+                                    <h5 class="mb-3">Livraison pour restaurants</h5>
+                                    <p>Des livreurs dédiés pour garantir des livraisons de repas rapides et efficaces.</p>
+                                    <a class="btn px-3 mt-auto mx-auto" href="#" data-bs-toggle="modal" data-bs-target="#modalLivraisonRestaurants">Voir plus</a>
+                                </div>
+                            </div>
+                            <div class="col-12 wow fadeIn" data-wow-delay="0.7s">
+                                <div class="service-item d-flex flex-column justify-content-center text-center rounded">
+                                    <div class="service-icon">
+                                        <i class="fa fa-truck fa-2x"></i>
+                                    </div>
+                                    <h5 class="mb-3">Colis Express</h5>
+                                    <p>Livraison urgente de vos colis dans les plus brefs délais.</p>
+                                    <a class="btn px-3 mt-auto mx-auto" href="#" data-bs-toggle="modal" data-bs-target="#modalColisExpress">Voir plus</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Modal Livraison de documents -->
+            <div class="modal fade" id="modalLivraisonDocuments" tabindex="-1" aria-labelledby="modalLivraisonDocumentsLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalLivraisonDocumentsLabel"><i class="fa fa-file-alt me-2"></i>Livraison de documents</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Transport sécurisé et rapide de vos documents administratifs et professionnels. Nous garantissons une livraison rapide et dans des conditions optimales de sécurité pour tous vos documents.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Modal Livraison e-commerce -->
+            <div class="modal fade" id="modalLivraisonEcommerce" tabindex="-1" aria-labelledby="modalLivraisonEcommerceLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalLivraisonEcommerceLabel"><i class="fa fa-shopping-cart me-2"></i>Livraison e-commerce</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Expéditions rapides pour vos commandes en ligne avec suivi en temps réel. Nous assurons une prise en charge rapide et une livraison efficace de toutes vos commandes e-commerce, avec un suivi détaillé à chaque étape.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Modal Livraison pour restaurants -->
+            <div class="modal fade" id="modalLivraisonRestaurants" tabindex="-1" aria-labelledby="modalLivraisonRestaurantsLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalLivraisonRestaurantsLabel"><i class="fa fa-utensils me-2"></i>Livraison pour restaurants</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Des livreurs dédiés pour garantir des livraisons de repas rapides et efficaces. Nous nous assurons que vos repas arrivent toujours chauds et dans les meilleurs délais.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Modal Colis Express -->
+            <div class="modal fade" id="modalColisExpress" tabindex="-1" aria-labelledby="modalColisExpressLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalColisExpressLabel"><i class="fa fa-truck me-2"></i>Colis Express</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Livraison urgente de vos colis dans les plus brefs délais. Nous vous garantissons une prise en charge rapide et une livraison express, même pour les colis les plus urgents.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tarifs Section -->
+<section id="tarifs" class="tarifs-section">
+    <div class="container">
+        <h2>Tarifs de Livraison</h2>
+        <p>Chez <strong>Mon Livreur Pro</strong>, nous proposons des tarifs transparents et compétitifs pour assurer des livraisons rapides et fiables.</p>
+
+        <table class="tarifs-table">
+            <thead>
+                <tr>
+                    <th>Départ</th>
+                    <th>Destination</th>
+                    <th>Tarif (FCFA)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Grand-Bassam</td>
+                    <td>Cocody</td>
+                    <td>2 000</td>
+                </tr>
+                <tr>
+                    <td>Grand-Bassam</td>
+                    <td>Yopougon</td>
+                    <td>3 500</td>
+                </tr>
+                <tr>
+                    <td>Grand-Bassam</td>
+                    <td>Marcory</td>
+                    <td>2 000</td>
+                </tr>
+                <tr>
+                    <td>Grand-Bassam</td>
+                    <td>Treichville</td>
+                    <td>2 000</td>
+                </tr>
+                <tr>
+                    <td>Grand-Bassam</td>
+                    <td>Bingerville</td>
+                    <td>4 000</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="tarifs-infos">
+            <p><strong>Options supplémentaires :</strong></p>
+            <ul>
+                <li>✅ <strong>Livraison Express</strong> (+500 FCFA) : Recevez votre colis en moins d'une heure.</li>
+                <li>✅ <strong>Livraison de nuit</strong> (+1000 FCFA) : Disponible après 21h.</li>
+                <li>✅ <strong>Colis volumineux</strong> : Contactez-nous pour un devis personnalisé.</li>
+            </ul>
+        </div>
+
+        <div class="tarifs-contact">
+            <p><strong>Vous ne trouvez pas votre commune ?</strong></p>
+            <p>Contactez-nous au <a href="tel:+2250102331740">+225 01 02 33 17 40</a> ou via notre <a href="{% url 'Contact' %}">formulaire en ligne</a>.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonial Start -->
+<div class="container-xxl py-5">
+    <div class="container py-5">
+        <div class="row g-5">
+            <div class="col-lg-5 wow fadeIn" data-wow-delay="0.1s">
+                <div class="btn btn-sm section-title-badge rounded-pill px-4 mb-3">Témoignages</div>
+                <h1 class="mb-4">Ce Que Disent Nos Clients !</h1>
+                <p class="mb-4">Nos clients apprécient la rapidité, la fiabilité et le professionnalisme de nos services de livraison. Découvrez leurs expériences et comment "Mon Livreur Pro" a facilité leurs envois.</p>
+                <a class="btn btn-primary rounded-pill px-4" href="">Lire Plus</a>
+            </div>
+            <div class="col-lg-7 wow fadeIn" data-wow-delay="0.5s">
+                <div class="owl-carousel testimonial-carousel border-start" style="border-color: var(--secondary-color) !important; border-width: 3px !important;">
+                    <div class="testimonial-item ps-5">
+                        <i class="fa fa-quote-left fa-2x mb-3"></i>
+                        <p class="fs-4">"Mon Livreur Pro a transformé la façon dont nous envoyons nos colis. La livraison est rapide et l'équipe est toujours disponible pour répondre à nos besoins."</p>
+                        <div class="d-flex align-items-center">
+                            <img class="img-fluid flex-shrink-0 rounded-circle" src="{% static 'site/img/DG.jpg' %}"
+                                style="width: 60px; height: 60px;">
+                            <div class="ps-3">
+                                <h5 class="mb-1">Debetou toh serge</h5>
+                                <span>CEO de oils of africa</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="testimonial-item ps-5">
+                        <i class="fa fa-quote-left fa-2x mb-3"></i>
+                        <p class="fs-4">"Grâce à Mon Livreur Pro, nous avons pu améliorer notre logistique et offrir une expérience de livraison sans faille à nos clients. Un service de confiance !"</p>
+                        <div class="d-flex align-items-center">
+                            <img class="img-fluid flex-shrink-0 rounded-circle" src="{% static 'site/img/DG.jpg' %}"
+                                style="width: 60px; height: 60px;">
+                            <div class="ps-3">
+                                <h5 class="mb-1">Debetou toh serge</h5>
+                                <span>CEO de oils of africa</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="testimonial-item ps-5">
+                        <i class="fa fa-quote-left fa-2x mb-3"></i>
+                        <p class="fs-4">"Nous avons choisi Mon Livreur Pro pour sa réputation de fiabilité. Chaque livraison a été un succès et nous avons une totale confiance en leurs services."</p>
+                        <div class="d-flex align-items-center">
+                            <img class="img-fluid flex-shrink-0 rounded-circle" src="{% static 'site/img/DG.jpg' %}"
+                                style="width: 60px; height: 60px;">
+                            <div class="ps-3">
+                                <h5 class="mb-1">Debetou toh serge</h5>
+                                <span>CEO de oils of africa</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

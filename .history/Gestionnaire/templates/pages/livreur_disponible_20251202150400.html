@@ -1,0 +1,567 @@
+{% extends 'base_gestionnaire.html' %}
+{% block page_name %}Dashboard Gestionnaire{% endblock %}
+{% block content %}
+{% load static %}
+
+<!-- Mapbox CSS -->
+<link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+
+<style>
+    .container-fluid { padding: 20px; }
+    .course-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 15px;
+    }
+    .card-header {
+        padding: 15px;
+        background: #f8f9fa;
+        border-bottom: 1px solid #eee;
+    }
+    .info-item {
+        margin-bottom: 10px;
+    }
+    .info-label {
+        color: #666;
+        font-size: 0.85rem;
+    }
+    .info-value {
+        color: #333;
+        font-weight: 500;
+    }
+    #map {
+        height: 600px;
+        width: 100%;
+        margin-bottom: 20px;
+        border-radius: 10px;
+    }
+    .online-status {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 5px;
+    }
+    .online {
+        background-color: #28a745;
+    }
+    .offline {
+        background-color: #dc3545;
+    }
+    @media (max-width: 768px) {
+        .desktop-view { display: none; }
+        .mobile-view { display: block; }
+    }
+    @media (min-width: 769px) {
+        .mobile-view { display: none; }
+        .desktop-view { display: block; }
+    }
+    
+    /* Styles pour les marqueurs personnalisés Mapbox */
+    .custom-marker {
+        cursor: pointer;
+        transition: transform 0.2s ease;
+    }
+    
+    .custom-marker:hover {
+        transform: scale(1.1);
+        z-index: 1000;
+    }
+    
+    .marker-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        padding: 8px;
+        min-width: 120px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .marker-photo-container {
+        position: relative;
+        margin-bottom: 8px;
+    }
+    
+    .marker-photo {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid white;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    
+    .status-indicator {
+        position: absolute;
+        top: -2px;
+        right: -2px;
+        width: 16px;
+        height: 16px;
+        border: 2px solid white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 8px;
+    }
+    
+    .marker-info {
+        font-size: 11px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100px;
+    }
+    
+    .marker-status {
+        font-size: 9px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    /* Popup personnalisé */
+    .mapboxgl-popup-content {
+        padding: 0;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    .livreur-popup {
+        text-align: center;
+        padding: 15px;
+        max-width: 250px;
+    }
+    
+    .livreur-photo-large {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        border: 3px solid #ffffff;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        object-fit: cover;
+        margin: 10px 0;
+    }
+    
+    .livreur-name {
+        font-size: 1.1em;
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #333;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 12px;
+        font-size: 0.9em;
+        margin: 5px 0;
+        font-weight: 600;
+    }
+    
+    .status-available {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .status-busy {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .adresse-container {
+        margin-top: 10px;
+        padding: 8px;
+        background-color: #f5f5f5;
+        border-radius: 4px;
+        border-left: 4px solid #4a90e2;
+        text-align: left;
+    }
+    
+    .adresse-titre {
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 5px;
+        font-size: 0.9em;
+    }
+    
+    .adresse-texte {
+        color: #666;
+        font-size: 0.85em;
+        margin: 0;
+        word-wrap: break-word;
+    }
+    
+    /* Contrôles de navigation Mapbox */
+    .mapboxgl-ctrl-group {
+        border-radius: 8px;
+    }
+</style>
+
+<div class="container-fluid">
+    <h4 class="mb-4">Disponibilité Des Livreurs</h4>
+    
+    <!-- Contrôles de la carte -->
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <label for="mapStyle" class="form-label">Style de carte:</label>
+                    <select id="mapStyle" class="form-select">
+                        <option value="streets-v12">Streets</option>
+                        <option value="outdoors-v12">Outdoors</option>
+                        <option value="light-v11">Light</option>
+                        <option value="dark-v11">Dark</option>
+                        <option value="satellite-v9">Satellite</option>
+                        <option value="satellite-streets-v12">Satellite Streets</option>
+                    </select>
+                </div>
+                <div class="col-md-6 d-flex align-items-end">
+                    <button id="refreshPositions" class="btn btn-primary">
+                        <i class="bx bx-refresh"></i> Actualiser les positions
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="map"></div>
+
+    <!-- Vue Mobile -->
+    <div class="mobile-view">
+        {% for livreur in livreur_disponible %}
+            <div class="course-card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="online-status {% if livreur.user.is_online %}online{% else %}offline{% endif %}"></span>
+                            <strong>{{ livreur.user.username }}</strong>
+                        </div>
+                        <span class="badge {% if livreur.is_available == 'LIBRE' %}bg-label-success{% else %}bg-label-danger{% endif %}">
+                            {{ livreur.is_available }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <div class="info-label">Email</div>
+                        <div class="info-value">{{ livreur.user.email }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Contact</div>
+                        <div class="info-value">{{ livreur.user.Contact }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Dernière connexion</div>
+                        <div class="info-value">{{ livreur.user.last_login|date:"d/m/Y H:i" }}</div>
+                    </div>
+                    <div class="action-buttons mt-3">
+                        <a href="#" class="btn btn-primary btn-sm">
+                            <i class="bx bx-detail"></i> Détails
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="text-center py-4">
+                <p>Aucun livreur disponible</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Vue Desktop -->
+    <div class="desktop-view">
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Photo</th>
+                            <th>Nom</th>
+                            <th>Contact</th>
+                            <th>Dernière connexion</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for livreur in livreur_disponible %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>
+                                    <ul class="list-unstyled users-list m-0 avatar-group d-flex align-items-center">
+                                        <li data-bs-toggle="tooltip"
+                                            data-popup="tooltip-custom"
+                                            data-bs-placement="top"
+                                            class="avatar avatar-xs pull-up"
+                                            title="{{ livreur.user.username }}">
+                                            {% if livreur.user.photos %}
+                                                <img src="{{ livreur.user.photos.url }}" 
+                                                    alt="Avatar de {{ livreur.user.username }}" 
+                                                    class="rounded-circle" />
+                                            {% else %}
+                                                <img src="{% static 'images/default-avatar.png' %}" 
+                                                    alt="Avatar par défaut" 
+                                                    class="rounded-circle" />
+                                            {% endif %}
+                                        </li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <span class="online-status {% if livreur.user.is_online %}online{% else %}offline{% endif %}"></span>
+                                    {{ livreur.user.username }}
+                                </td>
+                                <td>{{ livreur.user.Contact }}</td>
+                                <td>{{ livreur.user.last_login|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    <span class="badge {% if livreur.is_available == 'LIBRE' %}bg-label-success{% else %}bg-label-danger{% endif %}">
+                                        {{ livreur.is_available }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="#" class="btn btn-primary btn-sm">
+                                        <i class="bx bx-detail"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center">Aucun livreur disponible</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mapbox JS -->
+<script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+
+<script>
+// Configuration Mapbox
+mapboxgl.accessToken = 'pk.eyJ1IjoiaWJyYWsiLCJhIjoiY21oYnV4M3M5MDZqMTJyc2E0enFpbTlwaCJ9.OH_RYh--XO3vn363pKRlRg';
+
+// Variables globales
+let map;
+let markers = [];
+
+// Initialiser la carte Mapbox
+function initMap() {
+    map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v12',
+        center: [-4.0267, 5.3364], // [longitude, latitude] pour Abidjan
+        zoom: 10
+    });
+
+    // Ajouter les contrôles de navigation
+    map.addControl(new mapboxgl.NavigationControl());
+    map.addControl(new mapboxgl.FullscreenControl());
+    map.addControl(new mapboxgl.GeolocateControl({
+        positionOptions: {
+            enableHighAccuracy: true
+        },
+        trackUserLocation: true
+    }));
+
+    // Charger les positions des livreurs une fois la carte chargée
+    map.on('load', function() {
+        loadLivreurPositions();
+    });
+
+    // Gérer le changement de style de carte
+    document.getElementById('mapStyle').addEventListener('change', function(e) {
+        map.setStyle('mapbox://styles/mapbox/' + e.target.value);
+        // Recharger les marqueurs après le changement de style
+        map.once('style.load', function() {
+            loadLivreurPositions();
+        });
+    });
+
+    // Gérer le bouton d'actualisation
+    document.getElementById('refreshPositions').addEventListener('click', function() {
+        loadLivreurPositions();
+    });
+}
+
+// Fonction pour obtenir l'adresse à partir des coordonnées avec Mapbox Geocoding
+async function getAddress(lon, lat) {
+    try {
+        const response = await fetch(
+            `https://api.mapbox.com/geocoding/v5/mapbox.places/${lon},${lat}.json?access_token=${mapboxgl.accessToken}&language=fr`
+        );
+        const data = await response.json();
+        
+        if (data.features && data.features.length > 0) {
+            return data.features[0].place_name;
+        }
+        return "Adresse non disponible";
+    } catch (error) {
+        console.error("Erreur lors de la récupération de l'adresse :", error);
+        return "Adresse non disponible";
+    }
+}
+
+// Fonction pour créer le contenu du popup
+function createPopupContent(livreur, adresse) {
+    const iconUrl = livreur.photo || '{% static "images/default-avatar.png" %}';
+    const isAvailable = livreur.is_available === 'LIBRE';
+    
+    return `
+        <div class="livreur-popup">
+            <div class="livreur-name">${livreur.username}</div>
+            <img src="${iconUrl}" 
+                 alt="Photo de ${livreur.username}" 
+                 class="livreur-photo-large"
+                 onerror="this.src='{% static "images/default-avatar.png" %}'">
+            <div class="status-badge ${isAvailable ? 'status-available' : 'status-busy'}">
+                ${isAvailable ? '🟢 LIBRE' : '🔴 OCCUPÉ'}
+            </div>
+            <div class="adresse-container">
+                <div class="adresse-titre">📍 Adresse actuelle</div>
+                <div class="adresse-texte">${adresse}</div>
+            </div>
+        </div>
+    `;
+}
+
+// Fonction pour créer un marqueur personnalisé
+function createCustomMarker(livreur) {
+    const iconUrl = livreur.photo || '{% static "images/default-avatar.png" %}';
+    const isAvailable = livreur.is_available === 'LIBRE';
+    const statusColor = isAvailable ? '#28a745' : '#dc3545';
+    const statusIcon = isAvailable ? '🟢' : '🔴';
+    
+    const el = document.createElement('div');
+    el.className = 'custom-marker';
+    el.innerHTML = `
+        <div class="marker-card" style="border: 2px solid ${statusColor};">
+            <div class="marker-photo-container">
+                <img src="${iconUrl}" 
+                     alt="${livreur.username}" 
+                     class="marker-photo"
+                     onerror="this.src='{% static "images/default-avatar.png" %}'">
+                <div class="status-indicator" style="background: ${statusColor};">
+                    ${statusIcon}
+                </div>
+            </div>
+            <div class="marker-info">${livreur.username}</div>
+            <div class="marker-status" style="color: ${statusColor};">
+                ${isAvailable ? 'Libre' : 'Occupé'}
+            </div>
+        </div>
+    `;
+    
+    return el;
+}
+
+// Fonction pour charger et afficher les positions des livreurs
+async function loadLivreurPositions() {
+    try {
+        // Afficher un indicateur de chargement
+        const refreshBtn = document.getElementById('refreshPositions');
+        refreshBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Chargement...';
+        refreshBtn.disabled = true;
+
+        const response = await fetch('/api/livreur-positions/');
+        const data = await response.json();
+
+        // Supprimer les anciens marqueurs
+        markers.forEach(marker => marker.remove());
+        markers = [];
+
+        if (data.length === 0) {
+            console.log("Aucun livreur trouvé");
+            alert("Aucun livreur disponible actuellement");
+            return;
+        }
+
+        // Tableau pour stocker les coordonnées et calculer les limites
+        const bounds = new mapboxgl.LngLatBounds();
+
+        // Créer les marqueurs pour chaque livreur
+        for (const livreur of data) {
+            try {
+                // Vérifier que les coordonnées sont valides
+                if (!livreur.latitude || !livreur.longitude || 
+                    isNaN(livreur.latitude) || isNaN(livreur.longitude)) {
+                    console.warn(`Coordonnées invalides pour ${livreur.username}`);
+                    continue;
+                }
+
+                const coordinates = [parseFloat(livreur.longitude), parseFloat(livreur.latitude)];
+                
+                // Obtenir l'adresse
+                const adresse = livreur.adresse || await getAddress(coordinates[0], coordinates[1]);
+                
+                // Créer l'élément de marqueur personnalisé
+                const markerElement = createCustomMarker(livreur);
+                
+                // Créer le popup
+                const popup = new mapboxgl.Popup({ 
+                    offset: 25,
+                    closeButton: true,
+                    closeOnClick: false
+                }).setHTML(createPopupContent(livreur, adresse));
+                
+                // Créer et ajouter le marqueur
+                const marker = new mapboxgl.Marker(markerElement)
+                    .setLngLat(coordinates)
+                    .setPopup(popup)
+                    .addTo(map);
+                
+                markers.push(marker);
+                bounds.extend(coordinates);
+                
+            } catch (error) {
+                console.error(`Erreur lors de la création du marqueur pour ${livreur.username}:`, error);
+            }
+        }
+
+        // Ajuster la vue pour afficher tous les marqueurs
+        if (markers.length > 0) {
+            if (markers.length === 1) {
+                // Un seul livreur : centrer dessus
+                map.flyTo({
+                    center: markers[0].getLngLat(),
+                    zoom: 14
+                });
+            } else {
+                // Plusieurs livreurs : ajuster pour tous les voir
+                map.fitBounds(bounds, {
+                    padding: { top: 50, bottom: 50, left: 50, right: 50 },
+                    maxZoom: 15
+                });
+            }
+        }
+
+        console.log(`${markers.length} livreur(s) chargé(s) avec succès sur ${data.length} total`);
+
+    } catch (error) {
+        console.error("Erreur lors du chargement des positions :", error);
+        alert("Erreur lors du chargement des positions des livreurs");
+    } finally {
+        // Restaurer le bouton
+        const refreshBtn = document.getElementById('refreshPositions');
+        refreshBtn.innerHTML = '<i class="bx bx-refresh"></i> Actualiser les positions';
+        refreshBtn.disabled = false;
+    }
+}
+
+// Initialiser la carte au chargement de la page
+initMap();
+
+// Actualiser automatiquement les positions toutes les 30 secondes
+setInterval(loadLivreurPositions, 30000);
+</script>
+
+{% endblock %}

@@ -1,0 +1,11 @@
+from django.urls import path
+from django.views.generic import RedirectView
+from django.contrib.auth import views as auth_views
+from Client.views import *
+
+app_name = 'Gestionnaire'
+urlpatterns = [
+
+    path('Accueil/Gestionnaire/', Dashbord, name='Dashbord_Gestionnaire'),
+     
+] 
