@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Mon Profil - {{ client.user.get_full_name }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        
+        <!-- Header avec bannière -->
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
+            <div class="h-48 bg-gradient-to-r from-primary to-secondary"></div>
+            <div class="px-8 pb-8">
+                <div class="flex flex-col md:flex-row items-center md:items-end -mt-20 mb-6">
+                    <div class="relative">
+                        <div class="w-40 h-40 rounded-full border-8 border-white shadow-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                            <span class="text-6xl font-bold text-white">
+                                {{ user.first_name.0|upper }}{{ user.last_name.0|upper }}
+                            </span>
+                        </div>
+                        <div class="absolute bottom-2 right-2 w-6 h-6 rounded-full border-4 border-white bg-green-500"></div>
+                    </div>
+                    
+                    <div class="md:ml-8 mt-4 md:mt-0 text-center md:text-left flex-1">
+                        <h1 class="text-3xl font-bold text-gray-900">{{ user.get_full_name }}</h1>
+                        <p class="text-gray-600 mt-1">
+                            <i class="ri-mail-line"></i> {{ user.email }}
+                        </p>
+                        {% if client.telephone %}
+                        <p class="text-gray-600 mt-1">
+                            <i class="ri-phone-line"></i> {{ client.telephone }}
+                        </p>
+                        {% endif %}
+                        <div class="flex items-center justify-center md:justify-start gap-4 mt-3">
+                            <span class="px-4 py-2 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                <i class="ri-vip-crown-line"></i> Client depuis {{ client.created_at|date:"M Y" }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 md:mt-0 flex gap-3">
+                        <a href="{% url 'client_edit_profile' %}" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all shadow-md hover:shadow-lg">
+                            <i class="ri-edit-line mr-2"></i>Modifier le profil
+                        </a>
+                        <a href="{% url 'client_settings' %}" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all">
+                            <i class="ri-settings-3-line"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistiques -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm font-medium">Total Commandes</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-2">{{ total_commandes }}</p>
+                    </div>
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                        <i class="ri-shopping-bag-3-line text-3xl text-blue-600"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm font-medium">En cours</p>
+                        <p class="text-3xl font-bold text-orange-600 mt-2">{{ commandes_en_cours }}</p>
+                    </div>
+                    <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center">
+                        <i class="ri-time-line text-3xl text-orange-600"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm font-medium">Livrées</p>
+                        <p class="text-3xl font-bold text-green-600 mt-2">{{ commandes_livrees }}</p>
+                    </div>
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                        <i class="ri-checkbox-circle-line text-3xl text-green-600"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm font-medium">Total Dépensé</p>
+                        <p class="text-3xl font-bold text-primary mt-2">{{ total_depense|floatformat:0 }} FCFA</p>
+                    </div>
+                    <div class="w-16 h-16 bg-secondary/30 rounded-full flex items-center justify-center">
+                        <i class="ri-money-dollar-circle-line text-3xl text-primary"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Dernières commandes -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-bold text-gray-900 flex items-center">
+                            <i class="ri-shopping-bag-line text-primary mr-2"></i>
+                            Dernières commandes
+                        </h2>
+                        <a href="{% url 'client_orders' %}" class="text-primary hover:text-primary/80 text-sm font-medium">
+                            Voir tout <i class="ri-arrow-right-line ml-1"></i>
+                        </a>
+                    </div>
+                    
+                    {% if dernieres_commandes %}
+                        <div class="space-y-4">
+                            {% for commande in dernieres_commandes %}
+                            <a href="{% url 'client_order_detail' commande.uuid %}" class="block p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-3 mb-2">
+                                            <span class="font-semibold text-gray-900">#{{ commande.numero_commande }}</span>
+                                            <span class="px-3 py-1 rounded-full text-xs font-medium
+                                                {% if commande.statut == 'livree' %}bg-green-100 text-green-800
+                                                {% elif commande.statut == 'en_attente' %}bg-yellow-100 text-yellow-800
+                                                {% elif commande.statut == 'annulee' %}bg-red-100 text-red-800
+                                                {% else %}bg-blue-100 text-blue-800{% endif %}">
+                                                {{ commande.get_statut_display }}
+                                            </span>
+                                        </div>
+                                        <p class="text-sm text-gray-600">
+                                            <i class="ri-calendar-line mr-1"></i>
+                                            {{ commande.created_at|date:"d/m/Y à H:i" }}
+                                        </p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="font-bold text-primary">{{ commande.montant_total|floatformat:0 }} FCFA</p>
+                                        <p class="text-xs text-gray-500">{{ commande.lignes.count }} article{{ commande.lignes.count|pluralize }}</p>
+                                    </div>
+                                </div>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-12">
+                            <i class="ri-shopping-bag-line text-6xl text-gray-300 mb-4"></i>
+                            <p class="text-gray-500 mb-4">Vous n'avez pas encore passé de commande</p>
+                            <a href="{% url 'catalog' %}" class="inline-block px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all">
+                                <i class="ri-shopping-cart-line mr-2"></i>Commencer mes achats
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Actions rapides -->
+            <div class="space-y-6">
+                
+                <!-- Panier -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                        <i class="ri-shopping-cart-line text-primary mr-2"></i>
+                        Mon panier
+                    </h2>
+                    <div class="text-center py-6">
+                        <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="ri-shopping-cart-2-line text-4xl text-primary"></i>
+                        </div>
+                        <p class="text-3xl font-bold text-gray-900 mb-2">{{ panier_count }}</p>
+                        <p class="text-sm text-gray-600 mb-4">Article{{ panier_count|pluralize }} dans le panier</p>
+                        <a href="{% url 'panier_detail' %}" class="inline-block px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all">
+                            Voir le panier
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Actions rapides -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">Actions rapides</h2>
+                    <div class="space-y-3">
+                        <a href="{% url 'client_orders' %}" class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors group">
+                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                                <i class="ri-shopping-bag-line text-blue-600"></i>
+                            </div>
+                            <span class="ml-3 font-medium text-gray-900">Mes commandes</span>
+                            <i class="ri-arrow-right-s-line ml-auto text-gray-400"></i>
+                        </a>
+                        
+                        <a href="{% url 'client_addresses' %}" class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors group">
+                            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition-colors">
+                                <i class="ri-map-pin-line text-green-600"></i>
+                            </div>
+                            <span class="ml-3 font-medium text-gray-900">Mes adresses</span>
+                            <i class="ri-arrow-right-s-line ml-auto text-gray-400"></i>
+                        </a>
+                        
+                        <a href="{% url 'liste-favoris' %}" class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors group">
+                            <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center group-hover:bg-red-200 transition-colors">
+                                <i class="ri-heart-line text-red-600"></i>
+                            </div>
+                            <span class="ml-3 font-medium text-gray-900">Mes favoris</span>
+                            <i class="ri-arrow-right-s-line ml-auto text-gray-400"></i>
+                        </a>
+                        
+                        <a href="{% url 'client_edit_profile' %}" class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors group">
+                            <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center group-hover:bg-orange-200 transition-colors">
+                                <i class="ri-edit-line text-orange-600"></i>
+                            </div>
+                            <span class="ml-3 font-medium text-gray-900">Modifier profil</span>
+                            <i class="ri-arrow-right-s-line ml-auto text-gray-400"></i>
+                        </a>
+                        
+                        <a href="{% url 'client_change_password' %}" class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors group">
+                            <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+                                <i class="ri-lock-password-line text-purple-600"></i>
+                            </div>
+                            <span class="ml-3 font-medium text-gray-900">Mot de passe</span>
+                            <i class="ri-arrow-right-s-line ml-auto text-gray-400"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Informations compte -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">Informations compte</h2>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between items-center pb-3 border-b">
+                            <span class="text-gray-600">Membre depuis</span>
+                            <span class="font-medium text-gray-900">{{ client.created_at|date:"d/m/Y" }}</span>
+                        </div>
+                        <div class="flex justify-between items-center pb-3 border-b">
+                            <span class="text-gray-600">Email vérifié</span>
+                            <span class="flex items-center text-green-600">
+                                <i class="ri-checkbox-circle-fill mr-1"></i> Oui
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Notifications</span>
+                            <span class="font-medium text-gray-900">
+                                {% if client.notifications_email %}Activées{% else %}Désactivées{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

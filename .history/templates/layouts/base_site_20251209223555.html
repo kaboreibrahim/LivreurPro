@@ -1,0 +1,413 @@
+{% load static %}
+{% load static i18n %}
+ <!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8">
+    <title>Mon Livreur Pro - Service de Livraison Professionnel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="keywords" content=" Mon livreur pro ,livraison, coursier, transport rapide, colis express, service fiable, logistique urbaine, livraison à domicile, e-commerce, entreprise, messagerie, envoi, réception, suivi colis, transporteur, Grand-Bassam, Abidjan, Côte d’Ivoire, modeste,cite agb, transfert, retrait colis, distribution, expédition, livraison sécurisée, ponctualité, tarif abordable">
+    <meta name="description" content="Service de livraison professionnel pour entreprises et e-commerce, livraison express, rapide et fiable de vos colis et documents administratifs">
+    <meta name="author" content="Ibrak Dev">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:title" content="Mon Livreur Pro - Service de Livraison Professionnel">
+    <meta property="og:description" content="Service de livraison professionnel pour entreprises et e-commerce">
+    <meta property="og:image" content="{% static 'site/img/logo.png' %}">
+
+    <!-- Favicon -->
+    <link rel="icon" href="{% static 'site/img/logo.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'site/img/logo.png' %}">
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    
+    <!-- Google Web Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icon Font Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="{% static 'site/lib/animate/animate.min.css' %}" rel="stylesheet">
+    <link href="{% static 'site/lib/owlcarousel/assets/owl.carousel.min.css' %}" rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom Stylesheets -->
+    <link href="{% static 'site/css/style.css' %}" rel="stylesheet">
+    <link href="{% static 'site/css/custom.css' %}" rel="stylesheet">
+    
+    <!-- Custom CSS Variables -->
+     <style>
+        :root {
+            --primary-color: #000080;
+            --primary-gradient: linear-gradient(135deg, #000080, #1e3c72, #2a5298);
+            --secondary-color: rgb(255, 172, 7);
+            --text-light: #f5f5dc;
+            --font-primary: 'Inter', sans-serif;
+            --font-secondary: 'Poppins', sans-serif;
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            line-height: 1.6;
+        }
+
+        /* Glassmorphism Navbar - Style épuré */
+        .navbar {
+            background: rgba(0, 0, 128, 0.15) !important;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: var(--transition);
+        }
+
+        .navbar.scrolled {
+            background: rgba(0, 0, 128, 0.3) !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            font-family: var(--font-secondary);
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .navbar-brand:hover {
+            transform: translateY(-2px);
+        }
+
+        .navbar-brand span {
+            color: var(--text-light);
+        }
+
+        /* Nav links minimalistes */
+        .nav-link {
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.8) !important;
+            padding: 0.6rem 1rem !important;
+            margin: 0 0.25rem;
+            border-radius: 8px;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: #fff !important;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .nav-link.active {
+            color: var(--secondary-color) !important;
+            background: rgba(255, 172, 7, 0.1);
+        }
+
+        /* CTA Button simple et élégant */
+        .btn-cta {
+            background: var(--secondary-color);
+            border: none;
+            font-weight: 600;
+            padding: 10px 24px;
+            border-radius: 20px;
+            transition: var(--transition);
+            color: #000 !important;
+        }
+
+        .btn-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 172, 7, 0.4);
+            background: rgb(255, 193, 7);
+        }
+
+        /* Navbar toggler */
+        .navbar-toggler {
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .navbar-toggler:focus {
+            box-shadow: none;
+        }
+
+        .back-to-top {
+            background: var(--primary-gradient);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .back-to-top:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .footer {
+            background: var(--primary-gradient);
+        }
+
+        .footer h5 {
+            font-family: var(--font-secondary);
+            font-weight: 600;
+            color: var(--secondary-color) !important;
+        }
+
+        .btn-social {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .btn-social:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 991px) {
+            .navbar-collapse {
+                background: rgba(0, 0, 128, 0.95);
+                backdrop-filter: blur(15px);
+                border-radius: 12px;
+                margin-top: 1rem;
+                padding: 1rem;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .btn-cta {
+                width: 100%;
+                margin-top: 0.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Loading Spinner (optional) -->
+    <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center" style="z-index: 9999;">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Chargement...</span>
+        </div>
+    </div>
+
+    <!-- Navigation Start -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top" style="background: var(--primary-gradient); backdrop-filter: blur(10px);">
+        <div class="container">
+            <a href="{% url 'Accueil' %}" class="navbar-brand d-flex align-items-center">
+                <img src="{% static 'site/img/logo.png' %}" alt="Mon Livreur Pro Logo" height="50" class="me-2">
+                <span style="font-size: 1.25rem; color: var(--text-light);">Mon Livreur Pro</span>
+            </a>
+            
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'Accueil' %}active{% endif %} mx-2" href="{% url 'Accueil' %}">Accueil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'Service' %}active{% endif %} mx-2" href="{% url 'Service' %}">Services</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'Apropos' %}active{% endif %} mx-2" href="{% url 'Apropos' %}">À propos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'Contact' %}active{% endif %} mx-2" href="{% url 'Contact' %}">Contact</a>
+                    </li>
+                    <li class="nav-item ms-3">
+                        <a href="{% url 'login' %}" class="btn btn-cta text-dark">
+                            <i class="fas fa-motorcycle me-2"></i>Demander un coursier
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- Navigation End -->
+
+    
+    <main>
+        {% block content %}
+        {% endblock content %}
+    </main>
+    <!-- Notifications/Messages -->
+    <div class="container-fluid">
+        {% include "layouts/_message.html" %}
+    </div>
+    <!-- Footer Start -->
+    <footer class="footer text-white-50 pt-5 mt-5">
+        <div class="container py-5">
+            <div class="row g-5">
+                <!-- Company Info -->
+                <div class="col-md-6 col-lg-3 wow fadeIn" data-wow-delay="0.1s">
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="{% static 'site/img/logo.png' %}" alt="Mon Livreur Pro" height="40" class="me-2">
+                        <h4 class="text-white mb-0">Mon Livreur <span class="text-warning">Pro</span></h4>
+                    </div>
+                    <p class="mb-0">Service de livraison rapide, fiable et professionnel pour les entreprises. Livraison de colis, documents administratifs et e-commerce avec efficacité et sécurité.</p>
+                </div>
+
+                <!-- Contact Info -->
+                <div class="col-md-6 col-lg-3 wow fadeIn" data-wow-delay="0.3s">
+                    <h5 class="mb-4">Contactez-Nous</h5>
+                    <div class="contact-info">
+                        <p class="mb-2"><i class="fas fa-map-marker-alt me-3 text-warning"></i>Cité AGD, Modeste, Côte d'Ivoire</p>
+                        <p class="mb-2"><i class="fas fa-phone-alt me-3 text-warning"></i>+225 01 50 20 05 09</p>
+                        <p class="mb-3"><i class="fas fa-envelope me-3 text-warning"></i>info@monlivreurpro.com</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a class="btn btn-outline-warning btn-social" href="#" aria-label="Twitter">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a class="btn btn-outline-warning btn-social" href="#" aria-label="Facebook">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a class="btn btn-outline-warning btn-social" href="#" aria-label="LinkedIn">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                        <a class="btn btn-outline-warning btn-social" href="#" aria-label="Instagram">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div class="col-md-6 col-lg-3 wow fadeIn" data-wow-delay="0.5s">
+                    <h5 class="mb-4">Liens Utiles</h5>
+                    <div class="d-flex flex-column gap-2">
+                        <a class="text-white-50 text-decoration-none" href="{% url 'Apropos' %}">
+                            <i class="fas fa-chevron-right me-2 text-warning"></i>À Propos
+                        </a>
+                        <a class="text-white-50 text-decoration-none" href="{% url 'Service' %}">
+                            <i class="fas fa-chevron-right me-2 text-warning"></i>Services
+                        </a>
+                        <a class="text-white-50 text-decoration-none" href="#">
+                            <i class="fas fa-chevron-right me-2 text-warning"></i>Politique de Confidentialité
+                        </a>
+                        <a class="text-white-50 text-decoration-none" href="#">
+                            <i class="fas fa-chevron-right me-2 text-warning"></i>Conditions Générales
+                        </a>
+                        <a class="text-white-50 text-decoration-none" href="#">
+                            <i class="fas fa-chevron-right me-2 text-warning"></i>Carrières
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Services -->
+                <div class="col-md-6 col-lg-3 wow fadeIn" data-wow-delay="0.7s">
+                    <h5 class="mb-4">Nos Services</h5>
+                    <div class="d-flex flex-column gap-2">
+                        <a class="text-white-50 text-decoration-none" href="{% url 'Service' %}">
+                            <i class="fas fa-box me-2 text-warning"></i>Livraison de Colis
+                        </a>
+                        <a class="text-white-50 text-decoration-none" href="{% url 'Service' %}">
+                            <i class="fas fa-bolt me-2 text-warning"></i>Livraison Express
+                        </a>
+                        <a class="text-white-50 text-decoration-none" href="{% url 'Service' %}">
+                            <i class="fas fa-file-alt me-2 text-warning"></i>Livraison de Documents
+                        </a>
+                        <a class="text-white-50 text-decoration-none" href="{% url 'Service' %}">
+                            <i class="fas fa-shopping-cart me-2 text-warning"></i>Services E-commerce
+                        </a>
+                        <a class="text-white-50 text-decoration-none" href="{% url 'Service' %}">
+                            <i class="fas fa-truck me-2 text-warning"></i>Solutions Logistiques
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Copyright -->
+        <div class="container border-top border-secondary pt-4">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                    <small>&copy; {% now "Y" %} <a class="text-warning text-decoration-none" href="#">Mon Livreur Pro</a>. Tous droits réservés.</small>
+                    <br>
+                    <small>Conçu avec ❤️ par <a class="text-warning text-decoration-none" href="https://mon-portfolio-dh55.onrender.com/fr/accueil/">Ibrak Dev</a></small>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <div class="d-flex justify-content-center justify-content-md-end gap-3">
+                        <a href="{% url 'Accueil' %}" class="text-white-50 text-decoration-none small">Accueil</a>
+                        <a href="#" class="text-white-50 text-decoration-none small">Cookies</a>
+                        <a href="#" class="text-white-50 text-decoration-none small">Aide</a>
+                        <a href="#" class="text-white-50 text-decoration-none small">FAQ</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- Footer End -->
+
+    <!-- Back to Top -->
+    <a href="#" class="btn back-to-top" id="backToTop" aria-label="Retour en haut">
+        <i class="bi bi-arrow-up"></i>
+    </a>
+
+    {% comment %} <div class="container-fluid">
+        {% include "layouts/_message.html" %}
+    </div> {% endcomment %}
+    <!-- JavaScript Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'site/lib/wow/wow.min.js' %}"></script>
+    <script src="{% static 'site/lib/easing/easing.min.js' %}"></script>
+    <script src="{% static 'site/lib/waypoints/waypoints.min.js' %}"></script>
+    <script src="{% static 'site/lib/counterup/counterup.min.js' %}"></script>
+    <script src="{% static 'site/lib/owlcarousel/owl.carousel.min.js' %}"></script>
+
+    <!-- Custom JavaScript -->
+    <script src="{% static 'site/js/main.js' %}"></script>
+    
+    <!-- Enhanced JavaScript -->
+    <script>
+        // Hide spinner when page loads
+        window.addEventListener('load', function() {
+            const spinner = document.getElementById('spinner');
+            if (spinner) {
+                spinner.classList.remove('show');
+                setTimeout(() => spinner.style.display = 'none', 300);
+            }
+        });
+
+        // Smooth scroll for back to top
+        document.getElementById('backToTop').addEventListener('click', function(e) {
+            e.preventDefault();
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // Show/hide back to top button
+        window.addEventListener('scroll', function() {
+            const backToTop = document.getElementById('backToTop');
+            if (window.scrollY > 300) {
+                backToTop.style.display = 'flex';
+            } else {
+                backToTop.style.display = 'none';
+            }
+        });
+
+        // Initialize WOW.js
+        if (typeof WOW !== 'undefined') {
+            new WOW().init();
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,993 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Mon Profil - {{ user.get_full_name }}{% endblock %}
+
+<link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+
+{% block content %}
+
+<style>
+    :root {
+        --primary: #000080;
+        --secondary: #FF6B00;
+        --light: #FFF9E5;
+        --dark: #1A1A1A;
+    }
+    
+    .profile-container {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 1rem;
+    }
+    
+    .profile-header {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border-left: 4px solid var(--primary);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+    
+    .avatar-circle {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 700;
+        color: white;
+        box-shadow: 0 4px 12px rgba(0, 0, 128, 0.2);
+        margin: 0 auto 1rem;
+    }
+    
+    .user-name {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 0.25rem;
+        text-align: center;
+    }
+    
+    .user-email {
+        color: #6c757d;
+        font-size: 0.9rem;
+        text-align: center;
+    }
+    
+    .badge-membre {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--light);
+        color: var(--primary);
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        margin: 0.5rem auto;
+    }
+    
+    .btn-edit {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 0.65rem 1.25rem;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        width: 100%;
+        justify-content: center;
+        margin-top: 1rem;
+    }
+    
+    .btn-edit:hover {
+        background: #000066;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 128, 0.3);
+        color: white;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.25rem;
+        border-left: 3px solid var(--primary);
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    }
+    
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--dark);
+    }
+    
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        background: var(--light);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+    
+    .stat-card:nth-child(2) { border-left-color: var(--secondary); }
+    .stat-card:nth-child(3) { border-left-color: #28a745; }
+    .stat-card:nth-child(4) { border-left-color: var(--secondary); }
+    
+    .section-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+    
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .section-title::before {
+        content: '';
+        width: 4px;
+        height: 20px;
+        background: var(--primary);
+        border-radius: 2px;
+    }
+    
+    .order-item {
+        display: block;
+        padding: 1rem;
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+    
+    .order-item:hover {
+        border-color: var(--primary);
+        background: #f8f9ff;
+    }
+    
+    .order-number {
+        font-weight: 600;
+        color: var(--dark);
+        font-size: 0.95rem;
+    }
+    
+    .order-status {
+        padding: 0.3rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    
+    .status-livree { background: #d4edda; color: #155724; }
+    .status-attente { background: #fff3cd; color: #856404; }
+    .status-annulee { background: #f8d7da; color: #721c24; }
+    .status-enroute { background: #d1ecf1; color: #0c5460; }
+    
+    .order-date {
+        color: #6c757d;
+        font-size: 0.8rem;
+        margin-top: 0.5rem;
+    }
+    
+    .order-total {
+        font-weight: 700;
+        color: var(--dark);
+        font-size: 1rem;
+    }
+    
+    .quick-action {
+        display: flex;
+        align-items: center;
+        padding: 0.875rem;
+        border-radius: 10px;
+        margin-bottom: 0.75rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: var(--dark);
+    }
+    
+    .quick-action:hover {
+        background: #f8f9fa;
+        color: var(--primary);
+    }
+    
+    .action-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+    
+    .action-icon.blue { background: #e3f2fd; color: var(--primary); }
+    .action-icon.green { background: #e8f5e9; color: #2e7d32; }
+    .action-icon.red { background: #ffebee; color: #c62828; }
+    .action-icon.orange { background: #fff3e0; color: var(--secondary); }
+    .action-icon.purple { background: #f3e5f5; color: #7b1fa2; }
+    
+    .action-label {
+        font-weight: 500;
+        flex: 1;
+        font-size: 0.9rem;
+    }
+    
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f0f0f0;
+        gap: 1rem;
+    }
+    
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    
+    .info-label {
+        color: #6c757d;
+        font-size: 0.85rem;
+        flex-shrink: 0;
+    }
+    
+    .info-value {
+        font-weight: 500;
+        color: var(--dark);
+        font-size: 0.85rem;
+        text-align: right;
+        word-break: break-word;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 2rem 1rem;
+    }
+    
+    .empty-icon {
+        font-size: 3rem;
+        color: #dee2e6;
+        margin-bottom: 1rem;
+    }
+    
+    .empty-text {
+        color: #6c757d;
+        margin-bottom: 1.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .btn-primary-custom {
+        background: var(--primary);
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+    }
+    
+    .btn-primary-custom:hover {
+        background: #000066;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 128, 0.3);
+        color: white;
+    }
+
+    /* Améliorations pour les tableaux sur mobile */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .history-table {
+        width: 100%;
+        font-size: 0.85rem;
+        min-width: 600px;
+    }
+
+    /* Media Queries pour mobile */
+    @media (max-width: 768px) {
+        .profile-container {
+            padding: 0.5rem;
+        }
+
+        .profile-header {
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        .avatar-circle {
+            width: 70px;
+            height: 70px;
+            font-size: 1.75rem;
+        }
+
+        .user-name {
+            font-size: 1.25rem;
+        }
+
+        .user-email {
+            font-size: 0.85rem;
+        }
+
+        .badge-membre {
+            font-size: 0.75rem;
+            padding: 0.4rem 0.85rem;
+        }
+
+        .btn-edit {
+            padding: 0.6rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        .stat-card {
+            padding: 1rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+        }
+
+        .stat-icon {
+            width: 36px;
+            height: 36px;
+            font-size: 1.1rem;
+        }
+
+        .section-card {
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .section-title::before {
+            height: 18px;
+        }
+
+        .order-item {
+            padding: 0.875rem;
+        }
+
+        .order-number {
+            font-size: 0.9rem;
+        }
+
+        .order-status {
+            font-size: 0.65rem;
+            padding: 0.25rem 0.6rem;
+        }
+
+        .order-total {
+            font-size: 0.95rem;
+        }
+
+        .order-date {
+            font-size: 0.75rem;
+        }
+
+        .quick-action {
+            padding: 0.75rem;
+        }
+
+        .action-icon {
+            width: 36px;
+            height: 36px;
+            font-size: 1.1rem;
+        }
+
+        .action-label {
+            font-size: 0.85rem;
+        }
+
+        .info-label,
+        .info-value {
+            font-size: 0.8rem;
+        }
+
+        .history-table {
+            font-size: 0.8rem;
+        }
+
+        /* Amélioration de l'affichage des stats sur petits écrans */
+        .row.g-3 {
+            gap: 0.75rem !important;
+        }
+
+        /* Optimisation du header sur très petits écrans */
+        .section-card .d-flex.justify-content-between {
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: flex-start !important;
+        }
+
+        .section-card .d-flex.justify-content-between a {
+            align-self: flex-end;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .profile-container {
+            padding: 0.25rem;
+        }
+
+        .stat-value {
+            font-size: 1.35rem;
+        }
+
+        .order-item .d-flex {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .order-item .text-end {
+            text-align: left !important;
+        }
+
+        /* Empiler les éléments pour plus de lisibilité */
+        .order-item > div:first-child .d-flex {
+            flex-wrap: wrap;
+        }
+    }
+
+    /* Amélioration du scroll horizontal sur mobile */
+    @media (max-width: 992px) {
+        .table-responsive::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .table-responsive::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background: #000066;
+        }
+    }
+</style>
+<div class="profile-container">
+    <div class="container" style="max-width: 1200px;">
+        <!-- Header Profil -->
+        <div class="profile-header">
+            <div class="row align-items-center">
+                <div class="col-12 col-md-auto mb-3 mb-md-0">
+                    <div class="avatar-circle">
+                        {{ user.first_name.0|upper }}{{ user.last_name.0|upper }}
+                    </div>
+                </div>
+                <div class="col-12 col-md flex-grow-1">
+                    <h1 class="user-name">{{ user.get_full_name }}</h1>
+                    <p class="user-email mb-2">{{ user.email }}</p>
+                    {% if user.Contact %}
+                    <p class="user-email mb-2">{{ user.Contact }}</p>
+                    {% endif %}
+                    <div class="d-flex justify-content-center">
+                        <div class="badge-membre">
+                            <i class="ri-vip-crown-line"></i>
+                            Membre depuis {{ user.date_joined|date:"M Y" }}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-auto mt-3 mt-md-0">
+                    <a href="{% url 'Client:edit_profile'%}" class="btn-edit">
+                        <i class="ri-edit-line"></i>
+                        Modifier le profil
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistiques -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="stat-label">Commandes</div>
+                            <div class="stat-value">{{ total_commandes }}</div>
+                        </div>
+                        <div class="stat-icon" style="color: var(--primary);">
+                            <i class="ri-shopping-bag-3-line"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="stat-label">En cours</div>
+                            <div class="stat-value" style="color: var(--secondary);">{{ commandes_en_cours }}</div>
+                        </div>
+                        <div class="stat-icon" style="color: var(--secondary);">
+                            <i class="ri-time-line"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="stat-label">Livrées</div>
+                            <div class="stat-value" style="color: #28a745;">{{ commandes_livrees }}</div>
+                        </div>
+                        <div class="stat-icon" style="color: #28a745;">
+                            <i class="ri-checkbox-circle-line"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="stat-label">Dépensé</div>
+                            <div class="stat-value" style="font-size: 1.25rem;">{{ total_depense|floatformat:0 }}</div>
+                            <small style="color: #6c757d;">FCFA</small>
+                        </div>
+                        <div class="stat-icon" style="color: var(--secondary);">
+                            <i class="ri-money-dollar-circle-line"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Colonne principale -->
+            <div class="col-lg-8">
+                <!-- Dernières commandes -->
+                <div class="section-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="section-title mb-0">Dernières commandes</h2>
+                        <a href="{% url 'Client:liste_demandes'%}" style="color: var(--primary); text-decoration: none; font-weight: 500; font-size: 0.85rem;">
+                            Voir tout <i class="ri-arrow-right-line"></i>
+                        </a>
+                    </div>
+                    
+                    {% if dernieres_commandes %}
+                        {% for commande in dernieres_commandes %}
+                        <a href="#" class="order-item">
+                            <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap gap-2">
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <span class="order-number">#{{ commande.ref }}</span>
+                                    <span class="order-status 
+                                        {% if commande.statut == 'TERMINEE' %}status-livree
+                                        {% elif commande.statut == 'EN_ATTENTE' %}status-attente
+                                        {% elif commande.statut == 'ANNULEE' %}status-annulee
+                                        {% else %}status-enroute{% endif %}">
+                                        {{ commande.get_statut_display }}
+                                    </span>
+                                </div>
+                                <div class="text-end">
+                                    <div class="order-total">{{ commande.cout_livraison|floatformat:0|default:"--" }} FCFA</div>
+                                    <small style="color: #6c757d;">{{ commande.type_course }}</small>
+                                </div>
+                            </div>
+                            <div class="order-date">
+                                <i class="ri-calendar-line"></i> {{ commande.date_demande|date:"d/m/Y à H:i" }}
+                            </div>
+                            <div style="font-size: 0.8rem; color: #6c757d; margin-top: 0.5rem;">
+                                <i class="ri-map-pin-line"></i> {{ commande.adresse_depart|truncatewords:5 }} → {{ commande.adresse_destination|truncatewords:5 }}
+                            </div>
+                        </a>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="ri-shopping-bag-3-line"></i>
+                            </div>
+                            <p class="empty-text">Vous n'avez pas encore passé de course</p>
+                            <a href="" class="btn-primary-custom">
+                                <i class="ri-add-line"></i>
+                                Commencez une course
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Historique complet des livraisons -->
+                {% if historique_livraisons %}
+                <div class="section-card" id="historique">
+                    <h2 class="section-title">Historique des livraisons ({{ commandes_livrees }})</h2>
+                    
+                    <div class="table-responsive">
+                        <table class="history-table">
+                            <thead>
+                                <tr style="border-bottom: 2px solid #e9ecef;">
+                                    <th style="padding: 1rem 0.5rem; text-align: left; color: #6c757d; font-weight: 600;">Référence</th>
+                                    <th style="padding: 1rem 0.5rem; text-align: left; color: #6c757d; font-weight: 600;">Date</th>
+                                    <th style="padding: 1rem 0.5rem; text-align: left; color: #6c757d; font-weight: 600;">Trajet</th>
+                                    <th style="padding: 1rem 0.5rem; text-align: left; color: #6c757d; font-weight: 600;">Type</th>
+                                    <th style="padding: 1rem 0.5rem; text-align: left; color: #6c757d; font-weight: 600;">Livreur</th>
+                                    <th style="padding: 1rem 0.5rem; text-align: right; color: #6c757d; font-weight: 600;">Coût</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for livraison in historique_livraisons %}
+                                <tr style="border-bottom: 1px solid #f0f0f0;">
+                                    <td style="padding: 1rem 0.5rem;">
+                                        <a href="#" style="color: var(--primary); text-decoration: none; font-weight: 500;">
+                                            #{{ livraison.ref }}
+                                        </a>
+                                    </td>
+                                    <td style="padding: 1rem 0.5rem; color: #6c757d; white-space: nowrap;">
+                                        {{ livraison.date_demande|date:"d/m/Y" }}
+                                    </td>
+                                    <td style="padding: 1rem 0.5rem; color: var(--dark); max-width: 200px;">
+                                        <div style="font-size: 0.85rem;">
+                                            <div style="margin-bottom: 0.25rem;">
+                                                <i class="ri-record-circle-line" style="color: var(--primary);"></i>
+                                                {{ livraison.adresse_depart|truncatewords:3 }}
+                                            </div>
+                                            <div>
+                                                <i class="ri-map-pin-fill" style="color: var(--secondary);"></i>
+                                                {{ livraison.adresse_destination|truncatewords:3 }}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td style="padding: 1rem 0.5rem;">
+                                        <span style="padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.7rem; font-weight: 500; white-space: nowrap;
+                                            {% if livraison.type_course == 'EXPRESSE' %}
+                                                background: #fff3e0; color: var(--secondary);
+                                            {% else %}
+                                                background: #e3f2fd; color: var(--primary);
+                                            {% endif %}">
+                                            {{ livraison.get_type_course_display }}
+                                        </span>
+                                    </td>
+                                    <td style="padding: 1rem 0.5rem; color: var(--dark);">
+                                        {% if livraison.coursier %}
+                                            {{ livraison.coursier.get_full_name }}
+                                        {% else %}
+                                            <span style="color: #adb5bd;">Non assigné</span>
+                                        {% endif %}
+                                    </td>
+                                    <td style="padding: 1rem 0.5rem; text-align: right; white-space: nowrap;">
+                                        <span style="font-weight: 600; color: var(--dark);">
+                                            {{ livraison.cout_livraison|floatformat:0|default:"--" }} FCFA
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Colonne latérale -->
+            <div class="col-lg-4">
+                <!-- Actions rapides -->
+                <div class="section-card">
+                    <h2 class="section-title">Actions rapides</h2>
+                    
+                    <a href="{% url 'Client:liste_demandes' %}" class="quick-action">
+                        <div class="action-icon blue">
+                            <i class="ri-shopping-bag-line"></i>
+                        </div>
+                        <span class="action-label">Mes Demandes</span>
+                        <i class="ri-arrow-right-s-line" style="color: #adb5bd;"></i>
+                    </a>
+                    
+                    <a href="" class="quick-action">
+                        <div class="action-icon green">
+                            <i class="ri-settings-line"></i>
+                        </div>
+                        <span class="action-label">Paramètres</span>
+                        <i class="ri-arrow-right-s-line" style="color: #adb5bd;"></i>
+                    </a>
+                    
+                    <a href="{%url 'Client:commande_history'%}" class="quick-action">
+                        <div class="action-icon red">
+                            <i class="bx bx-history"></i>
+                        </div>
+                        <span class="action-label">Mes Historiques</span>
+                        <i class="ri-arrow-right-s-line" style="color: #adb5bd;"></i>
+                    </a>  
+                    
+                    <a href="{% url 'Client:edit_profile'%}" class="quick-action">
+                        <div class="action-icon orange">
+                            <i class="ri-edit-line"></i>
+                        </div>
+                        <span class="action-label">Modifier profil</span>
+                        <i class="ri-arrow-right-s-line" style="color: #adb5bd;"></i>
+                    </a>
+                    
+                    <a href="{% url 'Client:change_password'%}" class="quick-action">
+                        <div class="action-icon purple">
+                            <i class="ri-lock-password-line"></i>
+                        </div>
+                        <span class="action-label">Mot de passe</span>
+                        <i class="ri-arrow-right-s-line" style="color: #adb5bd;"></i>
+                    </a>
+                </div>
+
+                <!-- Informations compte -->
+                <div class="section-card">
+                    <h2 class="section-title">Informations</h2>
+                    
+                    <div class="info-row">
+                        <span class="info-label">Membre depuis</span>
+                        <span class="info-value">{{ user.date_joined|date:"d/m/Y" }}</span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="info-label">Email vérifié</span>
+                        <span class="info-value" style="color: {% if user.is_verified %}#28a745{% else %}#dc3545{% endif %};">
+                            <i class="ri-{% if user.is_verified %}checkbox-circle-fill{% else %}close-circle-fill{% endif %}"></i> 
+                            {% if user.is_verified %}Oui{% else %}Non{% endif %}
+                        </span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="info-label">Téléphone</span>
+                        <span class="info-value">
+                            {{ user.Contact|default:"Non renseigné" }}
+                        </span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="info-label">Dernière connexion</span>
+                        <span class="info-value">
+                            {{ user.last_login|date:"d/m/Y H:i"|default:"Jamais" }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bouton Scroll to Top pour mobile -->
+<button id="scrollTopBtn" style="
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 999;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 128, 0.3);
+    transition: all 0.3s ease;
+">
+    <i class="ri-arrow-up-line"></i>
+</button>
+
+<script>
+// Bouton Scroll to Top
+const scrollTopBtn = document.getElementById('scrollTopBtn');
+
+window.addEventListener('scroll', function() {
+    if (window.pageYOffset > 300) {
+        scrollTopBtn.style.display = 'block';
+    } else {
+        scrollTopBtn.style.display = 'none';
+    }
+});
+
+scrollTopBtn.addEventListener('click', function() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+});
+
+// Animation au scroll pour les cards
+const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+};
+
+const observer = new IntersectionObserver(function(entries) {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+        }
+    });
+}, observerOptions);
+
+// Appliquer l'animation à tous les éléments avec la classe .section-card et .stat-card
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.section-card, .stat-card');
+    cards.forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'all 0.6s ease';
+        observer.observe(card);
+    });
+});
+</script>
+
+<style>
+/* Ajout d'animations supplémentaires */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.profile-header {
+    animation: fadeInUp 0.6s ease;
+}
+
+.stat-card {
+    animation: fadeInUp 0.6s ease;
+    animation-fill-mode: both;
+}
+
+.stat-card:nth-child(1) { animation-delay: 0.1s; }
+.stat-card:nth-child(2) { animation-delay: 0.2s; }
+.stat-card:nth-child(3) { animation-delay: 0.3s; }
+.stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+/* Style amélioré pour le scroll horizontal sur mobile */
+@media (max-width: 992px) {
+    .table-responsive {
+        margin: 0 -1.5rem;
+        padding: 0 1.5rem;
+    }
+    
+    .table-responsive::after {
+        content: '→';
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--primary);
+        font-size: 1.5rem;
+        opacity: 0.5;
+        pointer-events: none;
+        animation: slideHint 2s infinite;
+    }
+    
+    @keyframes slideHint {
+        0%, 100% { transform: translateY(-50%) translateX(0); }
+        50% { transform: translateY(-50%) translateX(5px); }
+    }
+}
+
+/* Touch feedback pour mobile */
+@media (hover: none) and (pointer: coarse) {
+    .order-item:active,
+    .quick-action:active,
+    .btn-edit:active,
+    .btn-primary-custom:active {
+        transform: scale(0.98);
+        opacity: 0.9;
+    }
+}
+
+/* Amélioration de la lisibilité sur petits écrans */
+@media (max-width: 576px) {
+    body {
+        font-size: 14px;
+    }
+    
+    /* Optimisation des marges négatives pour le plein écran */
+    .section-card:first-of-type {
+        border-radius: 0;
+        margin-left: -0.25rem;
+        margin-right: -0.25rem;
+    }
+}
+
+/* Mode sombre automatique (optionnel) */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --dark: #ffffff;
+        --light-bg: #1a1a1a;
+    }
+    
+    /* Vous pouvez ajouter d'autres règles pour le mode sombre si nécessaire */
+}
+
+/* Amélioration de l'accessibilité */
+.btn-edit:focus,
+.btn-primary-custom:focus,
+.quick-action:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* Loading skeleton (optionnel pour améliorer l'UX) */
+@keyframes skeleton-loading {
+    0% { background-position: -200px 0; }
+    100% { background-position: calc(200px + 100%) 0; }
+}
+
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 0px, #f8f8f8 40px, #f0f0f0 80px);
+    background-size: 200px 100%;
+    animation: skeleton-loading 1.5s infinite;
+}
+
+/* Amélioration des transitions */
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Fix pour iOS Safari */
+@supports (-webkit-touch-callout: none) {
+    .profile-container {
+        min-height: -webkit-fill-available;
+    }
+}
+</style>
+{% endblock %}

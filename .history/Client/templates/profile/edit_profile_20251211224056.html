@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Modifier mon profil - {{ client.user.get_full_name }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-3xl mx-auto">
+        
+        <!-- Header -->
+        <div class="mb-8">
+            <a href="{% url 'client_profile' %}" class="inline-flex items-center text-primary hover:text-primary/80 transition-colors mb-4">
+                <i class="ri-arrow-left-line mr-2"></i>
+                Retour au profil
+            </a>
+            <h1 class="text-3xl font-bold text-gray-900">Modifier mon profil</h1>
+            <p class="text-gray-600 mt-2">Mettez à jour vos informations personnelles</p>
+        </div>
+
+        <!-- Formulaire -->
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Informations personnelles -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                    <i class="ri-user-line text-primary mr-2"></i>
+                    Informations personnelles
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.first_name.label }}</label>
+                        {{ form.first_name }}
+                        {% if form.first_name.errors %}
+                            <p class="text-red-600 text-sm mt-1">{{ form.first_name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.last_name.label }}</label>
+                        {{ form.last_name }}
+                        {% if form.last_name.errors %}
+                            <p class="text-red-600 text-sm mt-1">{{ form.last_name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.email.label }}</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <p class="text-red-600 text-sm mt-1">{{ form.email.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.telephone.label }}</label>
+                        {{ form.telephone }}
+                        {% if form.telephone.errors %}
+                            <p class="text-red-600 text-sm mt-1">{{ form.telephone.errors.0 }}</p>
+                        {% endif %}
+                        <p class="text-xs text-gray-500 mt-1">Votre numéro de téléphone pour être contacté</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Préférences de notifications -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                    <i class="ri-notification-line text-primary mr-2"></i>
+                    Préférences de notifications
+                </h2>
+                
+                <div class="space-y-4">
+                    <div class="flex items-start p-4 bg-gray-50 rounded-lg">
+                        <div class="flex items-center h-5 mt-1">
+                            {{ form.notifications_email }}
+                        </div>
+                        <div class="ml-3">
+                            <label for="id_notifications_email" class="font-medium text-gray-900 cursor-pointer">
+                                {{ form.notifications_email.label }}
+                            </label>
+                            <p class="text-sm text-gray-600 mt-1">
+                                Recevez des emails pour vos commandes, promotions et actualités
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start p-4 bg-gray-50 rounded-lg">
+                        <div class="flex items-center h-5 mt-1">
+                            {{ form.notifications_sms }}
+                        </div>
+                        <div class="ml-3">
+                            <label for="id_notifications_sms" class="font-medium text-gray-900 cursor-pointer">
+                                {{ form.notifications_sms.label }}
+                            </label>
+                            <p class="text-sm text-gray-600 mt-1">
+                                Recevez des SMS pour les mises à jour importantes de vos commandes
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informations complémentaires -->
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
+                <div class="flex items-start">
+                    <i class="ri-information-line text-blue-600 text-xl mt-1 mr-3 flex-shrink-0"></i>
+                    <div class="text-sm text-blue-800">
+                        <p class="font-medium mb-2">Protection de vos données</p>
+                        <p>Vos informations personnelles sont sécurisées et ne seront jamais partagées avec des tiers sans votre consentement. Vous pouvez modifier vos préférences à tout moment.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Boutons d'action -->
+            <div class="flex items-center justify-end gap-4 bg-white rounded-xl shadow-md p-6">
+                <a href="{% url 'client_profile' %}" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all font-medium">
+                    Annuler
+                </a>
+                <button type="submit" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all shadow-md hover:shadow-lg font-medium">
+                    <i class="ri-save-line mr-2"></i>
+                    Enregistrer les modifications
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

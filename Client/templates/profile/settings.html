@@ -1,0 +1,597 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Paramètres - {{ user.get_full_name }}{% endblock %}
+
+{% block extra_css %}
+<!-- Remix Icon CDN -->
+<link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #000080;
+        --secondary: #FF6B00;
+        --light: #FFF9E5;
+        --dark: #1A1A1A;
+    }
+    
+    .settings-container {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 3rem 1rem;
+    }
+    
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 500;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .back-link:hover {
+        color: #000066;
+        transform: translateX(-4px);
+    }
+    
+    .page-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 0.5rem;
+    }
+    
+    .page-header p {
+        color: #6c757d;
+        font-size: 0.95rem;
+    }
+    
+    .settings-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+    
+    .settings-card.danger {
+        border: 2px solid #dc3545;
+    }
+    
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .section-title i {
+        font-size: 1.5rem;
+        color: var(--primary);
+    }
+    
+    .section-title.danger i {
+        color: #dc3545;
+    }
+    
+    .setting-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.25rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .setting-item:hover {
+        background: #e9ecef;
+    }
+    
+    .setting-item.clickable {
+        cursor: pointer;
+    }
+    
+    .setting-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+    
+    .icon-blue { background: #e3f2fd; color: #1976d2; }
+    .icon-orange { background: #fff3e0; color: var(--secondary); }
+    .icon-green { background: #e8f5e9; color: #2e7d32; }
+    .icon-purple { background: #f3e5f5; color: #7b1fa2; }
+    .icon-yellow { background: #fff9c4; color: #f57f17; }
+    .icon-indigo { background: #e8eaf6; color: #3949ab; }
+    .icon-red { background: #ffebee; color: #c62828; }
+    .icon-gray { background: #f5f5f5; color: #616161; }
+    
+    .setting-content {
+        flex: 1;
+    }
+    
+    .setting-title {
+        font-weight: 500;
+        color: var(--dark);
+        margin-bottom: 0.25rem;
+    }
+    
+    .setting-description {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .setting-action {
+        margin-left: 1rem;
+        flex-shrink: 0;
+    }
+    
+    .btn-action {
+        padding: 0.5rem 1.25rem;
+        border: 2px solid var(--primary);
+        color: var(--primary);
+        background: white;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .btn-action:hover {
+        background: var(--primary);
+        color: white;
+    }
+    
+    .btn-danger {
+        background: #dc3545;
+        border-color: #dc3545;
+        color: white;
+    }
+    
+    .btn-danger:hover {
+        background: #c82333;
+        border-color: #c82333;
+    }
+    
+    .btn-success {
+        background: #28a745;
+        border-color: #28a745;
+        color: white;
+    }
+    
+    .btn-success:hover {
+        background: #218838;
+        border-color: #218838;
+    }
+    
+    .toggle-switch {
+        position: relative;
+        width: 44px;
+        height: 24px;
+    }
+    
+    .toggle-input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.3s;
+        border-radius: 24px;
+    }
+    
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.3s;
+        border-radius: 50%;
+    }
+    
+    .toggle-input:checked + .toggle-slider {
+        background-color: var(--primary);
+    }
+    
+    .toggle-input:checked + .toggle-slider:before {
+        transform: translateX(20px);
+    }
+    
+    .status-badge {
+        padding: 0.35rem 0.85rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .badge-soon {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .arrow-icon {
+        color: #adb5bd;
+        font-size: 1.25rem;
+    }
+    
+    .info-box {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        border: 2px solid var(--primary);
+        border-radius: 10px;
+        padding: 1.25rem;
+        display: flex;
+        align-items: start;
+        gap: 1rem;
+    }
+    
+    .info-box i {
+        font-size: 1.25rem;
+        color: var(--primary);
+        flex-shrink: 0;
+    }
+    
+    .info-text {
+        font-size: 0.9rem;
+        color: #1565c0;
+        line-height: 1.6;
+    }
+    
+    .danger-box {
+        background: #ffebee;
+        border: 2px solid #dc3545;
+        border-radius: 10px;
+        padding: 1.5rem;
+    }
+    
+    .danger-title {
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 0.5rem;
+    }
+    
+    .danger-description {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-bottom: 1.25rem;
+    }
+    
+    @media (max-width: 768px) {
+        .settings-container {
+            padding: 2rem 1rem;
+        }
+        
+        .settings-card {
+            padding: 1.5rem;
+        }
+        
+        .setting-item {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .setting-action {
+            margin-left: 0;
+            margin-top: 1rem;
+            width: 100%;
+        }
+        
+        .btn-action {
+            width: 100%;
+            text-align: center;
+        }
+    }
+</style>
+
+<div class="settings-container">
+    <div class="container" style="max-width: 900px;">
+        
+        <!-- Header -->
+        <div class="page-header">
+            <a href="{% url 'Client:profile' %}" class="back-link">
+                <i class="ri-arrow-left-line"></i>
+                Retour au profil
+            </a>
+            <h1>Paramètres du compte</h1>
+            <p>Gérez vos préférences et paramètres de compte</p>
+        </div>
+
+        <!-- Informations du compte -->
+        <div class="settings-card">
+            <h2 class="section-title">
+                <i class="ri-user-settings-line"></i>
+                Informations du compte
+            </h2>
+            
+            <div class="setting-item">
+                <div style="display: flex; align-items: center; flex: 1;">
+                    <div class="setting-icon icon-blue">
+                        <i class="ri-user-line"></i>
+                    </div>
+                    <div class="setting-content">
+                        <div class="setting-title">Informations personnelles</div>
+                        <div class="setting-description">Nom, email, téléphone</div>
+                    </div>
+                </div>
+                <div class="setting-action">
+                    <a href="{% url 'Client:edit_profile' %}" class="btn-action">
+                        Modifier
+                    </a>
+                </div>
+            </div>
+            
+            <div class="setting-item">
+                <div style="display: flex; align-items: center; flex: 1;">
+                    <div class="setting-icon icon-orange">
+                        <i class="ri-lock-password-line"></i>
+                    </div>
+                    <div class="setting-content">
+                        <div class="setting-title">Mot de passe</div>
+                        <div class="setting-description">Modifié il y a {{ user.last_login|timesince }}</div>
+                    </div>
+                </div>
+                <div class="setting-action">
+                    <a href="{% url 'Client:change_password' %}" class="btn-action">
+                        Changer
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="settings-card">
+            <h2 class="section-title">
+                <i class="ri-notification-line"></i>
+                Notifications
+            </h2>
+            
+            <div class="setting-item">
+                <div style="display: flex; align-items: center; flex: 1;">
+                    <div class="setting-icon icon-purple">
+                        <i class="ri-mail-line"></i>
+                    </div>
+                    <div class="setting-content">
+                        <div class="setting-title">Notifications par email</div>
+                        <div class="setting-description">Recevoir des emails pour vos demandes de livraison</div>
+                    </div>
+                </div>
+                <div class="setting-action">
+                    <label class="toggle-switch">
+                        <input type="checkbox" class="toggle-input" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="setting-item">
+                <div style="display: flex; align-items: center; flex: 1;">
+                    <div class="setting-icon icon-green">
+                        <i class="ri-message-line"></i>
+                    </div>
+                    <div class="setting-content">
+                        <div class="setting-title">Notifications par SMS</div>
+                        <div class="setting-description">Recevoir des SMS pour les mises à jour importantes</div>
+                    </div>
+                </div>
+                <div class="setting-action">
+                    <label class="toggle-switch">
+                        <input type="checkbox" class="toggle-input" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="setting-item">
+                <div style="display: flex; align-items: center; flex: 1;">
+                    <div class="setting-icon icon-yellow">
+                        <i class="ri-notification-badge-line"></i>
+                    </div>
+                    <div class="setting-content">
+                        <div class="setting-title">Promotions et offres</div>
+                        <div class="setting-description">Recevoir des offres spéciales et promotions</div>
+                    </div>
+                </div>
+                <div class="setting-action">
+                    <label class="toggle-switch">
+                        <input type="checkbox" class="toggle-input">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="setting-item">
+                <div style="display: flex; align-items: center; flex: 1;">
+                    <div class="setting-icon icon-blue">
+                        <i class="ri-information-line"></i>
+                    </div>
+                    <div class="setting-content">
+                        <div class="setting-title">Actualités et conseils</div>
+                        <div class="setting-description">Recevoir des conseils et actualités du service</div>
+                    </div>
+                </div>
+                <div class="setting-action">
+                    <label class="toggle-switch">
+                        <input type="checkbox" class="toggle-input">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Confidentialité et sécurité -->
+        <div class="settings-card">
+            <h2 class="section-title">
+                <i class="ri-shield-line"></i>
+                Confidentialité et sécurité
+            </h2>
+            
+            <div class="setting-item clickable">
+                <div style="display: flex; align-items: center; flex: 1;">
+                    <div class="setting-icon icon-indigo">
+                        <i class="ri-eye-line"></i>
+                    </div>
+                    <div class="setting-content">
+                        <div class="setting-title">Visibilité du profil</div>
+                        <div class="setting-description">Contrôlez qui peut voir votre profil</div>
+                    </div>
+                </div>
+                <div class="setting-action">
+                    <i class="ri-arrow-right-s-line arrow-icon"></i>
+                </div>
+            </div>
+            
+            <div class="setting-item">
+                <div style="display: flex; align-items: center; flex: 1;">
+                    <div class="setting-icon icon-red">
+                        <i class="ri-shield-check-line"></i>
+                    </div>
+                    <div class="setting-content">
+                        <div class="setting-title">Authentification à deux facteurs</div>
+                        <div class="setting-description">Ajoutez une couche de sécurité supplémentaire</div>
+                    </div>
+                </div>
+                <div class="setting-action">
+                    <span class="status-badge badge-soon">Bientôt</span>
+                </div>
+            </div>
+            
+            <div class="setting-item clickable">
+                <div style="display: flex; align-items: center; flex: 1;">
+                    <div class="setting-icon icon-gray">
+                        <i class="ri-history-line"></i>
+                    </div>
+                    <div class="setting-content">
+                        <div class="setting-title">Historique de connexion</div>
+                        <div class="setting-description">Consultez vos connexions récentes</div>
+                    </div>
+                </div>
+                <div class="setting-action">
+                    <i class="ri-arrow-right-s-line arrow-icon"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Support et aide -->
+        <div class="settings-card">
+            <h2 class="section-title">
+                <i class="ri-customer-service-line"></i>
+                Support et aide
+            </h2>
+            
+            <a href="#" class="setting-item clickable" style="text-decoration: none; color: inherit;">
+                <div style="display: flex; align-items: center; flex: 1;">
+                    <div class="setting-icon icon-blue">
+                        <i class="ri-question-line"></i>
+                    </div>
+                    <div class="setting-content">
+                        <div class="setting-title">Centre d'aide</div>
+                        <div class="setting-description">Trouvez des réponses à vos questions</div>
+                    </div>
+                </div>
+                <div class="setting-action">
+                    <i class="ri-arrow-right-s-line arrow-icon"></i>
+                </div>
+            </a>
+            
+            <a href="#" class="setting-item clickable" style="text-decoration: none; color: inherit;">
+                <div style="display: flex; align-items: center; flex: 1;">
+                    <div class="setting-icon icon-green">
+                        <i class="ri-mail-line"></i>
+                    </div>
+                    <div class="setting-content">
+                        <div class="setting-title">Contacter le support</div>
+                        <div class="setting-description">Notre équipe est là pour vous aider</div>
+                    </div>
+                </div>
+                <div class="setting-action">
+                    <i class="ri-arrow-right-s-line arrow-icon"></i>
+                </div>
+            </a>
+            
+            <a href="#" class="setting-item clickable" style="text-decoration: none; color: inherit;">
+                <div style="display: flex; align-items: center; flex: 1;">
+                    <div class="setting-icon icon-purple">
+                        <i class="ri-feedback-line"></i>
+                    </div>
+                    <div class="setting-content">
+                        <div class="setting-title">Envoyer un feedback</div>
+                        <div class="setting-description">Aidez-nous à améliorer la plateforme</div>
+                    </div>
+                </div>
+                <div class="setting-action">
+                    <i class="ri-arrow-right-s-line arrow-icon"></i>
+                </div>
+            </a>
+        </div>
+
+        <!-- Informations utiles -->
+        <div class="info-box" style="margin-bottom: 1.5rem;">
+            <i class="ri-lightbulb-line"></i>
+            <div class="info-text">
+                <strong>Conseil :</strong> Activez les notifications pour ne manquer aucune mise à jour importante sur vos demandes de livraison. Vous pouvez personnaliser vos préférences à tout moment.
+            </div>
+        </div>
+
+        <!-- Zone de danger -->
+        <div class="settings-card danger">
+            <h2 class="section-title danger">
+                <i class="ri-error-warning-line"></i>
+                Zone de danger
+            </h2>
+            
+            <div class="danger-box">
+                <div class="danger-title">Supprimer mon compte</div>
+                <p class="danger-description">
+                    Une fois votre compte supprimé, toutes vos données seront définitivement effacées. Cette action est irréversible.
+                </p>
+                <button type="button" onclick="confirmDelete()" class="btn-action btn-danger">
+                    <i class="ri-delete-bin-line"></i>
+                    Supprimer mon compte
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Confirmation de suppression
+function confirmDelete() {
+    if (confirm('⚠️ ATTENTION ⚠️\n\nÊtes-vous absolument sûr de vouloir supprimer votre compte ?\n\nCette action est IRRÉVERSIBLE et entraînera :\n- La suppression de toutes vos demandes\n- La perte de votre historique\n- La suppression de toutes vos données\n\nTapez "SUPPRIMER" pour confirmer.')) {
+        const confirmation = prompt('Tapez "SUPPRIMER" en majuscules pour confirmer la suppression :');
+        if (confirmation === 'SUPPRIMER') {
+            alert('Fonctionnalité de suppression en cours de développement. Veuillez contacter le support pour supprimer votre compte.');
+        } else {
+            alert('Suppression annulée.');
+        }
+    }
+}
+</script>
+{% endblock %}

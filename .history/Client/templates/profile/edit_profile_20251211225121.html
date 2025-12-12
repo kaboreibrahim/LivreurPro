@@ -1,0 +1,587 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Modifier mon profil - {{ user.get_full_name }}{% endblock %}
+
+{% block extra_css %}
+<!-- Remix Icon CDN -->
+<link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #000080;
+        --secondary: #FF6B00;
+        --light: #FFF9E5;
+        --dark: #1A1A1A;
+    }
+    
+    .edit-profile-container {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 3rem 1rem;
+    }
+    
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 500;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .back-link:hover {
+        color: #000066;
+        transform: translateX(-4px);
+    }
+    
+    .page-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 0.5rem;
+    }
+    
+    .page-header p {
+        color: #6c757d;
+        font-size: 0.95rem;
+    }
+    
+    .section-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+    
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .section-title i {
+        color: var(--primary);
+        font-size: 1.5rem;
+    }
+    
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-row.two-cols {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: var(--dark);
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .form-input,
+    .form-select {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        background: white;
+    }
+    
+    .form-input:focus,
+    .form-select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(0, 0, 128, 0.1);
+    }
+    
+    .form-input::placeholder {
+        color: #adb5bd;
+    }
+    
+    .form-help {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-top: 0.5rem;
+    }
+    
+    .form-error {
+        color: #dc3545;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .form-error i {
+        margin-right: 0.25rem;
+    }
+    
+    .notification-option {
+        display: flex;
+        align-items: start;
+        padding: 1.25rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .notification-option:hover {
+        background: #e9ecef;
+    }
+    
+    .notification-checkbox {
+        width: 20px;
+        height: 20px;
+        margin-top: 0.25rem;
+        cursor: pointer;
+        accent-color: var(--primary);
+    }
+    
+    .notification-content {
+        margin-left: 1rem;
+        flex: 1;
+    }
+    
+    .notification-label {
+        font-weight: 500;
+        color: var(--dark);
+        cursor: pointer;
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+    
+    .notification-description {
+        font-size: 0.85rem;
+        color: #6c757d;
+        line-height: 1.5;
+    }
+    
+    .info-card {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        border: 2px solid var(--primary);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .info-card-content {
+        display: flex;
+        align-items: start;
+        gap: 1rem;
+    }
+    
+    .info-icon {
+        width: 40px;
+        height: 40px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+    
+    .info-text {
+        flex: 1;
+    }
+    
+    .info-title {
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 0.5rem;
+    }
+    
+    .info-description {
+        font-size: 0.9rem;
+        color: #1565c0;
+        line-height: 1.6;
+    }
+    
+    .avatar-section {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        padding: 1.5rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .avatar-preview {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: white;
+        box-shadow: 0 4px 12px rgba(0, 0, 128, 0.2);
+    }
+    
+    .avatar-info {
+        flex: 1;
+    }
+    
+    .avatar-title {
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 0.5rem;
+    }
+    
+    .avatar-description {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-bottom: 1rem;
+    }
+    
+    .btn-upload {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 6px;
+        color: var(--dark);
+        font-size: 0.85rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-upload:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+    
+    .form-actions {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 1rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+    
+    .btn {
+        padding: 0.875rem 2rem;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        border: none;
+    }
+    
+    .btn-cancel {
+        background: white;
+        border: 2px solid #e9ecef;
+        color: #6c757d;
+    }
+    
+    .btn-cancel:hover {
+        background: #f8f9fa;
+        border-color: #dee2e6;
+        color: var(--dark);
+    }
+    
+    .btn-primary {
+        background: var(--primary);
+        border: 2px solid var(--primary);
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #000066;
+        border-color: #000066;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 128, 0.3);
+    }
+    
+    @media (max-width: 768px) {
+        .edit-profile-container {
+            padding: 2rem 1rem;
+        }
+        
+        .section-card {
+            padding: 1.5rem;
+        }
+        
+        .form-row.two-cols {
+            grid-template-columns: 1fr;
+        }
+        
+        .avatar-section {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="edit-profile-container">
+    <div class="container" style="max-width: 900px;">
+        
+        <!-- Header -->
+        <div class="page-header">
+            <a href="{% url 'Client:profile' %}" class="back-link">
+                <i class="ri-arrow-left-line"></i>
+                Retour au profil
+            </a>
+            <h1>Modifier mon profil</h1>
+            <p>Mettez à jour vos informations personnelles</p>
+        </div>
+
+        <!-- Formulaire -->
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Photo de profil -->
+            <div class="section-card">
+                <h2 class="section-title">
+                    <i class="ri-image-line"></i>
+                    Photo de profil
+                </h2>
+                
+                <div class="avatar-section">
+                    <div class="avatar-preview">
+                        {% if user.photos %}
+                            <img src="{{ user.photos.url }}" alt="Photo de profil" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        {% else %}
+                            {{ user.first_name.0|upper }}{{ user.last_name.0|upper }}
+                        {% endif %}
+                    </div>
+                    <div class="avatar-info">
+                        <div class="avatar-title">Changez votre photo de profil</div>
+                        <div class="avatar-description">
+                            JPG, PNG ou GIF. Taille maximale : 2 MB
+                        </div>
+                        <label for="id_photos" class="btn-upload">
+                            <i class="ri-upload-2-line"></i>
+                            Choisir une photo
+                        </label>
+                        <input type="file" id="id_photos" name="photos" accept="image/*" style="display: none;">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Informations personnelles -->
+            <div class="section-card">
+                <h2 class="section-title">
+                    <i class="ri-user-line"></i>
+                    Informations personnelles
+                </h2>
+                
+                <div class="form-row two-cols">
+                    <div class="form-group">
+                        <label for="id_first_name" class="form-label">Prénom</label>
+                        <input 
+                            type="text" 
+                            name="first_name" 
+                            id="id_first_name" 
+                            class="form-input"
+                            value="{{ user.first_name }}"
+                            placeholder="Entrez votre prénom"
+                            required
+                        >
+                        {% if form.first_name.errors %}
+                            <p class="form-error">
+                                <i class="ri-error-warning-line"></i>
+                                {{ form.first_name.errors.0 }}
+                            </p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_last_name" class="form-label">Nom</label>
+                        <input 
+                            type="text" 
+                            name="last_name" 
+                            id="id_last_name" 
+                            class="form-input"
+                            value="{{ user.last_name }}"
+                            placeholder="Entrez votre nom"
+                            required
+                        >
+                        {% if form.last_name.errors %}
+                            <p class="form-error">
+                                <i class="ri-error-warning-line"></i>
+                                {{ form.last_name.errors.0 }}
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_email" class="form-label">Adresse email</label>
+                        <input 
+                            type="email" 
+                            name="email" 
+                            id="id_email" 
+                            class="form-input"
+                            value="{{ user.email }}"
+                            placeholder="votre.email@exemple.com"
+                            required
+                        >
+                        {% if form.email.errors %}
+                            <p class="form-error">
+                                <i class="ri-error-warning-line"></i>
+                                {{ form.email.errors.0 }}
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_Contact" class="form-label">Numéro de téléphone</label>
+                        <input 
+                            type="tel" 
+                            name="Contact" 
+                            id="id_Contact" 
+                            class="form-input"
+                            value="{{ user.Contact }}"
+                            placeholder="+225 XX XX XX XX XX"
+                            required
+                        >
+                        {% if form.Contact.errors %}
+                            <p class="form-error">
+                                <i class="ri-error-warning-line"></i>
+                                {{ form.Contact.errors.0 }}
+                            </p>
+                        {% endif %}
+                        <p class="form-help">Votre numéro de téléphone pour être contacté</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Préférences de notifications -->
+            <div class="section-card">
+                <h2 class="section-title">
+                    <i class="ri-notification-line"></i>
+                    Préférences de notifications
+                </h2>
+                
+                <div class="notification-option">
+                    <input 
+                        type="checkbox" 
+                        name="notifications_email" 
+                        id="id_notifications_email" 
+                        class="notification-checkbox"
+                        {% if user.notifications_email %}checked{% endif %}
+                    >
+                    <div class="notification-content">
+                        <label for="id_notifications_email" class="notification-label">
+                            Notifications par email
+                        </label>
+                        <p class="notification-description">
+                            Recevez des emails pour vos demandes de livraison, promotions et actualités
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="notification-option">
+                    <input 
+                        type="checkbox" 
+                        name="notifications_sms" 
+                        id="id_notifications_sms" 
+                        class="notification-checkbox"
+                        {% if user.notifications_sms %}checked{% endif %}
+                    >
+                    <div class="notification-content">
+                        <label for="id_notifications_sms" class="notification-label">
+                            Notifications par SMS
+                        </label>
+                        <p class="notification-description">
+                            Recevez des SMS pour les mises à jour importantes de vos demandes de livraison
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informations de sécurité -->
+            <div class="info-card">
+                <div class="info-card-content">
+                    <div class="info-icon">
+                        <i class="ri-shield-check-line"></i>
+                    </div>
+                    <div class="info-text">
+                        <div class="info-title">Protection de vos données</div>
+                        <p class="info-description">
+                            Vos informations personnelles sont sécurisées et ne seront jamais partagées avec des tiers sans votre consentement. Vous pouvez modifier vos préférences à tout moment.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Boutons d'action -->
+            <div class="form-actions">
+                <a href="{% url 'Client:profile' %}" class="btn btn-cancel">
+                    Annuler
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="ri-save-line"></i>
+                    Enregistrer les modifications
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Prévisualisation de l'image uploadée
+document.getElementById('id_photos').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const avatarPreview = document.querySelector('.avatar-preview');
+            avatarPreview.innerHTML = `<img src="${e.target.result}" alt="Aperçu" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+        }
+        reader.readAsDataURL(file);
+    }
+});
+</script>
+{% endblock %}

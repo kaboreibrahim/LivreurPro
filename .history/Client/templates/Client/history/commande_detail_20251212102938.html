@@ -1,0 +1,571 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Détail de la commande #{{ commande.ref }}{% endblock %}
+
+{% block extra_css %}
+<!-- Remix Icon CDN -->
+<link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #000080;
+        --secondary: #FF6B00;
+        --light: #FFF9E5;
+        --dark: #1A1A1A;
+    }
+    
+    .order-detail-container {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 3rem 1rem;
+    }
+    
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .order-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--dark);
+    }
+    
+    .back-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        color: var(--dark);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .back-button:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+        transform: translateX(-4px);
+    }
+    
+    .detail-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+    
+    .card-header-custom {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    
+    .card-header-custom i {
+        font-size: 1.5rem;
+        color: var(--primary);
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .info-label {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .info-value {
+        font-size: 1rem;
+        color: var(--dark);
+        font-weight: 500;
+    }
+    
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        gap: 0.5rem;
+    }
+    
+    .status-success {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .status-warning {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .status-danger {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .status-info {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+    
+    .address-section {
+        padding: 1.25rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+        border-left: 4px solid var(--primary);
+        margin-bottom: 1rem;
+    }
+    
+    .address-section:last-child {
+        border-left-color: var(--secondary);
+    }
+    
+    .address-title {
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .address-title i {
+        color: var(--primary);
+    }
+    
+    .address-section:last-child .address-title i {
+        color: var(--secondary);
+    }
+    
+    .address-text {
+        color: #495057;
+        line-height: 1.6;
+    }
+    
+    .package-detail {
+        padding: 1.25rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+    }
+    
+    .package-label {
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 0.5rem;
+    }
+    
+    .package-value {
+        color: #495057;
+        line-height: 1.6;
+    }
+    
+    .specs-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .spec-item {
+        padding: 1rem;
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        text-align: center;
+    }
+    
+    .spec-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 0.25rem;
+    }
+    
+    .spec-label {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .photo-gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .photo-item {
+        position: relative;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #f8f9fa;
+        aspect-ratio: 4/3;
+    }
+    
+    .photo-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .photo-item:hover img {
+        transform: scale(1.05);
+    }
+    
+    .action-buttons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+    
+    .btn-custom {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.875rem 2rem;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        border: none;
+    }
+    
+    .btn-outline {
+        background: white;
+        border: 2px solid #e9ecef;
+        color: var(--dark);
+    }
+    
+    .btn-outline:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+    
+    .btn-primary-custom {
+        background: var(--primary);
+        color: white;
+    }
+    
+    .btn-primary-custom:hover {
+        background: #000066;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 128, 0.3);
+        color: white;
+    }
+    
+    .timeline-card {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        border: 2px solid var(--primary);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .timeline-title {
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .timeline-title i {
+        color: var(--primary);
+        font-size: 1.25rem;
+    }
+    
+    @media (max-width: 768px) {
+        .order-detail-container {
+            padding: 2rem 1rem;
+        }
+        
+        .detail-card {
+            padding: 1.5rem;
+        }
+        
+        .order-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .btn-custom {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .specs-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="order-detail-container">
+    <div class="container" style="max-width: 1100px;">
+        
+        <!-- Header -->
+        <div class="order-header">
+            <h1 class="order-title">Commande #{{ commande.ref }}</h1>
+            <a href="{% url 'Client:commande_history' %}" class="back-button">
+                <i class="ri-arrow-left-line"></i>
+                Retour
+            </a>
+        </div>
+
+        <!-- Informations générales -->
+        <div class="detail-card">
+            <h2 class="card-header-custom">
+                <i class="ri-information-line"></i>
+                Informations générales
+            </h2>
+            
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Référence</span>
+                    <span class="info-value">#{{ commande.ref }}</span>
+                </div>
+                
+                <div class="info-item">
+                    <span class="info-label">Date de commande</span>
+                    <span class="info-value">{{ commande.date_demande|date:"d/m/Y à H:i" }}</span>
+                </div>
+                
+                <div class="info-item">
+                    <span class="info-label">Statut</span>
+                    <span class="status-badge 
+                        {% if commande.statut == 'TERMINEE' %}status-success
+                        {% elif commande.statut == 'ANNULEE' %}status-danger
+                        {% elif commande.statut == 'EN_ATTENTE' %}status-warning
+                        {% else %}status-info{% endif %}">
+                        <i class="ri-
+                            {% if commande.statut == 'TERMINEE' %}checkbox-circle-line
+                            {% elif commande.statut == 'ANNULEE' %}close-circle-line
+                            {% else %}time-line{% endif %}"></i>
+                        {{ commande.get_statut_display }}
+                    </span>
+                </div>
+                
+                <div class="info-item">
+                    <span class="info-label">Type de course</span>
+                    <span class="info-value">{{ commande.get_type_course_display }}</span>
+                </div>
+                
+                {% if commande.cout_livraison %}
+                <div class="info-item">
+                    <span class="info-label">Coût de livraison</span>
+                    <span class="info-value" style="color: var(--secondary);">
+                        {{ commande.cout_livraison|floatformat:0 }} FCFA
+                    </span>
+                </div>
+                {% endif %}
+                
+                {% if commande.coursier %}
+                <div class="info-item">
+                    <span class="info-label">Livreur assigné</span>
+                    <span class="info-value">
+                        {{ commande.coursier.get_full_name|default:commande.coursier.username }}
+                    </span>
+                </div>
+                {% endif %}
+                
+                {% if commande.distance %}
+                <div class="info-item">
+                    <span class="info-label">Distance</span>
+                    <span class="info-value">{{ commande.distance|floatformat:2 }} km</span>
+                </div>
+                {% endif %}
+                
+                {% if commande.date_recuperation %}
+                <div class="info-item">
+                    <span class="info-label">Date de récupération</span>
+                    <span class="info-value">{{ commande.date_recuperation|date:"d/m/Y à H:i" }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Roadmap de suivi -->
+        {% if commande.statut != 'ANNULEE' %}
+        <div class="timeline-card">
+            <div class="timeline-title">
+                <i class="ri-route-line"></i>
+                Suivi de votre commande
+            </div>
+            {{ commande.get_roadmap|safe }}
+        </div>
+        {% endif %}
+
+        <!-- Adresses -->
+        <div class="detail-card">
+            <h2 class="card-header-custom">
+                <i class="ri-map-pin-line"></i>
+                Itinéraire
+            </h2>
+            
+            <div class="address-section">
+                <div class="address-title">
+                    <i class="ri-record-circle-line"></i>
+                    Point de départ
+                </div>
+                <div class="address-text">{{ commande.adresse_depart }}</div>
+            </div>
+            
+            <div class="address-section">
+                <div class="address-title">
+                    <i class="ri-map-pin-fill"></i>
+                    Destination
+                </div>
+                <div class="address-text">{{ commande.adresse_destination }}</div>
+                {% if commande.Contact_destinateur %}
+                    <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #dee2e6;">
+                        <strong style="color: var(--dark);">Contact destinataire :</strong>
+                        <span style="color: #495057;">{{ commande.Contact_destinateur }}</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Détails du colis -->
+        <div class="detail-card">
+            <h2 class="card-header-custom">
+                <i class="ri-package-line"></i>
+                Détails du colis
+            </h2>
+            
+            <div class="package-detail">
+                <div class="package-label">Description</div>
+                <div class="package-value">{{ commande.description_colis }}</div>
+            </div>
+            
+            <div class="specs-grid">
+                <div class="spec-item">
+                    <div class="spec-value">{{ commande.poids_colis }}</div>
+                    <div class="spec-label">Kilogrammes</div>
+                </div>
+                
+                <div class="spec-item">
+                    <div class="spec-value">{{ commande.valeur_colis|floatformat:0 }}</div>
+                    <div class="spec-label">FCFA (Valeur)</div>
+                </div>
+            </div>
+            
+            {% if commande.instructions %}
+            <div class="package-detail" style="margin-top: 1rem;">
+                <div class="package-label">
+                    <i class="ri-information-line" style="color: var(--primary);"></i>
+                    Instructions spéciales
+                </div>
+                <div class="package-value">{{ commande.instructions }}</div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Photos du colis -->
+        {% if commande.photo_colis1 or commande.photo_colis2 %}
+        <div class="detail-card">
+            <h2 class="card-header-custom">
+                <i class="ri-image-line"></i>
+                Photos du colis
+            </h2>
+            
+            <div class="photo-gallery">
+                {% if commande.photo_colis1 %}
+                <div class="photo-item">
+                    <img src="{{ commande.photo_colis1.url }}" alt="Photo du colis 1" onclick="openImageModal(this.src)">
+                </div>
+                {% endif %}
+                {% if commande.photo_colis2 %}
+                <div class="photo-item">
+                    <img src="{{ commande.photo_colis2.url }}" alt="Photo du colis 2" onclick="openImageModal(this.src)">
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Boutons d'action -->
+        <div class="action-buttons">
+            <a href="{% url 'Client:mes_commandes' %}" class="btn-custom btn-outline">
+                <i class="ri-arrow-left-line"></i>
+                Retour à mes commandes
+            </a>
+            {% if commande.statut == 'TERMINEE' %}
+            <button type="button" class="btn-custom btn-primary-custom" onclick="reorderCommand()">
+                <i class="ri-repeat-line"></i>
+                Commander à nouveau
+            </button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour agrandir les images -->
+<div id="imageModal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); cursor: pointer;" onclick="closeImageModal()">
+    <span style="position: absolute; top: 20px; right: 35px; color: #f1f1f1; font-size: 40px; font-weight: bold; cursor: pointer;" onclick="closeImageModal()">&times;</span>
+    <img id="modalImage" style="margin: auto; display: block; max-width: 90%; max-height: 90%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+</div>
+
+<script>
+function openImageModal(src) {
+    document.getElementById('imageModal').style.display = 'block';
+    document.getElementById('modalImage').src = src;
+}
+
+function closeImageModal() {
+    document.getElementById('imageModal').style.display = 'none';
+}
+
+function reorderCommand() {
+    if (confirm('Voulez-vous créer une nouvelle demande avec les mêmes informations ?')) {
+        // Rediriger vers le formulaire de création avec les données pré-remplies
+        window.location.href = '{% url "Client:nouvelle_demande" %}?reorder={{ commande.ref }}';
+    }
+}
+
+// Fermer le modal avec la touche Échap
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeImageModal();
+    }
+});
+</script>
+{% endblock %
