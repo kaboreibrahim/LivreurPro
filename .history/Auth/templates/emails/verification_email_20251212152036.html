@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Vérification de votre compte LivreurPro</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            padding: 20px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+        }
+        .code {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            letter-spacing: 5px;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #e9f7ef;
+            border-radius: 5px;
+            color: #0d6efd;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #777;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>Vérification de votre compte LivreurPro</h2>
+    </div>
+    <div class="content">
+        <p>Bonjour {{ user.first_name }},</p>
+        <p>Merci de vous être inscrit sur LivreurPro. Pour activer votre compte, veuillez utiliser le code de vérification ci-dessous :</p>
+        
+        <div class="code">
+            {{ code }}
+        </div>
+        
+        <p>Ce code est valable pendant 24 heures. Ne le partagez avec personne.</p>
+        
+        <p>Si vous n'êtes pas à l'origine de cette demande, veuillez ignorer cet email.</p>
+        
+        <p>Cordialement,<br>L'équipe LivreurPro</p>
+    </div>
+    <div class="footer">
+        <p>© {% now "Y" %} LivreurPro. Tous droits réservés.</p>
+    </div>
+</body>
+</html>

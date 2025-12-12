@@ -1,0 +1,81 @@
+{% extends 'registration/base.html' %}
+{% load static %}
+{% load static i18n %}
+{% block content %}
+
+<div class="authentication-wrapper authentication-basic container-p-y">
+    <div class="authentication-inner">
+      <!-- Verification Card -->
+      <div class="card">
+        <div class="card-body">
+          <!-- Logo -->
+          <div class="app-brand justify-content-center">
+            <a href="{% url 'home' %}" class="app-brand-link gap-2">
+              <img src="{% static 'assets/img/logo.png' %}" alt="Logo MON LIVRO PRO" class="app-brand-logo" style="height: 100px;" />
+            </a>
+          </div>
+          
+          <!-- Verification Form -->
+          <h4 class="mb-2">Vérification du compte 🔒</h4>
+          <p class="mb-4">Veuillez entrer le code de vérification envoyé à votre adresse email.</p>
+
+          <form method="post" class="mb-3">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                        <span style="font-size: 13px;">{{ error|escape }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="mb-3">
+              <label for="id_code" class="form-label">Code de vérification</label>
+              <div class="input-group">
+                <input 
+                  type="text" 
+                  name="code" 
+                  id="id_code" 
+                  class="form-control text-center" 
+                  placeholder="Entrez le code à 6 chiffres" 
+                  maxlength="6" 
+                  pattern="\d{6}" 
+                  title="Veuillez entrer un code à 6 chiffres" 
+                  required
+                />
+                <span class="input-group-text">
+                  <i class='bx bx-lock-alt'></i>
+                </span>
+              </div>
+              
+              {% if form.code.errors %}
+                  <div class="alert alert-danger mt-2">
+                      {% for error in form.code.errors %}
+                          <span style="font-size: 13px;">{{ error|escape }}</span>
+                      {% endfor %}
+                  </div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              <button class="btn btn-primary d-grid w-100" type="submit">
+                Vérifier le code
+              </button>
+            </div>
+          </form>
+
+          <p class="text-center">
+            <span>Vous n'avez pas reçu de code ?</span>
+            <a href="#" id="resend-code">
+              <span>Renvoyer le code</span>
+            </a>
+          </p>
+        </div>
+      </div>
+      <!-- /Verification Card -->
+    </div>
+</div>
+
+{% endblock %}
+

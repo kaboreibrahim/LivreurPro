@@ -1,0 +1,25 @@
+{% extends 'layouts/base_site.html' %}
+
+{% block content %}
+<div class="container my-5 py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <div class="error-template">
+                <h1 class="display-1 text-danger">{{ error_code }}</h1>
+                <h2 class="display-4">{{ title }}</h2>
+                <div class="error-details my-4">
+                    <p class="lead">{{ error_message }}</p>
+                </div>
+                <div class="error-actions mt-4">
+                    <a href="{% url 'home' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-home"></i> Retour à l'accueil
+                    </a>
+                    <a href="{% url 'contact' %}" class="btn btn-outline-secondary btn-lg">
+                        <i class="fas fa-envelope"></i> Contactez-nous
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

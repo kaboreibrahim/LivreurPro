@@ -1,0 +1,131 @@
+
+    
+/* Mobile map fullscreen styles */
+@media (max-width: 768px) {
+    .mobile-map-fullscreen-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: white;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .mobile-map-close-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #f44336;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        font-size: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1001;
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .map-container {
+        flex-grow: 1;
+        height: calc(100% - 60px);
+        width: 100%;
+    }
+}
+    .map-container {
+        height: 300px;
+        width: 100%;
+        margin-bottom: 15px;
+    }
+
+    /* Ensure map size fits on smaller screens */
+    @media (max-width: 768px) {
+        .map-container {
+            height: 250px;
+        }
+    }
+
+    /* Adjust form elements for mobile view */
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    /* Make the form take full width on small screens */
+    .form-control {
+        width: 100%;
+    }
+
+    /* Style for the map buttons */
+    .map-buttons {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+
+    /* Loading animation styles */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .btn-location.loading {
+        pointer-events: none;
+        opacity: 0.6;
+    }
+
+    /* Styles pour l'autocomplétion */
+    .autocomplete-suggestions {
+        border: 1px solid #ddd;
+        background: #fff;
+        overflow: auto;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border-radius: 4px;
+        position: absolute;
+        z-index: 1000;
+        max-height: 200px;
+        width: 100%;
+    }
+
+    .autocomplete-suggestion {
+        padding: 8px 12px;
+        cursor: pointer;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .autocomplete-suggestion:hover {
+        background-color: #f8f9fa;
+    }
+
+    .autocomplete-suggestion i {
+        margin-right: 8px;
+        color: #6c757d;
+    }

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vérification de votre compte LivreurPro</title>
+    
+    <style>
+        body {
+            font-family: 'Public Sans', sans-serif;
+            line-height: 1.6;
+            color: #1A1A1A;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .email-container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background-color: #000080;
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+        }
+        .logo {
+            max-width: 180px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+        .content {
+            padding: 30px;
+            background-color: #ffffff;
+            color: #333333;
+        }
+        .code {
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+            letter-spacing: 5px;
+            margin: 25px 0;
+            padding: 20px;
+            background-color: #FFF9E5;
+            border-radius: 6px;
+            color: #000080;
+            border: 2px dashed #FF6B00;
+        }
+        .footer {
+            margin-top: 30px;
+            padding: 20px;
+            text-align: center;
+            font-size: 13px;
+            color: #666666;
+            border-top: 1px solid #eeeeee;
+            background-color: #f9f9f9;
+        }
+        .btn-primary {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: #FF6B00;
+            color: white !important;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 600;
+            margin: 10px 0;
+        }
+        .text-primary {
+            color: #000080;
+        }
+        .text-secondary {
+            color: #FF6B00;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <img src="{% static 'assets/img/logo.png' %}" alt="LivreurPro Logo" class="logo">
+            <h2 style="margin: 10px 0 0; font-size: 24px;">Vérification de votre compte</h2>
+        </div>
+        <div class="content">
+            <p>Bonjour <strong>{{ user.first_name }}</strong>,</p>
+            <p>Merci de vous être inscrit sur <span class="text-primary">LivreurPro</span>. Pour activer votre compte, veuillez utiliser le code de vérification ci-dessous :</p>
+            
+            <div class="code">
+                {{ code }}
+            </div>
+            
+            <p style="text-align: center;">
+                <small>Ce code est valable pendant 24 heures. Ne le partagez avec personne.</small>
+            </p>
+            
+            <p>Si vous n'êtes pas à l'origine de cette inscription, veuillez ignorer cet email ou nous contacter à l'adresse <a href="mailto:support@livreurpro.com" class="text-secondary">support@livreurpro.com</a>.</p>
+            
+            <p>Cordialement,<br>L'équipe <span class="text-primary">LivreurPro</span></p>
+        </div>
+        <div class="footer">
+            <p>© {% now "Y" %} LivreurPro. Tous droits réservés.</p>
+            <p style="margin-top: 5px; font-size: 12px; color: #999;">
+                <a href="#" style="color: #666; text-decoration: none; margin: 0 5px;">Confidentialité</a> | 
+                <a href="#" style="color: #666; text-decoration: none; margin: 0 5px;">Conditions d'utilisation</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
