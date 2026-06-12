@@ -14,8 +14,10 @@ drf-yasg==1.21.10
 django-filter==24.3
 uritemplate==4.1.1
 
-# --- PostgreSQL ---
-psycopg2-binary==2.9.9
+
+
+# --- Static files ---
+whitenoise==6.9.0
 
 # --- CORS & Forms ---
 django-cors-headers==4.4.0
@@ -35,7 +37,7 @@ kombu==5.5.4
 vine==5.1.0
 
 # --- Utilitaires ---
-pillow==10.4.0
+
 python-dateutil==2.9.0.post0
 pytz==2025.2
 tzdata==2025.2
@@ -58,5 +60,3 @@ wcwidth==0.2.14
 # --- Build tools ---
 setuptools==47.1.0
 
-
-mysqlclient==2.2.4

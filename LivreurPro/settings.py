@@ -29,7 +29,7 @@ from django.utils.translation import gettext_lazy as _
 SECRET_KEY = "django-insecure-fy9_bg)8bjt-r=*v^v(q-#_26avm@hf@u%cmx5i398$w&x4_m)"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG =True
+DEBUG =False
 
 ALLOWED_HOSTS = ['*']
 
@@ -63,6 +63,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # WhiteNoise — juste après SecurityMiddleware
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -93,6 +94,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "Demande.context_processors.notifications_context",
             ],
         },
     },
@@ -105,34 +107,34 @@ WSGI_APPLICATION = "LivreurPro.wsgi.application"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'LivreurPro',
-        'USER': 'postgres',
-        'PASSWORD': '1234',
-        'HOST': 'localhost',  # Essayez 'localhost' au lieu de '127.0.0.1'
-        'PORT': '5432',
-        'OPTIONS': {
-            'client_encoding': 'UTF8',
-        },
-    }
-}
-
-
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'c2712705c_LivreurPro',  # Nom de votre base de données
-#         'HOST': '127.0.0.1',            # Adresse du serveur MySQL, ici localhost
-#         'USER': 'c2712705c_admin',                 # Nom d'utilisateur MySQL
-#         'PASSWORD': 'SD]g6NA;as^qe.f',                 # Mot de passe MySQL (à remplir si nécessaire)
-#         'PORT': 3306,                   # Port MySQL, par défaut 3306
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'LivreurPro',
+#         'USER': 'postgres',
+#         'PASSWORD': '1234',
+#         'HOST': 'localhost',  # Essayez 'localhost' au lieu de '127.0.0.1'
+#         'PORT': '5432',
 #         'OPTIONS': {
-#             'sql_mode': 'STRICT_ALL_TABLES',  # Mode SQL strict pour respecter les bonnes pratiques
+#             'client_encoding': 'UTF8',
 #         },
-#     },
+#     }
 # }
+
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'c2712705c_LivreurPro',  # Nom de votre base de données
+        'HOST': '127.0.0.1',            # Adresse du serveur MySQL, ici localhost
+        'USER': 'c2712705c_admin',                 # Nom d'utilisateur MySQL
+        'PASSWORD': 'SD]g6NA;as^qe.f',                 # Mot de passe MySQL (à remplir si nécessaire)
+        'PORT': 3306,                   # Port MySQL, par défaut 3306
+        'OPTIONS': {
+            'sql_mode': 'STRICT_ALL_TABLES',  # Mode SQL strict pour respecter les bonnes pratiques
+        },
+    },
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -178,6 +180,16 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
+# WhiteNoise — compression + cache long durée des fichiers statiques
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    },
+}
+
  
 
 MEDIA_URL = 'medias/'
@@ -185,7 +197,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'medias')
 
 
 # Configuration Mapbox
-MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoiaWJyYWsiLCJhIjoiY21oYnV4M3M5MDZqMTJyc2E0enFpbTlwaCJ9.OH_RYh--XO3vn363pKRlRg'
+MAPBOX_ACCESS_TOKEN = os.environ.get('MAPBOX_ACCESS_TOKEN', '')
 
 
 

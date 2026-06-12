@@ -6,8 +6,8 @@ from Demande.models import DCL
 def modifier_prix(request, pk):
     if not request.user.is_authenticated or not request.user.is_staff:
         messages.error(request, "Vous n'avez pas la permission d'effectuer cette action.")
-        return redirect('Gestionnaire:liste_demandes')
-    
+        return redirect('Gestionnaire:liste_demandes_gestionnaire')
+
     if request.method == 'POST':
         demande = get_object_or_404(DCL, pk=pk)
         nouveau_prix = request.POST.get('prix')
@@ -41,4 +41,4 @@ def modifier_prix(request, pk):
         
         return redirect('Gestionnaire:detail_demande', pk=demande.pk)
     
-    return redirect('Gestionnaire:liste_demandes')
+    return redirect('Gestionnaire:liste_demandes_gestionnaire')

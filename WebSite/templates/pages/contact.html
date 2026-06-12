@@ -1,5 +1,38 @@
 {% extends 'layouts/base_site.html' %}
 {% load static %}
+
+{% block title %}Contactez-Nous - Mon Livreur Pro | Grand-Bassam, Côte d'Ivoire{% endblock %}
+{% block meta_description %}Contactez Mon Livreur Pro pour toute demande de livraison à Grand-Bassam ou Abidjan. Téléphone : +225 01 50 20 05 09 | Email : infos@mon-livreur-pro.com. Réponse rapide garantie.{% endblock %}
+{% block og_title %}Contactez Mon Livreur Pro - Grand-Bassam, Côte d'Ivoire{% endblock %}
+{% block og_description %}Contactez Mon Livreur Pro par téléphone, email ou formulaire en ligne. Nous sommes disponibles du lundi au samedi de 7h à 20h.{% endblock %}
+{% block twitter_title %}Contactez Mon Livreur Pro - Grand-Bassam, Côte d'Ivoire{% endblock %}
+{% block twitter_description %}Contactez Mon Livreur Pro par téléphone, email ou formulaire en ligne. Disponible du lundi au samedi de 7h à 20h.{% endblock %}
+{% block meta_robots %}index, follow{% endblock %}
+
+{% block json_ld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ContactPage",
+  "name": "Contactez Mon Livreur Pro",
+  "url": "{{ request.scheme }}://{{ request.get_host }}/contact/",
+  "mainEntity": {
+    "@type": "LocalBusiness",
+    "name": "Mon Livreur Pro",
+    "telephone": "+2250150200509",
+    "email": "infos@mon-livreur-pro.com",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Cité AGD, Modeste",
+      "addressLocality": "Grand-Bassam",
+      "addressCountry": "CI"
+    },
+    "openingHours": "Mo-Sa 07:00-20:00"
+  }
+}
+</script>
+{% endblock json_ld %}
+
 {% block content %}
 
     <!-- Hero Start -->

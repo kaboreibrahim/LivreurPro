@@ -1,18 +1,66 @@
 {% extends 'layouts/base_site.html' %}
 {% load static %}
 
+{% block title %}Mon Livreur Pro - Livraison Express à Grand-Bassam & Abidjan, Côte d'Ivoire{% endblock %}
+{% block meta_description %}Mon Livreur Pro assure votre livraison express à Grand-Bassam et Abidjan. Colis, documents administratifs, e-commerce : rapide, fiable et abordable. Demandez un coursier en ligne.{% endblock %}
+{% block og_title %}Mon Livreur Pro - Livraison Express à Grand-Bassam & Abidjan{% endblock %}
+{% block og_description %}Service de livraison express, rapide et fiable pour particuliers et entreprises à Grand-Bassam et Abidjan. Demandez un coursier en ligne dès maintenant.{% endblock %}
+{% block twitter_title %}Mon Livreur Pro - Livraison Express à Grand-Bassam & Abidjan{% endblock %}
+{% block twitter_description %}Service de livraison express, rapide et fiable pour particuliers et entreprises à Grand-Bassam et Abidjan.{% endblock %}
+
+{% block json_ld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  "name": "Mon Livreur Pro",
+  "description": "Service de livraison professionnel à Grand-Bassam et Abidjan, Côte d'Ivoire.",
+  "url": "{{ request.scheme }}://{{ request.get_host }}/accueil/",
+  "telephone": "+2250150200509",
+  "email": "infos@mon-livreur-pro.com",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Cité AGD, Modeste",
+    "addressLocality": "Grand-Bassam",
+    "addressRegion": "Lagunes",
+    "addressCountry": "CI"
+  },
+  "areaServed": [
+    {"@type": "City", "name": "Grand-Bassam"},
+    {"@type": "City", "name": "Abidjan"}
+  ],
+  "image": "{{ request.scheme }}://{{ request.get_host }}{% static 'site/img/logo.png' %}",
+  "priceRange": "$$",
+  "openingHours": "Mo-Sa 07:00-20:00"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Mon Livreur Pro",
+  "url": "{{ request.scheme }}://{{ request.get_host }}/accueil/",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "{{ request.scheme }}://{{ request.get_host }}/demande/",
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+{% endblock json_ld %}
+
 {% block content %}
 <style>
     :root {
         --primary-color: #000080;
-        --primary-gradient: linear-gradient(135deg, #000080, #1e3c72, #2a5298);
-        --secondary-color: rgb(255, 172, 7);
+        --primary-gradient: linear-gradient(135deg, #000080 0%, #00006a 55%, #000055 100%);
+        --secondary-color: #FF6B00;   /* CORRIGÉ: était rgb(255,172,7) */
         --text-light: #f5f5dc;
         --font-primary: 'Inter', sans-serif;
         --font-secondary: 'Poppins', sans-serif;
         --border-radius: 12px;
-        --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.10);
+        --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     /* Hero Section */
@@ -44,17 +92,33 @@
     }
 
     .hero-header .btn-primary-custom {
-        background: var(--secondary-color);
+        background: linear-gradient(135deg, #FF6B00 0%, #e05e00 100%);
         color: white;
         border: none;
-        box-shadow: 0 4px 15px rgba(255, 172, 7, 0.4);
+        box-shadow: 0 4px 15px rgba(255, 107, 0, 0.40);
         transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-header .btn-primary-custom::after {
+        content: '';
+        position: absolute;
+        top: -50%; left: -75%;
+        width: 50%; height: 200%;
+        background: linear-gradient(to right, transparent, rgba(255,255,255,.22), transparent);
+        transform: skewX(-20deg);
+        transition: left .5s ease;
     }
 
     .hero-header .btn-primary-custom:hover {
-        background: #ff9800;
+        background: linear-gradient(135deg, #e05e00 0%, #cc5200 100%);
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(255, 172, 7, 0.6);
+        box-shadow: 0 8px 24px rgba(255, 107, 0, 0.60);
+    }
+
+    .hero-header .btn-primary-custom:hover::after {
+        left: 125%;
     }
 
     .hero-header .btn-outline-custom {
@@ -102,10 +166,14 @@
 
     /* Section Titles */
     .section-title-badge {
-        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        background: linear-gradient(135deg, #FF6B00 0%, #e05e00 100%) !important;
         color: white !important;
         border: none !important;
-        box-shadow: 0 4px 10px rgba(0, 0, 128, 0.2);
+        box-shadow: 0 4px 12px rgba(255, 107, 0, 0.30);
+        font-size: .78rem;
+        font-weight: 700;
+        letter-spacing: .8px;
+        text-transform: uppercase;
     }
 
     /* About Section */
@@ -123,7 +191,7 @@
         left: -50%;
         width: 200%;
         height: 200%;
-        background: linear-gradient(45deg, transparent, rgba(255, 172, 7, 0.1), transparent);
+        background: linear-gradient(45deg, transparent, rgba(255, 107, 0, 0.12), transparent);
         transform: rotate(45deg);
         transition: var(--transition);
     }
@@ -216,23 +284,45 @@
         position: absolute;
         width: 500px;
         height: 500px;
-        background: rgba(255, 172, 7, 0.1);
+        background: rgba(255, 107, 0, 0.12);
         border-radius: 50%;
         top: -250px;
         right: -250px;
     }
 
+    .feature::after {
+        content: '';
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        background: rgba(255, 107, 0, 0.08);
+        border-radius: 50%;
+        bottom: -100px;
+        left: 5%;
+        pointer-events: none;
+    }
+
     .stats-card {
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         border-radius: var(--border-radius);
         border: 1px solid rgba(255, 255, 255, 0.2);
         transition: var(--transition);
     }
 
     .stats-card:hover {
-        background: rgba(255, 255, 255, 0.25);
-        transform: scale(1.05);
+        background: rgba(255, 255, 255, 0.22);
+        transform: translateY(-4px);
+        box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+    }
+
+    .stats-card h2,
+    .stats-card .display-4,
+    .stats-card [data-toggle="counter-up"] {
+        color: #FF6B00 !important;
+        font-size: 2.4rem;
+        font-weight: 800;
     }
 
     /* FAQ Section */
@@ -255,6 +345,7 @@
     .accordion-button:not(.collapsed) {
         background: var(--primary-gradient);
         color: white;
+        border-left: 4px solid #FF6B00;
         box-shadow: none;
     }
 
@@ -403,8 +494,8 @@
                     window.onload = typeText;
                 </script>      
                 <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center justify-content-lg-start">
-                    <a href="{% url 'login' %}" class="btn btn-primary-custom py-3 px-5 rounded-pill animated slideInRight">
-                        <i class="bi bi-map me-2"></i>où allons-nous ? 
+                    <a href="{% url 'demande_publique' %}" class="btn btn-primary-custom py-3 px-5 rounded-pill animated slideInRight">
+                        <i class="fas fa-motorcycle me-2"></i>Demander un coursier
                     </a>
                     <a href="{% url 'Service' %}" class="btn btn-outline-custom py-3 px-5 rounded-pill animated slideInRight">
                         <i class="bi bi-list-check me-2"></i>Nos services

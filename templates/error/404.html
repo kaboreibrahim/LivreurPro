@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 — Page Introuvable | Mon Livreur Pro</title>
+<style>
+  :root {
+    --navy: #000080;
+    --orange: #FF6B00;
+    --light: #FFF9E5;
+    --dark: #0a0a2e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--dark);
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ---- étoiles ---- */
+  .stars {
+    position: fixed; inset: 0; pointer-events: none;
+  }
+  .star {
+    position: absolute;
+    border-radius: 50%;
+    background: #fff;
+    animation: twinkle var(--dur, 3s) ease-in-out infinite;
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.2; transform: scale(1); }
+    50%       { opacity: 1;   transform: scale(1.4); }
+  }
+
+  /* ---- planète ---- */
+  .planet {
+    position: absolute;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #3a3aaa, var(--navy));
+    box-shadow: 0 0 60px rgba(0,0,128,.6);
+    top: 8%; right: 8%;
+    animation: float 8s ease-in-out infinite;
+  }
+  .planet::after {
+    content: '';
+    position: absolute; top: 50%; left: -30%;
+    width: 160%; height: 30%;
+    border-radius: 50%;
+    border: 14px solid rgba(255,107,0,.35);
+    transform: translateY(-50%) rotateX(70deg);
+  }
+
+  /* ---- camion ---- */
+  .truck-wrap {
+    position: absolute;
+    bottom: 22%;
+    animation: drive 12s linear infinite;
+  }
+  @keyframes drive {
+    0%   { left: -200px; }
+    100% { left: 110%; }
+  }
+  .truck {
+    font-size: 3.5rem;
+    filter: drop-shadow(0 0 10px var(--orange));
+    transform: scaleX(-1);
+    animation: bump .4s ease-in-out infinite alternate;
+  }
+  @keyframes bump {
+    from { transform: scaleX(-1) translateY(0); }
+    to   { transform: scaleX(-1) translateY(-5px); }
+  }
+  .truck-trail {
+    position: absolute;
+    left: 100%; top: 50%;
+    width: 80px; height: 3px;
+    background: linear-gradient(to right, var(--orange), transparent);
+    transform: translateY(-50%);
+    border-radius: 2px;
+  }
+
+  /* ---- road ---- */
+  .road {
+    position: absolute;
+    bottom: 20%; left: 0; right: 0;
+    height: 6px;
+    background: repeating-linear-gradient(to right,
+      var(--orange) 0, var(--orange) 30px,
+      transparent 30px, transparent 60px);
+    opacity: .25;
+    animation: road-scroll 1s linear infinite;
+  }
+  @keyframes road-scroll {
+    from { background-position: 0 0; }
+    to   { background-position: 60px 0; }
+  }
+
+  /* ---- contenu ---- */
+  .content {
+    text-align: center;
+    z-index: 10;
+    padding: 2rem;
+  }
+
+  .error-code {
+    font-size: clamp(5rem, 18vw, 12rem);
+    font-weight: 900;
+    line-height: 1;
+    background: linear-gradient(135deg, var(--orange), #ffb347, var(--orange));
+    background-size: 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 2.5s linear infinite;
+    letter-spacing: -4px;
+  }
+  @keyframes shimmer {
+    0%   { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+  }
+
+  .oops {
+    font-size: 1.1rem;
+    color: var(--orange);
+    text-transform: uppercase;
+    letter-spacing: 6px;
+    margin: .5rem 0 1.2rem;
+    animation: pulse-text 2s ease-in-out infinite;
+  }
+  @keyframes pulse-text {
+    0%, 100% { opacity: .7; }
+    50%       { opacity: 1; }
+  }
+
+  .title {
+    font-size: clamp(1.3rem, 4vw, 2rem);
+    font-weight: 700;
+    margin-bottom: .8rem;
+    color: #e8e8ff;
+  }
+
+  .subtitle {
+    font-size: .95rem;
+    color: #9999cc;
+    max-width: 420px;
+    line-height: 1.6;
+    margin: 0 auto 2rem;
+  }
+
+  /* ---- boutons ---- */
+  .btn-group { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+  .btn {
+    padding: .75rem 2rem;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: .9rem;
+    text-decoration: none;
+    transition: transform .2s, box-shadow .2s;
+    cursor: pointer;
+    border: none;
+  }
+  .btn:hover { transform: translateY(-3px); }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--orange), #e55a00);
+    color: #fff;
+    box-shadow: 0 6px 24px rgba(255,107,0,.4);
+  }
+  .btn-primary:hover { box-shadow: 0 10px 32px rgba(255,107,0,.6); }
+
+  .btn-outline {
+    background: transparent;
+    color: #fff;
+    border: 2px solid rgba(255,255,255,.25);
+  }
+  .btn-outline:hover { border-color: var(--orange); color: var(--orange); }
+
+  /* ---- astronaute ---- */
+  .astronaut {
+    font-size: 4rem;
+    display: block;
+    margin: 0 auto 1rem;
+    animation: float 4s ease-in-out infinite;
+    filter: drop-shadow(0 0 18px rgba(255,107,0,.5));
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(-3deg); }
+    50%       { transform: translateY(-18px) rotate(3deg); }
+  }
+</style>
+</head>
+<body>
+
+<!-- étoiles générées -->
+<div class="stars" id="stars"></div>
+
+<div class="planet"></div>
+
+<div class="truck-wrap">
+  <span class="truck">🚚</span>
+  <div class="truck-trail"></div>
+</div>
+<div class="road"></div>
+
+<div class="content">
+  <span class="astronaut">🚀</span>
+  <div class="error-code">404</div>
+  <p class="oops">Oops !</p>
+  <h1 class="title">Livraison Introuvable</h1>
+  <p class="subtitle">
+    Notre livreur a cherché partout, mais cette page s'est perdue dans l'espace.
+    Il a peut-être pris le mauvais chemin… ou l'URL a changé.
+  </p>
+  <div class="btn-group">
+    <a href="/" class="btn btn-primary">🏠 Retour à l'accueil</a>
+    <a href="javascript:history.back()" class="btn btn-outline">← Page précédente</a>
+  </div>
+</div>
+
+<script>
+  // Génère des étoiles aléatoires
+  const container = document.getElementById('stars');
+  for (let i = 0; i < 120; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = Math.random() * 3 + 1;
+    s.style.cssText = `
+      width:${size}px; height:${size}px;
+      top:${Math.random()*100}%; left:${Math.random()*100}%;
+      --dur:${(Math.random()*4+2).toFixed(1)}s;
+      animation-delay:${(Math.random()*4).toFixed(1)}s;
+    `;
+    container.appendChild(s);
+  }
+</script>
+</body>
+</html>

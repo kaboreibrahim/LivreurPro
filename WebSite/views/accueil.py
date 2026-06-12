@@ -73,7 +73,14 @@ def robots_txt(request):
     lines = [
         "User-agent: *",
         "Disallow: /admin/",
-        "Allow: /"
+        "Disallow: /Auth/",
+        "Disallow: /client/",
+        "Disallow: /gestionnaire/",
+        "Disallow: /livreur/",
+        "Disallow: /notifications/",
+        "Allow: /",
+        "",
+        f"Sitemap: {request.scheme}://{request.get_host()}/sitemap.xml",
     ]
     return HttpResponse("\n".join(lines), content_type="text/plain")
 

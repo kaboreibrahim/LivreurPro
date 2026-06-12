@@ -1,828 +1,524 @@
 {% extends 'base_gestionnaire.html' %}
-{% block page_title %}Détails du Client - {{ client.username }}{% endblock %}
+{% block page_title %}Profil Client — {{ client.username }}{% endblock %}
 {% load static %}
 
-{% block content %}
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 <style>
-    :root {
-        --primary-color: #4f46e5;
-        --secondary-color: #6366f1;
-        --success-color: #10b981;
-        --warning-color: #f59e0b;
-        --danger-color: #ef4444;
-        --info-color: #3b82f6;
-    }
-    
-    body {
-        background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
-        min-height: 100vh;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    }
-    
-    /* Breadcrumb */
-    .breadcrumb-custom {
-        background: transparent;
-        padding: 0;
-        margin-bottom: 1.5rem;
-    }
-    
-    .breadcrumb-custom .breadcrumb-item {
-        color: #64748b;
-        font-size: 0.9rem;
-    }
-    
-    .breadcrumb-custom .breadcrumb-item a {
-        color: var(--primary-color);
-        text-decoration: none;
-        transition: all 0.2s ease;
-    }
-    
-    .breadcrumb-custom .breadcrumb-item a:hover {
-        color: var(--secondary-color);
-    }
-    
-    .breadcrumb-custom .breadcrumb-item.active {
-        color: #1e293b;
-        font-weight: 600;
-    }
-    
-    /* Carte de profil */
-    .profile-card {
-        background: white;
-        border-radius: 16px;
-        padding: 2rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-        text-align: center;
-        position: sticky;
-        top: 20px;
-    }
-    
-    .profile-photo-wrapper {
-        position: relative;
-        width: 160px;
-        height: 160px;
-        margin: 0 auto 1.5rem;
-    }
-    
-    .profile-photo {
-        width: 160px;
-        height: 160px;
-        border-radius: 50%;
-        overflow: hidden;
-        border: 4px solid #f1f5f9;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-        position: relative;
-    }
-    
-    .profile-photo img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    
-    .profile-initials {
-        width: 160px;
-        height: 160px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 3.5rem;
-        font-weight: 700;
-        color: white;
-        border: 4px solid #f1f5f9;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-    }
-    
-    .online-indicator {
-        position: absolute;
-        bottom: 8px;
-        right: 8px;
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        background: var(--success-color);
-        border: 3px solid white;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    }
-    
-    .online-indicator.offline {
-        background: #94a3b8;
-    }
-    
-    .profile-name {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #1e293b;
-        margin: 0 0 0.25rem 0;
-    }
-    
-    .profile-role {
-        color: #64748b;
-        font-size: 0.95rem;
-        margin-bottom: 1.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-    }
-    
-    .action-buttons {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-        margin-top: 2rem;
-        padding-top: 2rem;
-        border-top: 2px solid #f1f5f9;
-    }
-    
-    .btn-action {
-        padding: 0.75rem 1.5rem;
-        border-radius: 12px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        border: 2px solid;
-    }
-    
-    .btn-deactivate {
-        background: rgba(245, 158, 11, 0.1);
-        border-color: rgba(245, 158, 11, 0.3);
-        color: #f59e0b;
-    }
-    
-    .btn-deactivate:hover {
-        background: #f59e0b;
-        border-color: #f59e0b;
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
-    }
-    
-    .btn-activate {
-        background: rgba(16, 185, 129, 0.1);
-        border-color: rgba(16, 185, 129, 0.3);
-        color: #10b981;
-    }
-    
-    .btn-activate:hover {
-        background: #10b981;
-        border-color: #10b981;
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
-    }
-    
-    .btn-back {
-        background: #f8fafc;
-        border-color: #e2e8f0;
-        color: #64748b;
-    }
-    
-    .btn-back:hover {
-        background: white;
-        border-color: var(--primary-color);
-        color: var(--primary-color);
-        transform: translateY(-2px);
-    }
-    
-    /* Carte d'informations */
-    .info-card {
-        background: white;
-        border-radius: 16px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-        overflow: hidden;
-        margin-bottom: 1.5rem;
-    }
-    
-    .info-card-header {
-        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-        padding: 1.5rem 2rem;
-        color: white;
-    }
-    
-    .info-card-title {
-        font-size: 1.25rem;
-        font-weight: 700;
-        margin: 0;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-    
-    .info-card-body {
-        padding: 0;
-    }
-    
-    /* Liste d'informations */
-    .info-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-    
-    .info-item {
-        display: flex;
-        padding: 1.5rem 2rem;
-        border-bottom: 1px solid #f1f5f9;
-        transition: all 0.2s ease;
-    }
-    
-    .info-item:last-child {
-        border-bottom: none;
-    }
-    
-    .info-item:hover {
-        background: #f8fafc;
-    }
-    
-    .info-label {
-        flex: 0 0 200px;
-        font-weight: 700;
-        color: #64748b;
-        font-size: 0.9rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    
-    .info-label i {
-        font-size: 1rem;
-        color: var(--primary-color);
-    }
-    
-    .info-value {
-        flex: 1;
-        color: #1e293b;
-        font-weight: 500;
-        font-size: 0.95rem;
-    }
-    
-    /* Badges modernes */
-    .status-badge {
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        font-weight: 600;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    
-    .status-badge.active {
-        background: #d1fae5;
-        color: #065f46;
-    }
-    
-    .status-badge.inactive {
-        background: #fee2e2;
-        color: #991b1b;
-    }
-    
-    .status-badge.verified {
-        background: #dbeafe;
-        color: #1e40af;
-    }
-    
-    .status-badge.unverified {
-        background: #fef3c7;
-        color: #92400e;
-    }
-    
-    .status-badge.online {
-        background: #d1fae5;
-        color: #065f46;
-        animation: pulse 2s infinite;
-    }
-    
-    .status-badge.offline {
-        background: #f1f5f9;
-        color: #64748b;
-    }
-    
-    .status-badge i {
-        font-size: 0.7rem;
-    }
-    
-    @keyframes pulse {
-        0%, 100% {
-            opacity: 1;
-        }
-        50% {
-            opacity: 0.7;
-        }
-    }
-    
-    /* Section de statistiques */
-    .stats-section {
-        background: white;
-        border-radius: 16px;
-        padding: 2rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-        margin-bottom: 1.5rem;
-    }
-    
-    .stats-title {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: #1e293b;
-        margin-bottom: 1.5rem;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-    
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 1rem;
-    }
-    
-    .stat-item {
-        background: #f8fafc;
-        padding: 1.25rem;
-        border-radius: 12px;
-        text-align: center;
-        transition: all 0.3s ease;
-        border: 2px solid transparent;
-    }
-    
-    .stat-item:hover {
-        background: white;
-        border-color: var(--primary-color);
-        transform: translateY(-4px);
-        box-shadow: 0 8px 20px rgba(79, 70, 229, 0.15);
-    }
-    
-    .stat-icon {
-        font-size: 2rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    .stat-value {
-        font-size: 1.75rem;
-        font-weight: 800;
-        color: #1e293b;
-        margin: 0.5rem 0 0.25rem 0;
-    }
-    
-    .stat-label {
-        color: #64748b;
-        font-size: 0.85rem;
-        font-weight: 600;
-    }
-    
-    /* Responsive */
-    @media (max-width: 768px) {
-        .profile-card {
-            position: static;
-            margin-bottom: 1.5rem;
-        }
-        
-        .info-item {
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-        
-        .info-label {
-            flex: 0 0 auto;
-        }
-        
-        .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-     
-       /* Style général du tableau */
-    .table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        font-size: 0.9rem;
-    }
+:root {
+    --navy:        #000080;
+    --navy-dark:   #000060;
+    --navy-light:  #e8eaf6;
+    --orange:      #FF6B00;
+    --orange-light:#fff3e0;
+    --bg:          #F0F2F7;
+    --card-bg:     #ffffff;
+    --border:      #e8ecf0;
+    --t1:          #0f172a;
+    --t2:          #475569;
+    --t3:          #94a3b8;
+    --radius:      14px;
+    --shadow-sm:   0 1px 4px rgba(0,0,0,.07);
+    --shadow-md:   0 4px 16px rgba(0,0,0,.10);
+    --shadow-lg:   0 8px 32px rgba(0,0,0,.13);
+    --tr:          .22s cubic-bezier(.4,0,.2,1);
+}
+body { background: var(--bg); }
+.detail-wrap { max-width: 1200px; margin: 0 auto; padding: 0 1.25rem 3rem; }
 
-    /* En-tête du tableau */
-    .table thead th {
-        background-color: #f8f9fa;
-        color: #6c757d;
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.75rem;
-        letter-spacing: 0.5px;
-        padding: 1rem 1.25rem;
-        border: none;
-        white-space: nowrap;
-    }
+/* ── Top bar ── */
+.top-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.5rem; flex-wrap: wrap; gap: .75rem;
+}
+.btn-back {
+    display:inline-flex; align-items:center; gap:.4rem;
+    background:var(--card-bg); border:1.5px solid var(--border);
+    color:var(--t2); border-radius:10px; padding:.55rem 1.1rem;
+    font-size:.88rem; font-weight:600; text-decoration:none; transition:var(--tr);
+}
+.btn-back:hover { border-color:var(--navy); color:var(--navy); transform:translateY(-1px); }
+.breadcrumb-txt { font-size:.82rem; color:var(--t3); }
+.breadcrumb-txt a { color:var(--navy); text-decoration:none; font-weight:600; }
+.breadcrumb-txt a:hover { color:var(--orange); }
 
-    /* Cellules du tableau */
-    .table td {
-        padding: 1rem 1.25rem;
-        vertical-align: middle;
-        border-top: 1px solid #f1f3f9;
-        color: #4a4a4a;
-    }
+/* ── Layout ── */
+.detail-grid {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+}
+@media (max-width:900px) { .detail-grid { grid-template-columns: 1fr; } }
 
-    /* Lignes du tableau */
-    .table tbody tr {
-        transition: all 0.2s ease;
-        background-color: #fff;
-    }
+/* ── Profile card ── */
+.profile-card {
+    background: var(--card-bg); border-radius: var(--radius);
+    box-shadow: var(--shadow-sm); border: 1px solid var(--border);
+    overflow: hidden; position: sticky; top: 20px;
+}
+.profile-banner {
+    background: linear-gradient(135deg, var(--navy) 0%, #1a237e 60%, #283593 100%);
+    height: 80px; position: relative;
+}
+.profile-banner::before {
+    content:''; position:absolute; inset:0;
+    background:url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='g' width='30' height='30' patternUnits='userSpaceOnUse'%3E%3Cpath d='M30 0L0 0 0 30' fill='none' stroke='rgba(255,255,255,.04)' stroke-width='1'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='60' height='60' fill='url(%23g)'/%3E%3C/svg%3E");
+    opacity:.6;
+}
+.profile-avatar-wrap {
+    display: flex; justify-content: center;
+    margin-top: -40px; position: relative; z-index: 1;
+}
+.profile-avatar {
+    width: 80px; height: 80px; border-radius: 50%;
+    border: 3px solid var(--card-bg); box-shadow: var(--shadow-md);
+    overflow: hidden; background: linear-gradient(135deg, var(--navy), #3949ab);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; font-weight: 800; color: #fff;
+    position: relative;
+}
+.profile-avatar img { width:100%; height:100%; object-fit:cover; }
+.online-dot {
+    position: absolute; bottom: 4px; right: 4px;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: #10b981; border: 2.5px solid var(--card-bg);
+}
+.online-dot.offline { background: var(--t3); }
 
-    .table tbody tr:hover {
-        background-color: #f8f9fa;
-    }
+.profile-body { padding: 1rem 1.4rem 1.4rem; text-align: center; }
+.profile-name { font-size: 1.15rem; font-weight: 800; color: var(--t1); margin: 0 0 .25rem; }
+.profile-sub  { font-size: .82rem; color: var(--t3); margin-bottom: .85rem; display:flex; align-items:center; justify-content:center; gap:.3rem; }
+.profile-status {
+    display: inline-flex; align-items: center; gap: .3rem;
+    padding: .3rem .85rem; border-radius: 20px;
+    font-size: .72rem; font-weight: 700;
+    margin-bottom: 1.25rem;
+}
+.st-active   { background:#d1fae5; color:#065f46; }
+.st-inactive { background:#fee2e2; color:#991b1b; }
 
-    /* Badges */
-    .badge {
-        font-weight: 500;
-        padding: 0.35em 0.65em;
-        font-size: 0.75em;
-        border-radius: 50rem;
-    }
+/* quick info rows */
+.qinfo-list { list-style:none; padding:0; margin:0 0 1.25rem; text-align:left; border-top:1px solid var(--border); padding-top:1rem; }
+.qinfo-item { display:flex; align-items:center; gap:.6rem; padding:.45rem 0; font-size:.84rem; color:var(--t2); border-bottom:1px solid #f8fafc; }
+.qinfo-item:last-child { border-bottom:none; }
+.qinfo-item i { color:var(--t3); font-size:.95rem; width:18px; flex-shrink:0; }
+.qinfo-item strong { color:var(--t1); }
 
-    /* Boutons d'action */
-    .btn-action {
-        padding: 0.35rem 0.75rem;
-        font-size: 0.8rem;
-        border-radius: 6px;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.35rem;
-    }
+/* profile actions */
+.profile-actions { display:flex; flex-direction:column; gap:.6rem; border-top:1px solid var(--border); padding-top:1.25rem; }
+.btn-pa {
+    display:flex; align-items:center; justify-content:center; gap:.45rem;
+    padding:.65rem 1rem; border-radius:10px;
+    font-size:.85rem; font-weight:600; border:1.5px solid;
+    text-decoration:none; transition:var(--tr); cursor:pointer; width:100%;
+}
+.btn-pa-deactivate { background:#fff8e1; border-color:#fbbf24; color:#92400e; }
+.btn-pa-deactivate:hover { background:#fbbf24; border-color:#fbbf24; color:#fff; transform:translateY(-1px); box-shadow:0 4px 12px rgba(251,191,36,.35); }
+.btn-pa-activate { background:#ecfdf5; border-color:#6ee7b7; color:#065f46; }
+.btn-pa-activate:hover { background:#10b981; border-color:#10b981; color:#fff; transform:translateY(-1px); box-shadow:0 4px 12px rgba(16,185,129,.35); }
 
-    .btn-action i {
-        font-size: 0.9em;
-    }
+/* ── Right column ── */
+.right-col { display:flex; flex-direction:column; gap:1.25rem; }
 
-    /* Statut */
-    .status-badge {
-        padding: 0.4rem 0.8rem;
-        border-radius: 50px;
-        font-size: 0.75rem;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
+/* ── Section card ── */
+.section-card { background:var(--card-bg); border-radius:var(--radius); box-shadow:var(--shadow-sm); border:1px solid var(--border); overflow:hidden; }
+.sc-header {
+    background: linear-gradient(135deg, var(--navy) 0%, #1a237e 100%);
+    padding: .9rem 1.4rem;
+    display: flex; align-items: center; gap: .6rem;
+}
+.sc-header h3 { font-size:.95rem; font-weight:700; color:#fff; margin:0; }
+.sc-header i  { color:rgba(255,255,255,.8); font-size:1.1rem; }
+.sc-header .sc-badge {
+    margin-left:auto; background:rgba(255,255,255,.2); color:#fff;
+    border-radius:12px; padding:.2rem .65rem; font-size:.74rem; font-weight:700;
+}
 
-    .status-active {
-        background-color: #e8f5e9;
-        color: #2e7d32;
-    }
+/* info grid */
+.info-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 0;
+}
+@media (max-width:640px) { .info-grid { grid-template-columns: 1fr; } }
+.info-cell {
+    padding: 1rem 1.4rem; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    transition: var(--tr);
+}
+.info-cell:nth-child(2n) { border-right:none; }
+.info-cell:nth-last-child(-n+2) { border-bottom:none; }
+.info-cell:hover { background:#f8fafc; }
+.info-lbl { font-size:.72rem; font-weight:700; color:var(--t3); text-transform:uppercase; letter-spacing:.4px; margin-bottom:.3rem; display:flex; align-items:center; gap:.3rem; }
+.info-lbl i { font-size:.8rem; }
+.info-val { font-size:.9rem; font-weight:600; color:var(--t1); }
 
-    .status-inactive {
-        background-color: #ffebee;
-        color: #c62828;
-    }
+/* badge variants */
+.badge-active   { display:inline-flex;align-items:center;gap:.3rem;padding:.28rem .7rem;border-radius:20px;font-size:.72rem;font-weight:700;background:#d1fae5;color:#065f46; }
+.badge-inactive { display:inline-flex;align-items:center;gap:.3rem;padding:.28rem .7rem;border-radius:20px;font-size:.72rem;font-weight:700;background:#fee2e2;color:#991b1b; }
+.badge-verified { display:inline-flex;align-items:center;gap:.3rem;padding:.28rem .7rem;border-radius:20px;font-size:.72rem;font-weight:700;background:#dbeafe;color:#1e40af; }
+.badge-unverif  { display:inline-flex;align-items:center;gap:.3rem;padding:.28rem .7rem;border-radius:20px;font-size:.72rem;font-weight:700;background:#fef3c7;color:#92400e; }
+.badge-online   { display:inline-flex;align-items:center;gap:.3rem;padding:.28rem .7rem;border-radius:20px;font-size:.72rem;font-weight:700;background:#d1fae5;color:#065f46; }
+.badge-offline  { display:inline-flex;align-items:center;gap:.3rem;padding:.28rem .7rem;border-radius:20px;font-size:.72rem;font-weight:700;background:#f1f5f9;color:var(--t2); }
 
-    /* Image de profil */
-    .profile-img {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 2px solid #fff;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
+/* ── Stats grid ── */
+.stats-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+}
+@media (max-width:640px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+.stat-cell {
+    padding: 1.25rem 1.1rem; text-align: center;
+    border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    transition: var(--tr);
+}
+.stat-cell:nth-child(4n) { border-right:none; }
+.stat-cell:nth-last-child(-n+4) { border-bottom:none; }
+@media (max-width:640px) {
+    .stat-cell:nth-child(2n) { border-right:none; }
+    .stat-cell:nth-child(4n) { border-right:1px solid var(--border); }
+    .stat-cell:nth-last-child(-n+4) { border-bottom:1px solid var(--border); }
+    .stat-cell:nth-last-child(-n+2) { border-bottom:none; }
+}
+.stat-cell:hover { background:#f8fafc; }
+.stat-icon-wrap {
+    width:42px; height:42px; border-radius:11px;
+    display:flex; align-items:center; justify-content:center;
+    margin:0 auto .6rem; font-size:1.2rem;
+}
+.stat-val   { font-size:1.6rem; font-weight:800; color:var(--t1); line-height:1; margin-bottom:.25rem; }
+.stat-label { font-size:.72rem; font-weight:700; color:var(--t3); text-transform:uppercase; letter-spacing:.4px; }
 
-    /* Numéro de ligne */
-    .line-number {
-        color: #6c757d;
-        font-weight: 500;
-    }
+/* ── History table ── */
+.hist-table { width:100%; border-collapse:collapse; }
+.hist-table thead tr { background:#f8fafc; }
+.hist-table thead th {
+    padding:.8rem 1.2rem; font-size:.73rem; font-weight:700;
+    text-transform:uppercase; letter-spacing:.5px; color:var(--t3);
+    border-bottom:1px solid var(--border); white-space:nowrap;
+}
+.hist-table tbody tr { border-bottom:1px solid var(--border); transition:var(--tr); cursor:pointer; }
+.hist-table tbody tr:last-child { border-bottom:none; }
+.hist-table tbody tr:hover { background:#f8fafc; }
+.hist-table td { padding:.9rem 1.2rem; vertical-align:middle; font-size:.87rem; color:var(--t1); }
 
-    /* Responsive */
-    @media (max-width: 992px) {
-        .table-responsive {
-            border-radius: 0.5rem;
-            border: 1px solid #f1f3f9;
-            overflow: hidden;
-        }
-    }
+/* ref cell */
+.ref-cell { display:flex; align-items:center; gap:.6rem; }
+.ref-icon { width:34px; height:34px; border-radius:9px; background:var(--navy-light); color:var(--navy); display:flex; align-items:center; justify-content:center; font-size:.9rem; flex-shrink:0; }
+.ref-main { font-weight:700; font-size:.88rem; font-family:monospace; }
+.ref-route { font-size:.72rem; color:var(--t3); margin-top:1px; }
+
+/* status badges */
+.hs-badge { display:inline-flex;align-items:center;gap:.28rem;padding:.25rem .65rem;border-radius:20px;font-size:.71rem;font-weight:700;white-space:nowrap; }
+.hs-attente  { background:#fef3c7; color:#92400e; }
+.hs-cours    { background:#dbeafe; color:#1e3a8a; }
+.hs-terminee { background:#d1fae5; color:#065f46; }
+.hs-annulee  { background:#fee2e2; color:#991b1b; }
+.type-express   { background:#fce7f3; color:#9d174d; }
+.type-classique { background:#e0e7ff; color:#3730a3; }
+
+.btn-detail {
+    display:inline-flex; align-items:center; gap:.3rem;
+    background:var(--navy-light); color:var(--navy);
+    border:none; border-radius:8px; padding:.38rem .85rem;
+    font-size:.78rem; font-weight:700; text-decoration:none; transition:var(--tr);
+}
+.btn-detail:hover { background:var(--navy); color:#fff; }
+
+/* empty history */
+.hist-empty { padding:3rem 2rem; text-align:center; }
+.hist-empty-icon { width:64px; height:64px; border-radius:50%; background:var(--navy-light); display:flex; align-items:center; justify-content:center; margin:0 auto .75rem; font-size:1.7rem; color:var(--navy); }
+.hist-empty h5 { font-weight:700; color:var(--t2); margin-bottom:.25rem; }
+.hist-empty p  { color:var(--t3); font-size:.85rem; margin:0; }
 </style>
+{% endblock %}
 
-<div class="container-fluid p-4">
-     
-    
-    <div class="row">
-        <!-- Colonne de profil -->
-        <div class="col-lg-4">
+{% block content %}
+<div class="detail-wrap">
+
+    <!-- Top bar -->
+    <div class="top-bar">
+        <a href="{% url 'Gestionnaire:liste_clients' %}" class="btn-back">
+            <i class="bi bi-arrow-left"></i> Retour à la liste
+        </a>
+        <span class="breadcrumb-txt">
+            <a href="{% url 'Gestionnaire:liste_clients' %}">Clients</a>
+            <i class="bi bi-chevron-right mx-1" style="font-size:.7rem;color:var(--t3);"></i>
+            {{ client.username }}
+        </span>
+    </div>
+
+    <div class="detail-grid">
+
+        <!-- ── Profile sidebar ── -->
+        <div>
             <div class="profile-card">
-                <div class="profile-photo-wrapper">
-                    <div class="profile-photo">
+                <div class="profile-banner"></div>
+                <div class="profile-avatar-wrap">
+                    <div class="profile-avatar">
                         {% if client.photos %}
-                            <img src="{{ client.photos.url }}" alt="Photo de profil">
+                            <img src="{{ client.photos.url }}" alt="Photo">
                         {% else %}
-                            <div class="profile-initials">
-                                {{ client.username|first|upper }}
-                            </div>
+                            {{ client.username|first|upper }}
                         {% endif %}
+                        <div class="online-dot {% if not client.is_online %}offline{% endif %}"></div>
                     </div>
-                    <div class="online-indicator {% if not client.is_online %}offline{% endif %}"></div>
                 </div>
-                
-                <h2 class="profile-name">
-                    {{ client.get_full_name|default:client.username }}
-                </h2>
-                <div class="profile-role">
-                    <i class="fas fa-user-circle"></i>
-                    <span>Client</span>
-                </div>
-                
-                <div class="status-badge {% if client.is_active %}active{% else %}inactive{% endif %}">
-                    <i class="fas fa-circle"></i>
-                    {% if client.is_active %}Compte Actif{% else %}Compte Inactif{% endif %}
-                </div>
-                
-                <div class="action-buttons">
-                    <a href="{% url 'Gestionnaire:activer_desactiver_client' client.pk %}" 
-                       class="btn btn-action {% if client.is_active %}btn-deactivate{% else %}btn-activate{% endif %}"
-                       onclick="return confirm('Êtes-vous sûr de vouloir {% if client.is_active %}désactiver{% else %}activer{% endif %} ce client ?')">
-                        {% if client.is_active %}
-                            <i class="fas fa-ban"></i> Désactiver le compte
-                        {% else %}
-                            <i class="fas fa-check-circle"></i> Activer le compte
-                        {% endif %}
-                    </a>
-                    
-                    <a href="{% url 'Gestionnaire:liste_clients' %}" class="btn btn-action btn-back">
-                        <i class="fas fa-arrow-left"></i> Retour à la liste
-                    </a>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Colonne d'informations -->
-        <div class="col-lg-8">
-            <!-- Informations principales -->
-            <div class="info-card">
-                <div class="info-card-header">
-                    <h3 class="info-card-title">
-                        <i class="fas fa-info-circle"></i>
-                        Informations du client
-                    </h3>
-                </div>
-                <div class="info-card-body">
-                    <ul class="info-list">
-                        <li class="info-item">
-                            <div class="info-label">
-                                <i class="fas fa-user"></i>
-                                Nom d'utilisateur
-                            </div>
-                            <div class="info-value">
-                                <strong>{{ client.username }}</strong>
-                            </div>
+                <div class="profile-body">
+                    <div class="profile-name">{{ client.get_full_name|default:client.username }}</div>
+                    <div class="profile-sub"><i class="bi bi-person-circle"></i> Client enregistré</div>
+                    <span class="profile-status {% if client.is_active %}st-active{% else %}st-inactive{% endif %}">
+                        <i class="bi bi-circle-fill" style="font-size:.45rem;"></i>
+                        {% if client.is_active %}Compte actif{% else %}Compte inactif{% endif %}
+                    </span>
+
+                    <ul class="qinfo-list">
+                        <li class="qinfo-item">
+                            <i class="bi bi-envelope"></i>
+                            <span>{{ client.email|default:"—" }}</span>
                         </li>
-                        
-                        <li class="info-item">
-                            <div class="info-label">
-                                <i class="fas fa-envelope"></i>
-                                Email
-                            </div>
-                            <div class="info-value">
-                                {{ client.email }}
-                            </div>
+                        <li class="qinfo-item">
+                            <i class="bi bi-phone"></i>
+                            <span>{{ client.Contact|default:"Non renseigné" }}</span>
                         </li>
-                        
-                        <li class="info-item">
-                            <div class="info-label">
-                                <i class="fas fa-phone"></i>
-                                Téléphone
-                            </div>
-                            <div class="info-value">
-                                {{ client.Contact|default:"<span class='text-muted'>Non renseigné</span>" }}
-                            </div>
+                        <li class="qinfo-item">
+                            <i class="bi bi-calendar3"></i>
+                            <span>Membre depuis <strong>{{ client.date_joined|date:"d/m/Y" }}</strong></span>
                         </li>
-                        
-                        <li class="info-item">
-                            <div class="info-label">
-                                <i class="fas fa-calendar-plus"></i>
-                                Date d'inscription
-                            </div>
-                            <div class="info-value">
-                                {{ client.date_joined|date:"d/m/Y à H:i" }}
-                            </div>
-                        </li>
-                        
-                        <li class="info-item">
-                            <div class="info-label">
-                                <i class="fas fa-clock"></i>
-                                Dernière connexion
-                            </div>
-                            <div class="info-value">
-                                {% if client.last_login %}
-                                    {{ client.last_login|date:"d/m/Y à H:i" }}
-                                {% else %}
-                                    <span class="text-muted">Jamais connecté</span>
-                                {% endif %}
-                            </div>
-                        </li>
-                        
-                        <li class="info-item">
-                            <div class="info-label">
-                                <i class="fas fa-toggle-on"></i>
-                                Statut du compte
-                            </div>
-                            <div class="info-value">
-                                <span class="status-badge {% if client.is_active %}active{% else %}inactive{% endif %}">
-                                    <i class="fas fa-circle"></i>
-                                    {% if client.is_active %}Actif{% else %}Inactif{% endif %}
-                                </span>
-                            </div>
-                        </li>
-                        
-                        <li class="info-item">
-                            <div class="info-label">
-                                <i class="fas fa-shield-check"></i>
-                                Email vérifié
-                            </div>
-                            <div class="info-value">
-                                {% if client.is_verified %}
-                                    <span class="status-badge verified">
-                                        <i class="fas fa-check-circle"></i>
-                                        Vérifié
-                                    </span>
-                                {% else %}
-                                    <span class="status-badge unverified">
-                                        <i class="fas fa-exclamation-circle"></i>
-                                        Non vérifié
-                                    </span>
-                                {% endif %}
-                            </div>
-                        </li>
-                        
-                        <li class="info-item">
-                            <div class="info-label">
-                                <i class="fas fa-circle"></i>
-                                Statut en ligne
-                            </div>
-                            <div class="info-value">
-                                {% if client.is_online %}
-                                    <span class="status-badge online">
-                                        <i class="fas fa-circle"></i>
-                                        En ligne
-                                    </span>
-                                {% else %}
-                                    <span class="status-badge offline">
-                                        <i class="fas fa-circle"></i>
-                                        Hors ligne
-                                    </span>
-                                {% endif %}
-                            </div>
+                        <li class="qinfo-item">
+                            <i class="bi bi-box-seam"></i>
+                            <span><strong>{{ demandes_stats.total_demandes }}</strong> commande{{ demandes_stats.total_demandes|pluralize }}</span>
                         </li>
                     </ul>
-                </div>
-            </div>
-            
-                
 
-    <!-- Section Statistiques des Demandes -->
-    <div class="stats-section">
-        <h3 class="stats-title">
-            <i class="fas fa-chart-bar"></i>
-            Statistiques des demandes
-        </h3>
-        <div class="stats-grid">
-            <div class="stat-item">
-                <div class="stat-icon">📋</div>
-                <div class="stat-value">{{ demandes_stats.total_demandes }}</div>
-                <div class="stat-label">Total Demandes</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-icon">⏳</div>
-                <div class="stat-value">{{ demandes_stats.demandes_en_cours }}</div>
-                <div class="stat-label">En cours</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-icon">✅</div>
-                <div class="stat-value">{{ demandes_stats.demandes_terminees }}</div>
-                <div class="stat-label">Terminées</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-icon">❌</div>
-                <div class="stat-value">{{ demandes_stats.demandes_annulees }}</div>
-                <div class="stat-label">Annulées</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-icon">⚡</div>
-                <div class="stat-value">{{ demandes_expresses }}</div>
-                <div class="stat-label">Expresses</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-icon">🚚</div>
-                <div class="stat-value">{{ demandes_classiques }}</div>
-                <div class="stat-label">Classiques</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-icon">💰</div>
-                <div class="stat-value">{{ demandes_stats.montant_total|floatformat:2 }} FCFA</div>
-                <div class="stat-label">Montant Total</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-icon">⌛</div>
-                <div class="stat-value">{{ demandes_stats.demandes_en_attente }}</div>
-                <div class="stat-label">En attente</div>
+                    <div class="profile-actions">
+                        <a href="{% url 'Gestionnaire:activer_desactiver_client' client.pk %}"
+                           class="btn-pa {% if client.is_active %}btn-pa-deactivate{% else %}btn-pa-activate{% endif %}"
+                           onclick="return confirm('Êtes-vous sûr de vouloir {% if client.is_active %}désactiver{% else %}activer{% endif %} ce client ?')">
+                            {% if client.is_active %}
+                            <i class="bi bi-slash-circle"></i> Désactiver le compte
+                            {% else %}
+                            <i class="bi bi-check-circle"></i> Activer le compte
+                            {% endif %}
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="info-card">
-    <div class="info-card-header d-flex justify-content-between align-items-center">
-        <h3 class="info-card-title mb-0">
-            <i class="fas fa-list me-2 text-primary"></i>
-            Historique des demandes
-            <span class="badge bg-primary-soft ms-2">{{ demandes_stats.total_demandes }}</span>
-        </h3>
-    </div>
-    <div class="info-card-body p-0">
-        {% if demandes %}
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Référence</th>
-                            <th>Date</th>
-                            <th>Type</th>
-                            <th>Statut</th>
-                            <th>Coût</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for demande in demandes %}
-                        <tr>
-                            <td class="line-number">{{ forloop.counter }}</td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="flex-shrink-0 me-2">
-                                        <div class="bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                                            <i class="fas fa-box text-primary"></i>
+        <!-- ── Right column ── -->
+        <div class="right-col">
+
+            <!-- Informations détaillées -->
+            <div class="section-card">
+                <div class="sc-header">
+                    <i class="bi bi-person-lines-fill"></i>
+                    <h3>Informations du client</h3>
+                </div>
+                <div class="info-grid">
+                    <div class="info-cell">
+                        <div class="info-lbl"><i class="bi bi-person"></i> Nom d'utilisateur</div>
+                        <div class="info-val">{{ client.username }}</div>
+                    </div>
+                    <div class="info-cell">
+                        <div class="info-lbl"><i class="bi bi-envelope"></i> Email</div>
+                        <div class="info-val">{{ client.email|default:"—" }}</div>
+                    </div>
+                    <div class="info-cell">
+                        <div class="info-lbl"><i class="bi bi-phone"></i> Téléphone</div>
+                        <div class="info-val">{{ client.Contact|default:"Non renseigné" }}</div>
+                    </div>
+                    <div class="info-cell">
+                        <div class="info-lbl"><i class="bi bi-calendar-plus"></i> Date d'inscription</div>
+                        <div class="info-val">{{ client.date_joined|date:"d/m/Y à H:i" }}</div>
+                    </div>
+                    <div class="info-cell">
+                        <div class="info-lbl"><i class="bi bi-clock-history"></i> Dernière connexion</div>
+                        <div class="info-val">
+                            {% if client.last_login %}{{ client.last_login|date:"d/m/Y à H:i" }}
+                            {% else %}<span style="color:var(--t3);font-style:italic;">Jamais connecté</span>{% endif %}
+                        </div>
+                    </div>
+                    <div class="info-cell">
+                        <div class="info-lbl"><i class="bi bi-toggle-on"></i> Statut du compte</div>
+                        <div class="info-val">
+                            {% if client.is_active %}
+                            <span class="badge-active"><i class="bi bi-check-circle-fill"></i> Actif</span>
+                            {% else %}
+                            <span class="badge-inactive"><i class="bi bi-x-circle-fill"></i> Inactif</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="info-cell">
+                        <div class="info-lbl"><i class="bi bi-shield-check"></i> Email vérifié</div>
+                        <div class="info-val">
+                            {% if client.is_verified %}
+                            <span class="badge-verified"><i class="bi bi-patch-check-fill"></i> Vérifié</span>
+                            {% else %}
+                            <span class="badge-unverif"><i class="bi bi-exclamation-circle"></i> Non vérifié</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="info-cell">
+                        <div class="info-lbl"><i class="bi bi-circle"></i> Statut en ligne</div>
+                        <div class="info-val">
+                            {% if client.is_online %}
+                            <span class="badge-online"><i class="bi bi-circle-fill" style="font-size:.5rem;"></i> En ligne</span>
+                            {% else %}
+                            <span class="badge-offline"><i class="bi bi-circle" style="font-size:.5rem;"></i> Hors ligne</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistiques -->
+            <div class="section-card">
+                <div class="sc-header">
+                    <i class="bi bi-bar-chart-fill"></i>
+                    <h3>Statistiques des commandes</h3>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-cell">
+                        <div class="stat-icon-wrap" style="background:#e8eaf6; color:var(--navy);">
+                            <i class="bi bi-inbox-fill"></i>
+                        </div>
+                        <div class="stat-val">{{ demandes_stats.total_demandes }}</div>
+                        <div class="stat-label">Total</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-icon-wrap" style="background:#fff3cd; color:#92400e;">
+                            <i class="bi bi-clock-history"></i>
+                        </div>
+                        <div class="stat-val">{{ demandes_stats.demandes_en_attente }}</div>
+                        <div class="stat-label">En attente</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-icon-wrap" style="background:#dbeafe; color:#1e40af;">
+                            <i class="bi bi-arrow-repeat"></i>
+                        </div>
+                        <div class="stat-val">{{ demandes_stats.demandes_en_cours }}</div>
+                        <div class="stat-label">En cours</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-icon-wrap" style="background:#d1fae5; color:#065f46;">
+                            <i class="bi bi-check2-circle"></i>
+                        </div>
+                        <div class="stat-val">{{ demandes_stats.demandes_terminees }}</div>
+                        <div class="stat-label">Terminées</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-icon-wrap" style="background:#fee2e2; color:#991b1b;">
+                            <i class="bi bi-x-circle"></i>
+                        </div>
+                        <div class="stat-val">{{ demandes_stats.demandes_annulees }}</div>
+                        <div class="stat-label">Annulées</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-icon-wrap" style="background:#fce7f3; color:#9d174d;">
+                            <i class="bi bi-lightning-fill"></i>
+                        </div>
+                        <div class="stat-val">{{ demandes_expresses }}</div>
+                        <div class="stat-label">Expresses</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-icon-wrap" style="background:#e0e7ff; color:#3730a3;">
+                            <i class="bi bi-bicycle"></i>
+                        </div>
+                        <div class="stat-val">{{ demandes_classiques }}</div>
+                        <div class="stat-label">Classiques</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-icon-wrap" style="background:#d1fae5; color:#065f46;">
+                            <i class="bi bi-cash-stack"></i>
+                        </div>
+                        <div class="stat-val" style="font-size:1.1rem;">{{ demandes_stats.montant_total|floatformat:0 }}</div>
+                        <div class="stat-label">FCFA Total</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Historique des commandes -->
+            <div class="section-card">
+                <div class="sc-header">
+                    <i class="bi bi-list-ul"></i>
+                    <h3>Historique des commandes</h3>
+                    <span class="sc-badge">{{ demandes_stats.total_demandes }}</span>
+                </div>
+                {% if demandes %}
+                <div class="table-responsive">
+                    <table class="hist-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th><i class="bi bi-hash me-1"></i>Référence</th>
+                                <th><i class="bi bi-calendar3 me-1"></i>Date</th>
+                                <th><i class="bi bi-tag me-1"></i>Type</th>
+                                <th><i class="bi bi-circle me-1"></i>Statut</th>
+                                <th><i class="bi bi-cash me-1"></i>Coût</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for demande in demandes %}
+                            <tr onclick="window.location.href='{% url 'Gestionnaire:detail_demande' demande.pk %}'">
+                                <td style="color:var(--t3);font-size:.8rem;font-weight:600;">{{ forloop.counter }}</td>
+                                <td>
+                                    <div class="ref-cell">
+                                        <div class="ref-icon"><i class="bi bi-box-seam"></i></div>
+                                        <div>
+                                            <div class="ref-main">{{ demande.ref }}</div>
+                                            <div class="ref-route">{{ demande.adresse_depart|truncatechars:14 }} → {{ demande.adresse_destination|truncatechars:14 }}</div>
                                         </div>
                                     </div>
-                                    <div>
-                                        <div class="fw-medium text-dark">{{ demande.ref }}</div>
-                                        <small class="text-muted">{{ demande.adresse_depart|truncatechars:15 }} → {{ demande.adresse_destination|truncatechars:15 }}</small>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="text-nowrap">{{ demande.date_demande|date:"d/m/Y" }}</div>
-                                <small class="text-muted">{{ demande.date_demande|date:"H:i" }}</small>
-                            </td>
-                            <td>
-                                {% if demande.type_course == 'EXPRESSE' %}
-                                    <span class="badge bg-danger-soft text-danger">⚡ Expresse</span>
-                                {% else %}
-                                    <span class="badge bg-info-soft text-info">🚚 Classique</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if demande.statut == 'EN_ATTENTE' %}
-                                    <span class="badge bg-warning-soft text-warning">⏳ En attente</span>
-                                {% elif demande.statut == 'TERMINEE' %}
-                                    <span class="badge bg-success-soft text-success">✅ Terminée</span>
-                                {% elif demande.statut == 'ANNULEE' %}
-                                    <span class="badge bg-danger-soft text-danger">❌ Annulée</span>
-                                {% else %}
-                                    <span class="badge bg-primary-soft text-primary">🔄 En cours</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <span class="fw-medium">{{ demande.cout_livraison|default:"-"|floatformat:2 }} FCFA</span>
-                            </td>
-                            <td>
-                                <div class="d-flex gap-2">
-                                    <a href="{% url 'Gestionnaire:detail_demande' demande.pk %}" 
-                                       class="btn btn-sm btn-outline-primary btn-action"
-                                       title="Voir les détails">
-                                        <i class="fas fa-eye"></i>
-                                        <span class="d-none d-md-inline">Détails</span>
+                                </td>
+                                <td>
+                                    <div class="date-main" style="font-size:.85rem;">{{ demande.date_demande|date:"d/m/Y" }}</div>
+                                    <div class="date-sub" style="font-size:.74rem;color:var(--t3);">{{ demande.date_demande|date:"H:i" }}</div>
+                                </td>
+                                <td>
+                                    {% if demande.type_course == 'EXPRESSE' %}
+                                    <span class="hs-badge type-express"><i class="bi bi-lightning-fill"></i> Express</span>
+                                    {% else %}
+                                    <span class="hs-badge type-classique"><i class="bi bi-bicycle"></i> Classique</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if demande.statut == 'EN_ATTENTE' %}
+                                    <span class="hs-badge hs-attente"><i class="bi bi-clock"></i> En attente</span>
+                                    {% elif demande.statut == 'TERMINEE' %}
+                                    <span class="hs-badge hs-terminee"><i class="bi bi-check2-circle"></i> Terminée</span>
+                                    {% elif demande.statut == 'ANNULEE' %}
+                                    <span class="hs-badge hs-annulee"><i class="bi bi-x-circle"></i> Annulée</span>
+                                    {% else %}
+                                    <span class="hs-badge hs-cours"><i class="bi bi-arrow-repeat"></i> En cours</span>
+                                    {% endif %}
+                                </td>
+                                <td style="font-weight:700;">
+                                    {% if demande.cout_livraison %}
+                                    <span style="color:#065f46;">{{ demande.cout_livraison|floatformat:0 }} <span style="font-size:.74rem;font-weight:500;color:var(--t3);">FCFA</span></span>
+                                    {% else %}
+                                    <span style="color:var(--t3);">—</span>
+                                    {% endif %}
+                                </td>
+                                <td onclick="event.stopPropagation()">
+                                    <a href="{% url 'Gestionnaire:detail_demande' demande.pk %}" class="btn-detail">
+                                        <i class="bi bi-arrow-right"></i>
                                     </a>
-                                    
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% else %}
-            <div class="text-center p-5">
-                <div class="mb-3">
-                    <i class="fas fa-inbox fa-3x text-muted opacity-25"></i>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-                <h5 class="text-muted mb-2">Aucune demande trouvée</h5>
-                <p class="text-muted">Ce client n'a pas encore effectué de demande de coursier.</p>
+                {% else %}
+                <div class="hist-empty">
+                    <div class="hist-empty-icon"><i class="bi bi-inbox"></i></div>
+                    <h5>Aucune commande</h5>
+                    <p>Ce client n'a pas encore effectué de demande de livraison.</p>
+                </div>
+                {% endif %}
             </div>
-        {% endif %}
-    </div>
-</div>
- 
+
+        </div><!-- /right-col -->
+    </div><!-- /detail-grid -->
 </div>
 {% endblock %}

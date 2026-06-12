@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>400 — Requête Invalide | Mon Livreur Pro</title>
+<style>
+  :root {
+    --navy: #000080;
+    --orange: #FF6B00;
+    --yellow: #ffd600;
+    --dark: #08080f;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--dark);
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ---- grille de fond ---- */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,0,128,.15) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,128,.15) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: grid-move 20s linear infinite;
+  }
+  @keyframes grid-move {
+    from { background-position: 0 0; }
+    to   { background-position: 40px 40px; }
+  }
+
+  /* ---- glitch number ---- */
+  .error-code {
+    font-size: clamp(5rem, 18vw, 12rem);
+    font-weight: 900;
+    line-height: 1;
+    color: var(--yellow);
+    letter-spacing: -4px;
+    position: relative;
+    display: inline-block;
+  }
+  .error-code::before,
+  .error-code::after {
+    content: '400';
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    overflow: hidden;
+  }
+  .error-code::before {
+    color: #ff0055;
+    animation: glitch-a .9s steps(2, end) infinite;
+    clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+  }
+  .error-code::after {
+    color: #00e5ff;
+    animation: glitch-b 1.1s steps(2, end) infinite;
+    clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
+  }
+  @keyframes glitch-a {
+    0%  { transform: translate(0); }
+    20% { transform: translate(-4px, 2px); }
+    40% { transform: translate(4px, -2px); }
+    60% { transform: translate(-2px, 1px); }
+    80% { transform: translate(2px, -1px); }
+    100%{ transform: translate(0); }
+  }
+  @keyframes glitch-b {
+    0%  { transform: translate(0); }
+    25% { transform: translate(4px, 2px); }
+    50% { transform: translate(-4px,-2px); }
+    75% { transform: translate(2px, 1px); }
+    100%{ transform: translate(0); }
+  }
+
+  /* ---- scan line ---- */
+  .scanline {
+    position: fixed; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0px, transparent 3px,
+      rgba(0,0,0,.08) 3px, rgba(0,0,0,.08) 4px
+    );
+    animation: scan 8s linear infinite;
+  }
+  @keyframes scan {
+    from { background-position: 0 0; }
+    to   { background-position: 0 100px; }
+  }
+
+  /* ---- contenu ---- */
+  .content {
+    text-align: center;
+    z-index: 10;
+    padding: 2rem;
+    max-width: 580px;
+  }
+
+  .signal {
+    font-size: 3.5rem;
+    animation: blink .6s step-end infinite;
+    display: block;
+    margin-bottom: 1rem;
+    filter: drop-shadow(0 0 14px var(--yellow));
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: .2; }
+  }
+
+  .tag {
+    font-size: 1rem;
+    color: var(--yellow);
+    text-transform: uppercase;
+    letter-spacing: 6px;
+    margin-bottom: .8rem;
+  }
+
+  .title {
+    font-size: clamp(1.3rem, 4vw, 1.9rem);
+    font-weight: 700;
+    color: #ffffe0;
+    margin-bottom: .7rem;
+  }
+  .subtitle {
+    color: #888877;
+    font-size: .95rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+  }
+
+  /* ---- terminal ---- */
+  .terminal {
+    background: rgba(0,0,0,.6);
+    border: 1px solid var(--yellow);
+    border-radius: 8px;
+    padding: .9rem 1.2rem;
+    font-family: 'Courier New', monospace;
+    font-size: .78rem;
+    text-align: left;
+    margin-bottom: 2rem;
+    color: #aaa;
+    line-height: 1.7;
+  }
+  .terminal .prompt { color: var(--yellow); }
+  .terminal .err { color: #ff4444; }
+  .cursor {
+    display: inline-block;
+    width: 8px; height: 14px;
+    background: var(--yellow);
+    vertical-align: middle;
+    animation: blink .7s step-end infinite;
+  }
+
+  /* ---- boutons ---- */
+  .btn-group { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    padding: .75rem 2rem; border-radius: 50px;
+    font-weight: 600; font-size: .9rem;
+    text-decoration: none; transition: transform .2s, box-shadow .2s;
+    border: none; cursor: pointer;
+  }
+  .btn:hover { transform: translateY(-3px); }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--orange), #c44a00);
+    color: #fff;
+    box-shadow: 0 6px 24px rgba(255,107,0,.4);
+  }
+  .btn-primary:hover { box-shadow: 0 10px 32px rgba(255,107,0,.6); }
+  .btn-outline {
+    background: transparent; color: #ccc;
+    border: 2px solid rgba(255,255,255,.2);
+  }
+  .btn-outline:hover { border-color: var(--yellow); color: var(--yellow); }
+</style>
+</head>
+<body>
+
+<div class="scanline"></div>
+
+<div class="content">
+  <span class="signal">⚠️</span>
+
+  <div class="error-code">400</div>
+
+  <p class="tag">Signal Brouillé</p>
+  <h1 class="title">Requête Invalide</h1>
+  <p class="subtitle">
+    La requête envoyée au serveur était malformée ou contenait des paramètres incorrects.
+    Vérifiez l'URL ou revenez en arrière.
+  </p>
+
+  <div class="terminal">
+    <span class="prompt">$ </span>livreurpro --parse-request<br>
+    <span class="prompt">→ </span>Analyse en cours…<br>
+    <span class="err">[ERROR 400]</span> Paramètres manquants ou invalides<br>
+    <span class="prompt">→ </span>Impossible de traiter la demande <span class="cursor"></span>
+  </div>
+
+  <div class="btn-group">
+    <a href="/" class="btn btn-primary">🏠 Retour à l'accueil</a>
+    <a href="javascript:history.back()" class="btn btn-outline">← Page précédente</a>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,927 +1,1132 @@
 {% extends 'base_gestionnaire.html' %}
-{% block page_title %}Détail de la demande - {{ demande.ref }}{% endblock %}
-{% block content %}
 {% load static %}
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+{% block page_title %}Demande {{ demande.ref }} — Mon Livreur Pro{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css">
-
 <style>
-    :root {
-        --primary-color: #4f46e5;
-        --secondary-color: #6366f1;
-        --success-color: #10b981; 
-        --warning-color: #f59e0b;
-        --danger-color: #ef4444;
-        --info-color: #3b82f6;
-        --gray-light: #f8fafc;
-        --gray-medium: #e2e8f0;
-        --gray-dark: #64748b;
-        --text-dark: #1e293b;
-        --text-medium: #475569;
-        --white: #ffffff;
-        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-        --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.08);
-        --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
-        --radius-sm: 8px;
-        --radius-md: 12px;  
-        --radius-lg: 16px;
-    }
-
-    body {
-        background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
-        min-height: 100vh;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    }
-
-    .page-header {
-        background: white;
-        border-radius: var(--radius-lg);
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: var(--shadow-sm);
-    }
-
-    .page-title {
-        font-size: 2rem;
-        font-weight: 700;
-        color: var(--text-dark);
-        margin: 0;
-    }
-
-    .btn-primary-custom {
-        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-        border: none;
-        padding: 0.75rem 1.5rem;
-        border-radius: var(--radius-md);
-        font-weight: 600;
-        color: white;
-        transition: all 0.3s ease;
-        box-shadow: var(--shadow-sm);
-    }
-
-    .btn-primary-custom:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
-    }
-
-    .detail-card {
-        background: white;
-        border-radius: var(--radius-lg);
-        padding: 1.5rem;
-        transition: all 0.3s ease;
-        border: 2px solid transparent;
-        box-shadow: var(--shadow-sm);
-    }
-
-    .detail-card:hover {
-        box-shadow: var(--shadow-md);
-    }
-
-    .card-header-section {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1.5rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid var(--gray-medium);
-    }
-
-    .demande-ref {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: var(--text-dark);
-        margin: 0;
-    }
-
-    .status-badge {
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        font-weight: 600;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .status-EN_ATTENTE {
-        background: #fef3c7;
-        color: #92400e;
-    }
-
-    .status-VALIDATION_CLIENT {
-        background: #dbeafe;
-        color: #1e40af;
-    }
-
-    .status-VALIDATION_LIVREUR {
-        background: #e0e7ff;
-        color: #4338ca;
-    }
-
-    .status-LIVREUR_ROUTE {
-        background: #fed7aa;
-        color: #9a3412;
-    }
-
-    .status-RECEPTION_COLIS {
-        background: #e9d5ff;
-        color: #6b21a8;
-    }
-
-    .status-LIVRAISON_EN_ROUTE {
-        background: #fce7f3;
-        color: #9f1239;
-    }
-
-    .status-TERMINEE {
-        background: #d1fae5;
-        color: #065f46;
-    }
-
-    .status-ANNULEE {
-        background: #fee2e2;
-        color: #991b1b;
-    }
-
-    .section-title {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: var(--text-dark);
-        margin-bottom: 1rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 1px solid var(--gray-medium);
-    }
-
-    .info-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .info-item {
-        margin-bottom: 1rem;
-    }
-
-    .info-label {
-        font-size: 0.85rem;
-        color: var(--gray-dark);
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 0.25rem;
-    }
-
-    .info-value {
-        color: var(--text-dark);
-        font-weight: 600;
-        font-size: 0.95rem;
-    }
-
-    .location-section {
-        background: var(--gray-light);
-        border-radius: var(--radius-md);
-        padding: 1rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .location-item {
-        display: flex;
-        align-items: start;
-        gap: 0.75rem;
-        margin-bottom: 0.75rem;
-    }
-
-    .location-icon {
-        width: 32px;
-        height: 32px;
-        border-radius: var(--radius-sm);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        font-size: 1rem;
-    }
-
-    .location-icon.departure {
-        background: #dcfce7;
-        color: #166534;
-    }
-
-    .location-icon.destination {
-        background: #fee2e2;
-        color: #991b1b;
-    }
-
-    .location-label {
-        font-size: 0.75rem;
-        color: var(--gray-dark);
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .location-address {
-        color: var(--text-dark);
-        font-weight: 500;
-        margin: 0.25rem 0 0 0;
-        font-size: 0.9rem;
-    }
-
-    .cost-section {
-        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-        padding: 1rem;
-        border-radius: var(--radius-md);
-        margin: 1rem 0;
-        text-align: center;
-    }
-
-    .cost-label {
-        font-size: 0.75rem;
-        color: #0369a1;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .cost-value {
-        color: #0c4a6e;
-        font-weight: 800;
-        font-size: 1.5rem;
-        margin: 0.25rem 0 0 0;
-    }
-
-    .colis-images {
-        display: flex;
-        gap: 0.75rem;
-        margin-top: 1rem;
-        flex-wrap: wrap;
-    }
-
-    .colis-image {
-        border-radius: var(--radius-sm);
-        overflow: hidden;
-        box-shadow: var(--shadow-sm);
-        max-height: 120px;
-    }
-
-    .colis-image img {
-        width: auto;
-        height: 120px;
-        object-fit: cover;
-        cursor: pointer;
-    }
-
-    .timeline {
-        position: relative;
-        padding-left: 1.5rem;
-        list-style: none;
-        margin: 1.5rem 0;
-    }
-
-    .timeline::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        width: 2px;
-        background-color: var(--gray-medium);
-    }
-
-    .timeline-item {
-        position: relative;
-        margin-bottom: 1.5rem;
-        padding-left: 1.5rem;
-    }
-
-    .timeline-item::before {
-        content: '';
-        position: absolute;
-        left: -0.3125rem;
-        top: 0.125rem;
-        width: 0.625rem;
-        height: 0.625rem;
-        border-radius: 50%;
-        background-color: var(--gray-medium);
-    }
-
-    .timeline-item.active::before {
-        background-color: var(--primary-color);
-    }
-
-    .timeline-item.completed::before {
-        background-color: var(--success-color);
-    }
-
-    .timeline-content {
-        padding-bottom: 1rem;
-    }
-
-    .timeline-step {
-        font-weight: 600;
-        color: var(--text-dark);
-        margin-bottom: 0.25rem;
-    }
-
-    .timeline-status {
-        font-size: 0.85rem;
-        color: var(--gray-dark);
-    }
-
-    .action-card {
-        background: white;
-        border-radius: var(--radius-lg);
-        padding: 1.5rem;
-        box-shadow: var(--shadow-sm);
-        margin-bottom: 1.5rem;
-    }
-
-    .action-btn {
-        width: 100%;
-        margin-bottom: 0.75rem;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        padding: 0.75rem;
-        border-radius: var(--radius-sm);
-        transition: all 0.2s;
-    }
-
-    .action-btn i {
-        font-size: 1rem;
-    }
-
-    .livreur-card {
-        background: white;
-        border-radius: var(--radius-lg);
-        padding: 1.5rem;
-        box-shadow: var(--shadow-sm);
-        text-align: center;
-        margin-bottom: 1.5rem;
-    }
-
-    .livreur-avatar {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        object-fit: cover;
-        margin: 0 auto 1rem;
-        border: 3px solid white;
-        box-shadow: var(--shadow-sm);
-    }
-
-    .livreur-name {
-        font-weight: 600;
-        color: var(--text-dark);
-        margin-bottom: 0.5rem;
-    }
-
-    .livreur-contact {
-        color: var(--gray-dark);
-        font-size: 0.9rem;
-        margin-bottom: 0.25rem;
-    }
-
-    .livreur-actions {
-        display: flex;
-        gap: 0.5rem;
-        justify-content: center;
-        margin-top: 1rem;
-    }
-
-    .livreur-btn {
-        padding: 0.5rem 1rem;
-        border-radius: var(--radius-sm);
-        font-size: 0.85rem;
-        font-weight: 500;
-    }
-
-    .historique-item {
-        display: flex;
-        align-items: flex-start;
-        gap: 0.75rem;
-        padding: 0.75rem 0;
-        border-bottom: 1px solid var(--gray-medium);
-    }
-
-    .historique-item:last-child {
-        border-bottom: none;
-    }
-
-    .historique-icon {
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        background: var(--primary-color);
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        font-size: 0.75rem;
-    }
-
-    .historique-content {
-        flex: 1;
-    }
-
-    .historique-description {
-        font-weight: 500;
-        color: var(--text-dark);
-        margin-bottom: 0.25rem;
-    }
-
-    .historique-date {
-        font-size: 0.8rem;
-        color: var(--gray-dark);
-    }
-
-    .empty-state {
-        background: white;
-        border-radius: var(--radius-lg);
-        padding: 3rem 2rem;
-        text-align: center;
-        box-shadow: var(--shadow-sm);
-        margin: 2rem 0;
-    }
-
-    .empty-state-icon {
-        font-size: 3rem;
-        margin-bottom: 1rem;
-    }
-
-    .empty-state h3 {
-        color: var(--text-dark);
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-    }
-
-    .empty-state p {
-        color: var(--gray-dark);
-        margin-bottom: 2rem;
-    }
-
-    .dropdown-toggle {
-        background: none;
-        border: none;
-        padding: 0.25rem;
-        border-radius: var(--radius-sm);
-        color: var(--gray-dark);
-    }
-
-    .dropdown-toggle:hover {
-        background: var(--gray-light);
-    }
-
-    .dropdown-menu {
-        border-radius: var(--radius-sm);
-        box-shadow: var(--shadow-md);
-        border: none;
-        padding: 0.5rem 0;
-    }
-
-    .dropdown-item {
-        padding: 0.5rem 1rem;
-        transition: all 0.2s;
-    }
-
-    .dropdown-item:hover {
-        background: var(--gray-light);
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-        .page-header {
-            padding: 1.5rem;
-            border-radius: 0 0 24px 24px;
-            margin-bottom: 1rem;
-        }
-
-        .page-title {
-            font-size: 1.5rem;
-        }
-
-        .btn-primary-custom {
-            width: 100%;
-            padding: 1rem;
-            margin-top: 1rem;
-        }
-
-        .detail-card, .action-card, .livreur-card {
-            border-radius: 20px;
-            padding: 1.25rem;
-        }
-
-        .info-grid {
-            grid-template-columns: 1fr;
-            gap: 1rem;
-        }
-
-        .colis-images {
-            gap: 0.5rem;
-        }
-
-        .colis-image img {
-            height: 100px;
-        }
-
-        .livreur-actions {
-            flex-direction: column;
-        }
-
-        .livreur-btn {
-            width: 100%;
-            margin-bottom: 0.5rem;
-        }
-    }
+/* ════════════════════════════════════════════════
+   VARIABLES
+════════════════════════════════════════════════ */
+:root {
+  --navy:     #000080;
+  --navy-dk:  #00006a;
+  --navy-lt:  #e8eaf6;
+  --orange:   #FF6B00;
+  --bg:       #f0f2f7;
+  --card:     #ffffff;
+  --border:   #e5e9f0;
+  --t1:       #0f172a;
+  --t2:       #475569;
+  --t3:       #94a3b8;
+  --r:        16px;
+  --r-sm:     10px;
+  --sh-sm:    0 1px 4px rgba(0,0,0,.06);
+  --sh-md:    0 4px 20px rgba(0,0,0,.10);
+  --sh-lg:    0 8px 36px rgba(0,0,0,.13);
+  --ease:     .22s cubic-bezier(.4,0,.2,1);
+  --g-ok:     #10b981;
+  --g-warn:   #f59e0b;
+  --g-err:    #ef4444;
+  --g-info:   #3b82f6;
+  --g-purple: #8b5cf6;
+}
+body { background: var(--bg); }
+
+/* ════════════════════════════════════════════════
+   PAGE HEADER
+════════════════════════════════════════════════ */
+.det-header {
+  background: linear-gradient(135deg, var(--navy) 0%, #1a237e 60%, #283593 100%);
+  border-radius: var(--r);
+  padding: 1.5rem 2rem;
+  display: flex; align-items: center;
+  justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+  margin-bottom: 1.4rem;
+  position: relative; overflow: hidden;
+  box-shadow: 0 6px 28px rgba(0,0,128,.22);
+}
+.det-header::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fff' fill-opacity='.04'%3E%3Cpath d='M0 20L20 0L40 20L20 40z'/%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
+}
+.det-back {
+  display: inline-flex; align-items: center; gap: .5rem;
+  color: rgba(255,255,255,.8); text-decoration: none;
+  font-size: .85rem; font-weight: 500;
+  background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2);
+  padding: .45rem 1rem; border-radius: 8px;
+  transition: var(--ease);
+}
+.det-back:hover { background: rgba(255,255,255,.22); color: #fff; }
+.det-header-mid { display: flex; flex-direction: column; gap: .4rem; }
+.det-ref {
+  font-size: 1.6rem; font-weight: 800;
+  color: #fff; letter-spacing: -.5px; line-height: 1;
+}
+.det-header-meta {
+  display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
+}
+.det-header-meta .chip {
+  display: inline-flex; align-items: center; gap: .3rem;
+  background: rgba(255,255,255,.14); color: rgba(255,255,255,.9);
+  border-radius: 20px; padding: .25rem .75rem;
+  font-size: .75rem; font-weight: 600;
+}
+.det-header-actions { display: flex; gap: .6rem; flex-wrap: wrap; }
+.h-btn {
+  display: inline-flex; align-items: center; gap: .4rem;
+  padding: .55rem 1.15rem; border-radius: 9px;
+  font-size: .84rem; font-weight: 600;
+  text-decoration: none; transition: var(--ease); white-space: nowrap;
+  cursor: pointer; border: none;
+}
+.h-btn-orange {
+  background: linear-gradient(135deg, var(--orange) 0%, #e05e00 100%);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(255,107,0,.35);
+  position: relative; overflow: hidden;
+}
+.h-btn-orange::after {
+  content: '';
+  position: absolute; top: -50%; left: -75%;
+  width: 50%; height: 200%;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,.22), transparent);
+  transform: skewX(-20deg);
+  transition: left .5s ease;
+}
+.h-btn-orange:hover { background: linear-gradient(135deg, #e05e00 0%, #cc5200 100%); color: #fff; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,107,0,.50); }
+.h-btn-orange:hover::after { left: 125%; }
+.h-btn-ghost { background: rgba(255,255,255,.14); color: #fff; border: 1px solid rgba(255,255,255,.25); }
+.h-btn-ghost:hover { background: rgba(255,255,255,.24); color: #fff; }
+
+/* ════════════════════════════════════════════════
+   MAIN GRID
+════════════════════════════════════════════════ */
+.det-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 1.2rem;
+  align-items: start;
+}
+@media (max-width: 1050px) { .det-grid { grid-template-columns: 1fr; } }
+
+/* ════════════════════════════════════════════════
+   CARDS
+════════════════════════════════════════════════ */
+.dc {
+  background: var(--card);
+  border-radius: var(--r);
+  border: 1.5px solid var(--border);
+  box-shadow: var(--sh-sm);
+  overflow: hidden;
+  margin-bottom: 1.2rem;
+}
+.dc:last-child { margin-bottom: 0; }
+.dc-head {
+  padding: 1.1rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: .6rem;
+  background: #fafbfc;
+}
+.dc-head h3 {
+  font-size: .95rem; font-weight: 700;
+  color: var(--t1); margin: 0; flex: 1;
+  display: flex; align-items: center; gap: .5rem;
+}
+.dc-head h3 i { color: var(--navy); font-size: 1.05rem; }
+.dc-body { padding: 1.4rem 1.5rem; }
+
+/* ════════════════════════════════════════════════
+   STATUS BADGE
+════════════════════════════════════════════════ */
+.sbadge {
+  display: inline-flex; align-items: center; gap: .35rem;
+  padding: .35rem .9rem; border-radius: 20px;
+  font-size: .78rem; font-weight: 700;
+  white-space: nowrap;
+}
+.sbadge-EN_ATTENTE         { background:#fef3c7; color:#92400e; }
+.sbadge-VALIDATION_CLIENT  { background:#dbeafe; color:#1e3a8a; }
+.sbadge-VALIDATION_LIVREUR { background:#ede9fe; color:#4c1d95; }
+.sbadge-LIVREUR_ROUTE      { background:#fff7ed; color:#9a3412; }
+.sbadge-RECEPTION_COLIS    { background:#ecfdf5; color:#065f46; }
+.sbadge-LIVRAISON_EN_ROUTE { background:#fef3c7; color:#9a3412; }
+.sbadge-TERMINEE           { background:#dcfce7; color:#166534; }
+.sbadge-ANNULEE            { background:#fee2e2; color:#991b1b; }
+
+/* ════════════════════════════════════════════════
+   SUMMARY STATS ROW
+════════════════════════════════════════════════ */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: .9rem;
+}
+@media (max-width: 700px) { .stat-row { grid-template-columns: 1fr 1fr; } }
+.stat-item {
+  background: #f8fafc; border-radius: 12px;
+  padding: 1rem 1.1rem; border: 1.5px solid var(--border);
+  transition: var(--ease);
+}
+.stat-item:hover { border-color: var(--navy); background: var(--navy-lt); }
+.stat-item-label {
+  font-size: .68rem; font-weight: 700;
+  color: var(--t3); text-transform: uppercase;
+  letter-spacing: .5px; margin-bottom: .35rem;
+  display: flex; align-items: center; gap: .3rem;
+}
+.stat-item-val {
+  font-size: 1.05rem; font-weight: 700; color: var(--t1);
+}
+
+/* ════════════════════════════════════════════════
+   ROUTE VISUAL
+════════════════════════════════════════════════ */
+.route-vis {
+  display: flex; flex-direction: column;
+  margin-bottom: 1.3rem; position: relative;
+}
+.route-vis::before {
+  content: '';
+  position: absolute; left: 16px; top: 28px;
+  width: 2px; height: calc(100% - 56px);
+  background: linear-gradient(180deg, var(--g-ok) 0%, var(--g-err) 100%);
+  border-radius: 2px;
+}
+.route-point {
+  display: flex; align-items: flex-start; gap: 1rem;
+  position: relative; z-index: 1;
+}
+.route-point + .route-point { margin-top: 1rem; }
+.route-dot {
+  width: 34px; height: 34px; border-radius: 50%;
+  flex-shrink: 0; display: flex; align-items: center;
+  justify-content: center; font-size: .95rem;
+}
+.route-dot.dep  { background: #dcfce7; color: #166534; border: 2px solid #86efac; }
+.route-dot.dest { background: #fee2e2; color: #991b1b; border: 2px solid #fca5a5; }
+.route-addr-label {
+  font-size: .68rem; font-weight: 700; color: var(--t3);
+  text-transform: uppercase; letter-spacing: .5px; margin-bottom: .2rem;
+}
+.route-addr-val {
+  font-size: .9rem; font-weight: 600; color: var(--t1); line-height: 1.4;
+}
+.route-addr-sub { font-size: .78rem; color: var(--t3); margin-top: .15rem; }
+
+/* ════════════════════════════════════════════════
+   MAP
+════════════════════════════════════════════════ */
+#detMap {
+  height: 330px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 2px solid var(--border);
+  box-shadow: var(--sh-md);
+  transition: box-shadow var(--ease);
+}
+#detMap:hover { box-shadow: var(--sh-lg); }
+.map-placeholder {
+  height: 330px; border-radius: 12px;
+  background: #f8fafc; border: 1.5px dashed var(--border);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: .6rem; color: var(--t3);
+}
+.map-placeholder i { font-size: 2.5rem; }
+.map-info-overlay {
+  display: flex; gap: 1rem; flex-wrap: wrap;
+  margin-top: .9rem;
+}
+.map-stat {
+  flex: 1; min-width: 120px;
+  background: var(--navy-lt); color: var(--navy);
+  border-radius: 10px; padding: .7rem 1rem;
+  text-align: center;
+  border-top: 2px solid var(--orange);
+  transition: transform var(--ease), box-shadow var(--ease);
+}
+.map-stat:hover { transform: translateY(-2px); box-shadow: var(--sh-sm); }
+.map-stat-val { font-size: 1.1rem; font-weight: 800; display: block; color: var(--orange); }
+.map-stat-lbl { font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; }
+
+/* ════════════════════════════════════════════════
+   PACKAGE DETAILS
+════════════════════════════════════════════════ */
+.pkg-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+@media (max-width: 600px) { .pkg-grid { grid-template-columns: 1fr; } }
+.pkg-item-label {
+  font-size: .7rem; font-weight: 700; color: var(--t3);
+  text-transform: uppercase; letter-spacing: .5px; margin-bottom: .25rem;
+}
+.pkg-item-val {
+  font-size: .9rem; font-weight: 600; color: var(--t1);
+}
+.pkg-desc {
+  grid-column: 1 / -1;
+  background: #f8fafc; border-radius: 10px;
+  padding: .9rem 1.1rem; margin-bottom: .5rem;
+  font-size: .9rem; color: var(--t2); line-height: 1.55;
+  border: 1.5px solid var(--border);
+}
+.photo-strip { display: flex; gap: .75rem; flex-wrap: wrap; margin-top: 1rem; }
+.photo-item {
+  border-radius: 10px; overflow: hidden;
+  border: 1.5px solid var(--border);
+  box-shadow: var(--sh-sm);
+  transition: var(--ease);
+}
+.photo-item:hover { transform: scale(1.03); box-shadow: var(--sh-md); }
+.photo-item img { height: 110px; width: auto; display: block; object-fit: cover; }
+
+/* ════════════════════════════════════════════════
+   TIMELINE
+════════════════════════════════════════════════ */
+.tl { display: flex; flex-direction: column; gap: 0; }
+.tl-item {
+  display: flex; align-items: flex-start; gap: 1rem;
+  position: relative; padding-bottom: 1.2rem;
+}
+.tl-item:last-child { padding-bottom: 0; }
+.tl-item::before {
+  content: '';
+  position: absolute; left: 17px; top: 34px;
+  width: 2px; height: calc(100% - 34px);
+  background: var(--border);
+}
+.tl-item:last-child::before { display: none; }
+.tl-item.done::before { background: var(--g-ok); }
+.tl-icon {
+  width: 36px; height: 36px; border-radius: 50%;
+  flex-shrink: 0; display: flex; align-items: center;
+  justify-content: center; font-size: .9rem;
+  position: relative; z-index: 1;
+  transition: var(--ease);
+}
+.tl-icon-done    { background: var(--g-ok);  color: #fff; box-shadow: 0 0 0 4px #d1fae5; }
+.tl-icon-active  {
+  background: var(--navy); color: #fff;
+  box-shadow: 0 0 0 4px var(--navy-lt);
+  animation: pulseActive .9s ease-in-out infinite alternate;
+}
+.tl-icon-pending { background: #f1f5f9; color: var(--t3); border: 1.5px solid var(--border); }
+.tl-icon-cancel  { background: var(--g-err); color: #fff; }
+@keyframes pulseActive {
+  from { box-shadow: 0 0 0 3px rgba(255,107,0,.20); }
+  to   { box-shadow: 0 0 0 8px rgba(255,107,0,.04); }
+}
+.tl-content { flex: 1; padding-top: .3rem; }
+.tl-label { font-size: .9rem; font-weight: 700; color: var(--t1); }
+.tl-sub   { font-size: .75rem; color: var(--t3); margin-top: .1rem; }
+.tl-content.done .tl-label   { color: var(--g-ok); }
+.tl-content.active .tl-label { color: var(--navy); }
+.tl-content.pending .tl-label { color: var(--t3); font-weight: 500; }
+
+/* ════════════════════════════════════════════════
+   CLIENT CARD
+════════════════════════════════════════════════ */
+.cli-header {
+  display: flex; align-items: center; gap: 1rem;
+  margin-bottom: 1.2rem;
+}
+.cli-av {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--navy-lt); color: var(--navy);
+  font-size: 1.3rem; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.cli-name  { font-size: 1rem; font-weight: 700; color: var(--t1); }
+.cli-type  { font-size: .75rem; color: var(--t3); margin-top: .1rem; }
+.cli-badge {
+  display: inline-flex; align-items: center; gap: .25rem;
+  background: var(--navy-lt); color: var(--navy);
+  border-radius: 20px; padding: .2rem .6rem;
+  font-size: .7rem; font-weight: 700; margin-top: .3rem;
+}
+.cli-details { display: flex; flex-direction: column; gap: .65rem; margin-bottom: 1.2rem; }
+.cli-detail-row {
+  display: flex; align-items: flex-start; gap: .65rem;
+}
+.cli-detail-icon {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: #f8fafc; color: var(--navy);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .95rem; flex-shrink: 0; margin-top: .05rem;
+}
+.cli-detail-label { font-size: .68rem; font-weight: 700; color: var(--t3); text-transform: uppercase; letter-spacing: .4px; }
+.cli-detail-val   { font-size: .88rem; font-weight: 600; color: var(--t1); word-break: break-word; }
+.cli-actions { display: flex; gap: .55rem; flex-wrap: wrap; }
+.cli-btn {
+  flex: 1; min-width: 80px;
+  display: flex; align-items: center; justify-content: center; gap: .35rem;
+  padding: .6rem .5rem; border-radius: 10px;
+  font-size: .8rem; font-weight: 600;
+  text-decoration: none; transition: var(--ease); border: none; cursor: pointer;
+}
+.cli-btn-call { background: #dcfce7; color: #166534; }
+.cli-btn-call:hover { background: #10b981; color: #fff; }
+.cli-btn-wa   { background: #d1fae5; color: #065f46; }
+.cli-btn-wa:hover { background: #059669; color: #fff; }
+.cli-btn-mail { background: #dbeafe; color: #1e3a8a; }
+.cli-btn-mail:hover { background: #3b82f6; color: #fff; }
+
+/* ════════════════════════════════════════════════
+   ACTION CARD
+════════════════════════════════════════════════ */
+.act-list { display: flex; flex-direction: column; gap: .55rem; }
+.act-btn {
+  display: flex; align-items: center; gap: .7rem;
+  padding: .75rem 1rem; border-radius: 10px;
+  font-size: .88rem; font-weight: 600;
+  cursor: pointer; text-decoration: none;
+  transition: var(--ease); border: 1.5px solid var(--border);
+  background: #fafafa; color: var(--t1); width: 100%;
+}
+.act-btn:hover { border-color: var(--orange); background: rgba(255,107,0,.05); color: var(--orange); }
+.act-btn:hover i { color: var(--orange); }
+.act-btn i { font-size: 1.05rem; }
+.act-btn.act-danger { border-color: #fecaca; background: #fef2f2; color: #991b1b; }
+.act-btn.act-danger:hover { background: #ef4444; color: #fff; border-color: #ef4444; }
+.act-btn.act-success { border-color: #a7f3d0; background: #f0fdf4; color: #065f46; }
+.act-btn.act-success:hover { background: #10b981; color: #fff; border-color: #10b981; }
+.act-divider { height: 1px; background: var(--border); margin: .3rem 0; }
+
+/* ════════════════════════════════════════════════
+   COURSIER CARD
+════════════════════════════════════════════════ */
+.cour-header {
+  display: flex; align-items: center; gap: 1rem;
+  margin-bottom: 1.2rem;
+}
+.cour-av {
+  width: 56px; height: 56px; border-radius: 50%;
+  object-fit: cover; border: 2px solid var(--border);
+  background: var(--navy-lt); color: var(--navy);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; font-weight: 800;
+}
+.cour-name { font-size: 1rem; font-weight: 700; color: var(--t1); }
+.cour-ok { display: inline-flex; align-items: center; gap: .3rem; color: var(--g-ok); font-size: .78rem; font-weight: 600; margin-top: .2rem; }
+.cour-empty {
+  text-align: center; padding: 1.8rem 1rem;
+  color: var(--t3);
+}
+.cour-empty i { font-size: 2.5rem; display: block; margin-bottom: .6rem; }
+
+/* ════════════════════════════════════════════════
+   MODALS
+════════════════════════════════════════════════ */
+.modal-header-navy {
+  background: linear-gradient(135deg, var(--navy) 0%, #1a237e 100%);
+  color: #fff;
+}
+.modal-header-navy .btn-close { filter: invert(1); }
+
+/* ════════════════════════════════════════════════
+   ANIMATIONS
+════════════════════════════════════════════════ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.anim { animation: fadeUp .38s ease both; }
+.d1 { animation-delay: .04s; } .d2 { animation-delay: .09s; }
+.d3 { animation-delay: .14s; } .d4 { animation-delay: .19s; }
+.d5 { animation-delay: .24s; }
+
+/* ════════════════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .det-header { padding: 1.2rem 1.2rem; }
+  .det-ref { font-size: 1.3rem; }
+  .stat-row { grid-template-columns: 1fr 1fr; }
+  .dc-body { padding: 1.1rem 1.1rem; }
+}
 </style>
+{% endblock %}
 
-<div class="container mt-4 mb-5">
-    <!-- En-tête -->
-    <div class="page-header">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+{% block content %}
+
+{# ── Page header ────────────────────────────────────────────────────────── #}
+<div class="det-header anim">
+  <a href="{% url 'Gestionnaire:liste_demandes_gestionnaire' %}" class="det-back">
+    <i class="bi bi-arrow-left"></i> Retour
+  </a>
+
+  <div class="det-header-mid">
+    <div class="det-ref">📦 {{ demande.ref }}</div>
+    <div class="det-header-meta">
+      <span class="sbadge sbadge-{{ demande.statut }}">
+        {% if demande.statut == 'EN_ATTENTE' %}<i class="bi bi-clock"></i>
+        {% elif demande.statut == 'TERMINEE' %}<i class="bi bi-check2-circle"></i>
+        {% elif demande.statut == 'ANNULEE' %}<i class="bi bi-x-circle"></i>
+        {% else %}<i class="bi bi-arrow-repeat"></i>{% endif %}
+        {{ demande.get_statut_display }}
+      </span>
+      <span class="chip">
+        {% if demande.type_course == 'EXPRESSE' %}<i class="bi bi-lightning-fill"></i> Express
+        {% else %}<i class="bi bi-bicycle"></i> Classique{% endif %}
+      </span>
+      <span class="chip"><i class="bi bi-calendar3"></i> {{ demande.date_demande|date:"d/m/Y" }}</span>
+    </div>
+  </div>
+
+  <div class="det-header-actions">
+    <button class="h-btn h-btn-orange" data-bs-toggle="modal" data-bs-target="#modifierPrixModal">
+      <i class="bi bi-currency-dollar"></i> Prix
+    </button>
+    {% if not demande.coursier %}
+    <button class="h-btn h-btn-ghost" data-bs-toggle="modal" data-bs-target="#assignerLivreurModal">
+      <i class="bi bi-person-plus"></i> Assigner
+    </button>
+    {% endif %}
+    <button class="h-btn h-btn-ghost" data-bs-toggle="modal" data-bs-target="#changerStatutModal">
+      <i class="bi bi-arrow-repeat"></i> Statut
+    </button>
+  </div>
+</div>
+
+{# ── Two-column grid ─────────────────────────────────────────────────────── #}
+<div class="det-grid">
+
+  {# ════ LEFT COLUMN ════ #}
+  <div class="det-left">
+
+    {# ── Stats summary ── #}
+    <div class="dc anim d1">
+      <div class="dc-body">
+        <div class="stat-row">
+          <div class="stat-item">
+            <div class="stat-item-label"><i class="bi bi-calendar3"></i> Date demande</div>
+            <div class="stat-item-val">{{ demande.date_demande|date:"d/m/Y" }}<br>
+              <span style="font-size:.82rem;color:var(--t3);">{{ demande.date_demande|date:"H:i" }}</span>
+            </div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-item-label"><i class="bi bi-geo"></i> Distance</div>
+            <div class="stat-item-val" id="statDistance">
+              {% if demande.distance %}{{ demande.distance }} km{% else %}—{% endif %}
+            </div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-item-label"><i class="bi bi-clock"></i> Durée estimée</div>
+            <div class="stat-item-val" id="statDuration">—</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-item-label"><i class="bi bi-cash-coin"></i> Coût livraison</div>
+            <div class="stat-item-val">
+              {% if demande.cout_livraison %}
+                <span style="color:var(--g-ok);">{{ demande.cout_livraison|floatformat:0 }} FCFA</span>
+              {% else %}
+                <span style="color:var(--t3);">Non défini</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# ── Trajet + Map ── #}
+    <div class="dc anim d2">
+      <div class="dc-head">
+        <h3><i class="bi bi-map-fill"></i> Trajet</h3>
+      </div>
+      <div class="dc-body">
+        <div class="route-vis">
+          <div class="route-point">
+            <div class="route-dot dep"><i class="bi bi-circle-fill"></i></div>
             <div>
-                <h1 class="page-title">📦 Détail de la livraison</h1>
-                <p class="text-muted mt-2">Suivi et gestion de la demande #{{ demande.ref }}</p>
+              <div class="route-addr-label">Point de départ</div>
+              <div class="route-addr-val">{{ demande.adresse_depart }}</div>
+              {% if demande.latitude_depart and demande.longitude_depart %}
+              <div class="route-addr-sub">
+                <i class="bi bi-crosshair"></i>
+                {{ demande.latitude_depart|floatformat:5 }}, {{ demande.longitude_depart|floatformat:5 }}
+              </div>
+              {% endif %}
             </div>
-            <div class="d-flex gap-2">
-                <a href="{% url 'Gestionnaire:liste_demandes_gestionnaire' %}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left me-2"></i> Retour
-                </a>
-                <div class="dropdown">
-                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                        <i class="bi bi-three-dots-vertical"></i>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li>
-                            <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#editModal">
-                                <i class="bi bi-pencil me-2"></i> Modifier
-                            </a>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <a class="dropdown-item text-danger" href="#" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                                <i class="bi bi-trash me-2"></i> Supprimer
-                            </a>
-                        </li>
-                    </ul>
-                </div>
+          </div>
+          <div class="route-point">
+            <div class="route-dot dest"><i class="bi bi-geo-alt-fill"></i></div>
+            <div>
+              <div class="route-addr-label">Destination</div>
+              <div class="route-addr-val">{{ demande.adresse_destination }}</div>
+              {% if demande.latitude_destination and demande.longitude_destination %}
+              <div class="route-addr-sub">
+                <i class="bi bi-crosshair"></i>
+                {{ demande.latitude_destination|floatformat:5 }}, {{ demande.longitude_destination|floatformat:5 }}
+              </div>
+              {% endif %}
+              {% if demande.Contact_destinateur %}
+              <div class="route-addr-sub" style="color:var(--t2); margin-top:.3rem;">
+                <i class="bi bi-person-fill"></i> {{ demande.Contact_destinateur }}
+              </div>
+              {% endif %}
             </div>
+          </div>
         </div>
+
+        {# Map container #}
+        {% if map_data %}
+          <div id="detMap"></div>
+          <div class="map-info-overlay">
+            <div class="map-stat">
+              <span class="map-stat-val" id="mapDistVal">{% if demande.distance %}{{ demande.distance }} km{% else %}…{% endif %}</span>
+              <span class="map-stat-lbl"><i class="bi bi-arrows-expand"></i> Distance</span>
+            </div>
+            <div class="map-stat">
+              <span class="map-stat-val" id="mapDurVal">…</span>
+              <span class="map-stat-lbl"><i class="bi bi-clock"></i> Temps estimé</span>
+            </div>
+          </div>
+        {% else %}
+          <div class="map-placeholder">
+            <i class="bi bi-geo-alt-slash"></i>
+            <p style="margin:0; font-size:.9rem;">Coordonnées GPS non disponibles pour cette demande</p>
+          </div>
+        {% endif %}
+      </div>
     </div>
 
-    
-
-    <div class="row">
-        <div class="col-lg-8">
-            <!-- Carte principale -->
-            <div class="detail-card">
-                <div class="card-header-section">
-                    <h2 class="demande-ref">Demande #{{ demande.ref }}</h2>
-                    <span class="status-badge status-{{ demande.statut }}">
-                        <i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i>
-                        {{ demande.get_statut_display }}
-                    </span>
-                </div>
-
-                <div class="info-grid">
-                    <div>
-                        <div class="info-item">
-                            <div class="info-label">Date de demande</div>
-                            <div class="info-value">{{ demande.date_demande|date:"d/m/Y à H:i" }}</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Type de course</div>
-                            <div class="info-value">
-                                <span class="badge {% if demande.type_course == 'EXPRESSE' %}bg-warning{% else %}bg-info{% endif %}">
-                                    {{ demande.get_type_course_display }}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="info-item">
-                            <div class="info-label">Distance</div>
-                            <div class="info-value">{{ demande.distance|default:"Non spécifiée" }} km</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Coût de livraison</div>
-                            <div class="info-value">{{ demande.cout_livraison|default:0|floatformat:2 }} FCFA</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="location-section">
-                    <div class="location-item">
-                        <div class="location-icon departure">
-                            <i class="bi bi-geo-alt-fill"></i>
-                        </div>
-                        <div class="location-text">
-                            <div class="location-label">Point de départ</div>
-                            <p class="location-address">{{ demande.adresse_depart }}</p>
-                            {% if demande.latitude_depart and demande.longitude_depart %}
-                                <small class="text-muted">
-                                    <i class="bi bi-globe me-1"></i>
-                                    {{ demande.latitude_depart|floatformat:6 }}, {{ demande.longitude_depart|floatformat:6 }}
-                                </small>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <div class="location-item">
-                        <div class="location-icon destination">
-                            <i class="bi bi-geo-fill"></i>
-                        </div>
-                        <div class="location-text">
-                            <div class="location-label">Point d'arrivée</div>
-                            <p class="location-address">{{ demande.adresse_destination }}</p>
-                            {% if demande.latitude_destination and demande.longitude_destination %}
-                                <small class="text-muted">
-                                    <i class="bi bi-globe me-1"></i>
-                                    {{ demande.latitude_destination|floatformat:6 }}, {{ demande.longitude_destination|floatformat:6 }}
-                                </small>
-                            {% endif %}
-                            <div class="info-item mt-2">
-                                <div class="info-label">Contact sur place</div>
-                                <div class="info-value">{{ demande.Contact_destinateur|default:"Non spécifié" }}</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="section-title">Détails du colis</div>
-                <div class="info-grid">
-                    <div>
-                        <div class="info-label">Description</div>
-                        <div class="info-value">{{ demande.description_colis|linebreaksbr }}</div>
-                    </div>
-                    <div>
-                        <div class="info-item">
-                            <div class="info-label">Poids</div>
-                            <div class="info-value">{{ demande.poids_colis }} kg</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Valeur déclarée</div>
-                            <div class="info-value">{{ demande.valeur_colis|floatformat:2 }} FCFA</div>
-                        </div>
-                    </div>
-                </div>
-
-                {% if demande.photo_colis1 or demande.photo_colis2 %}
-                    <div class="colis-images">
-                        {% if demande.photo_colis1 %}
-                            <div class="colis-image">
-                                <a href="{{ demande.photo_colis1.url }}" data-lightbox="colis">
-                                    <img src="{{ demande.photo_colis1.url }}" alt="Photo colis 1">
-                                </a>
-                            </div>
-                        {% endif %}
-                        {% if demande.photo_colis2 %}
-                            <div class="colis-image">
-                                <a href="{{ demande.photo_colis2.url }}" data-lightbox="colis">
-                                    <img src="{{ demande.photo_colis2.url }}" alt="Photo colis 2">
-                                </a>
-                            </div>
-                        {% endif %}
-                    </div>
-                {% endif %}
-
-                {% if demande.instructions %}
-                    <div class="section-title">Instructions supplémentaires</div>
-                    <div class="info-value">{{ demande.instructions|linebreaksbr }}</div>
-                {% endif %}
+    {# ── Détails du colis ── #}
+    <div class="dc anim d3">
+      <div class="dc-head">
+        <h3><i class="bi bi-box-seam-fill"></i> Détails du colis</h3>
+      </div>
+      <div class="dc-body">
+        {% if demande.description_colis %}
+        <div class="pkg-desc">
+          <div style="font-size:.7rem;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem;">
+            <i class="bi bi-file-text"></i> Description
+          </div>
+          {{ demande.description_colis }}
+        </div>
+        {% endif %}
+        <div class="pkg-grid">
+          <div>
+            <div class="pkg-item-label"><i class="bi bi-box"></i> Poids</div>
+            <div class="pkg-item-val">{{ demande.poids_colis }} kg</div>
+          </div>
+          <div>
+            <div class="pkg-item-label"><i class="bi bi-currency-exchange"></i> Valeur déclarée</div>
+            <div class="pkg-item-val">{{ demande.valeur_colis|floatformat:0 }} FCFA</div>
+          </div>
+          <div>
+            <div class="pkg-item-label"><i class="bi bi-lightning"></i> Type de course</div>
+            <div class="pkg-item-val">{{ demande.get_type_course_display }}</div>
+          </div>
+          <div>
+            <div class="pkg-item-label"><i class="bi bi-calendar-event"></i> Date récupération</div>
+            <div class="pkg-item-val">{{ demande.date_recuperation|date:"d/m/Y H:i" }}</div>
+          </div>
+          {% if demande.instructions %}
+          <div style="grid-column:1/-1;">
+            <div class="pkg-item-label"><i class="bi bi-info-circle"></i> Instructions</div>
+            <div class="pkg-item-val" style="background:#fffbeb;border-radius:8px;padding:.6rem .8rem;border:1.5px solid #fde68a;color:#92400e;">
+              {{ demande.instructions }}
             </div>
-
-            <!-- Timeline -->
-            <div class="detail-card">
-                <div class="section-title">Suivi de la livraison</div>
-                <ul class="timeline">
-                    {% for statut in statut_choices %}
-                        {% with current=forloop.counter0 %}
-                        <li class="timeline-item {% if current < current_status_index %}completed{% elif current == current_status_index %}active{% endif %}">
-                            <div class="timeline-content">
-                                <div class="timeline-step">{{ statut.1 }}</div>
-                                <div class="timeline-status">
-                                    {% if current < current_status_index %}
-                                        Terminé
-                                    {% elif current == current_status_index %}
-                                        En cours
-                                    {% else %}
-                                        À venir
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </li>
-                        {% endwith %}
-                    {% endfor %}
-                </ul>
-            </div>
+          </div>
+          {% endif %}
         </div>
 
-        <div class="col-lg-4">
-            <!-- Actions -->
-            <div class="action-card">
-                <div class="section-title">Actions</div>
-                
-                     <!-- Bouton d'appel -->
-                    {% if demande.client.Contact %}
-                        <a href="tel:{{ demande.client.Contact }}" class="btn btn-success action-btn">
-                            <i class="bi bi-telephone"></i> Appeler le client
-                        </a>
-                    {% else %}
-                        <button class="btn btn-secondary action-btn" disabled title="Numéro non disponible">
-                            <i class="bi bi-telephone-x"></i> Numéro indisponible
-                        </button>
-                    {% endif %}
-
-                        <!-- Bouton WhatsApp -->
-                        {% if demande.client.Contact %}
-                            {% with phone_number=demande.client.Contact|stringformat:"s" %}
-                                {% if not "225" in phone_number and not "+" in phone_number %}
-                                    {% with phone_number="+225"|add:phone_number|cut:" " %}
-                                        <a href="https://wa.me/{{ phone_number }}?text=Bonjour%20Mr/M{{ demande.client.last_name|urlencode }}%20{{ demande.client.first_name|urlencode }}%2C%20je%20vous%20contacte%20concernant%20votre%20demande%20de%20coursier%2C%20r%C3%A9f%3A%20{{ demande.ref|urlencode }}" 
-                                        class="btn btn-info action-btn" 
-                                        target="_blank">
-                                            <i class="bi bi-whatsapp"></i> WhatsApp 
-                                        </a>
-                                    {% endwith %}
-                                {% else %}
-                                    <a href="https://wa.me/{{ phone_number|cut:' ' }}?text=Bonjour%20Mr/M{{ demande.client.last_name|urlencode }}%20{{ demande.client.first_name|urlencode }}%2C%20je%20vous%20contacte%20concernant%20votre%20demande%20de%20coursier%2C%20r%C3%A9f%3A%20{{ demande.ref|urlencode }}" 
-                                    class="btn btn-info action-btn" 
-                                    target="_blank">
-                                        <i class="bi bi-whatsapp"></i> WhatsApp 
-                                    </a>
-                                {% endif %}
-                            {% endwith %}
-                        {% else %}
-                            <button class="btn btn-secondary action-btn" disabled title="Numéro WhatsApp non disponible">
-                                <i class="bi bi-whatsapp"></i> WhatsApp indisponible
-                            </button>
-                        {% endif %}
-
-                        <!-- Bouton pour ouvrir le modal de modification de prix -->
-                        <button type="button" class="btn btn-warning action-btn" data-bs-toggle="modal" data-bs-target="#modifierPrixModal">
-                            <i class="bi bi-currency-dollar"></i> Montant
-                        </button>
-                        
-                        {% if not demande.coursier %}
-                        <button class="btn btn-primary action-btn" data-bs-toggle="modal" data-bs-target="#assignerLivreurModal">
-                            <i class="bi bi-person-plus"></i> Assigner un livreur
-                        </button>
-                        {% endif %}
-                    
-                        <button class="btn btn-danger action-btn" data-bs-toggle="modal" data-bs-target="#changerStatutModal" data-statut="ANNULEE">
-                            <i class="bi bi-x-circle"></i> Annuler la demande
-                        </button>
-                    
-                    <div class="empty-state py-3">
-                        {% if demande.statut == 'TERMINEE' %}
-                            <i class="bi bi-check-circle text-success empty-state-icon"></i>
-                            <h3 class="mb-0">Livraison terminée</h3>
-                        {% else %}
-                            <i class="bi bi-x-circle text-danger empty-state-icon"></i>
-                            <h3 class="mb-0">Livraison annulée</h3>
-                        {% endif %}
-                    </div>
-             
+        {% if demande.photo_colis1 or demande.photo_colis2 %}
+        <div style="margin-top:1rem;">
+          <div class="pkg-item-label" style="margin-bottom:.5rem;"><i class="bi bi-images"></i> Photos du colis</div>
+          <div class="photo-strip">
+            {% if demande.photo_colis1 %}
+            <div class="photo-item">
+              <a href="{{ demande.photo_colis1.url }}" data-lightbox="colis" data-title="Photo colis 1">
+                <img src="{{ demande.photo_colis1.url }}" alt="Photo 1">
+              </a>
             </div>
-
-            <!-- Livreur -->
-            <div class="livreur-card">
-                <div class="section-title">Livreur assigné</div>
-                {% if demande.coursier %}
-            
-                    <img class="livreur-avatar" src="{% if demande.user.photo %}{{ demande.coursier.photo.url }}{% else %}{% static 'img/undraw_profile.svg' %}{% endif %}" alt="Livreur">
-                    <div class="livreur-name" id="livreurAssignation">
-                        <i class="bi bi-person-check-fill text-success me-2"></i>
-                        {{ demande.coursier.get_full_name|default:demande.coursier.username }}
-                    </div>
-                {% else %}
-                    <div class="text-center py-4">
-                        <i class="bi bi-person-x text-muted" style="font-size: 3rem;"></i>
-                        <p class="mt-2 text-muted">Aucun livreur assigné</p>
-                        <div id="livreurAssignation"></div>
-                    </div>
-                {% endif %}
-                    <div class="livreur-contact">
-                        <i class="bi bi-phone me-1"></i>
-                        <a href="tel:{{ demande.coursier.Contact|default:"Non renseigné" }}">{{ demande.coursier.Contact|default:"Non renseigné" }}</a>
-                    </div>
-                    <div class="livreur-contact">
-                        <i class="bi bi-envelope me-1"></i>
-                        <a href="mailto:{{ demande.coursier.email }}">{{ demande.coursier.email }}</a>
-                    </div>
-                    <div class="livreur-actions">
-                        <a href="tel:{{ demande.coursier.Contact|default:"0000000000" }}" class="btn btn-primary livreur-btn">
-                            <i class="bi bi-telephone me-1"></i> Appeler
-                        </a>
-                        <a href="{% url 'Gestionnaire:livreur_disponible' %}" class="btn btn-info livreur-btn">
-                            <i class="bi bi-geo-alt me-1"></i> Localiser
-                        </a>
-                    </div>
-
-            <!-- Historique -->
-            <div class="detail-card">
-                <div class="section-title">Historique des actions</div>
-                {% for action in historique_actions %}
-                    <div class="historique-item">
-                        <div class="historique-icon">
-                            <i class="bi bi-clock"></i>
-                        </div>
-                        <div class="historique-content">
-                            <div class="historique-description">{{ action.description }}</div>
-                            <div class="historique-date">{{ action.date|date:"d/m/Y à H:i" }}</div>
-                        </div>
-                    </div>
-                {% empty %}
-                    <div class="empty-state py-3">
-                        <i class="bi bi-hourglass-split text-muted empty-state-icon"></i>
-                        <h3 class="mb-0">Aucun historique disponible</h3>
-                    </div>
-                {% endfor %}
+            {% endif %}
+            {% if demande.photo_colis2 %}
+            <div class="photo-item">
+              <a href="{{ demande.photo_colis2.url }}" data-lightbox="colis" data-title="Photo colis 2">
+                <img src="{{ demande.photo_colis2.url }}" alt="Photo 2">
+              </a>
             </div>
+            {% endif %}
+          </div>
         </div>
+        {% endif %}
+      </div>
     </div>
+
+    {# ── Timeline ── #}
+    <div class="dc anim d4">
+      <div class="dc-head">
+        <h3><i class="bi bi-diagram-3-fill"></i> Suivi de la livraison</h3>
+        <span class="sbadge sbadge-{{ demande.statut }}" style="font-size:.7rem;">
+          {{ demande.get_statut_display }}
+        </span>
+      </div>
+      <div class="dc-body">
+        {% if is_cancelled %}
+        <div style="display:flex;align-items:center;gap:.8rem;padding:.9rem 1rem;background:#fef2f2;border-radius:10px;border:1.5px solid #fecaca;margin-bottom:1.2rem;">
+          <i class="bi bi-x-circle-fill" style="color:#ef4444;font-size:1.3rem;"></i>
+          <div>
+            <div style="font-weight:700;color:#991b1b;">Demande annulée</div>
+            <div style="font-size:.78rem;color:#b91c1c;">Cette demande a été annulée</div>
+          </div>
+        </div>
+        {% endif %}
+        <div class="tl">
+          {% for step in success_path %}
+          <div class="tl-item {% if step.is_completed %}done{% endif %}">
+            <div class="tl-icon {% if step.is_completed %}tl-icon-done{% elif step.is_current %}tl-icon-active{% else %}tl-icon-pending{% endif %}">
+              <i class="bi {{ step.icon }}"></i>
+            </div>
+            <div class="tl-content {% if step.is_completed %}done{% elif step.is_current %}active{% else %}pending{% endif %}">
+              <div class="tl-label">{{ step.label }}</div>
+              <div class="tl-sub">
+                {% if step.is_completed %}Terminé
+                {% elif step.is_current %}En cours
+                {% else %}À venir{% endif %}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+  </div>{# /det-left #}
+
+  {# ════ RIGHT COLUMN ════ #}
+  <div class="det-right">
+
+    {# ── Client ── #}
+    <div class="dc anim d1">
+      <div class="dc-head">
+        <h3><i class="bi bi-person-fill"></i> Client</h3>
+        {% if demande.client %}
+          <span style="background:#dbeafe;color:#1e3a8a;border-radius:20px;padding:.2rem .65rem;font-size:.7rem;font-weight:700;">
+            <i class="bi bi-lock-fill"></i> Inscrit
+          </span>
+        {% else %}
+          <span style="background:#f3e8ff;color:#6b21a8;border-radius:20px;padding:.2rem .65rem;font-size:.7rem;font-weight:700;">
+            <i class="bi bi-globe2"></i> Invité
+          </span>
+        {% endif %}
+      </div>
+      <div class="dc-body">
+        <div class="cli-header">
+          <div class="cli-av">{{ demande.get_client_display|slice:":1"|upper }}</div>
+          <div>
+            <div class="cli-name">{{ demande.get_client_display }}</div>
+            <div class="cli-type">
+              {% if demande.client %}Client enregistré{% else %}Client non inscrit{% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="cli-details">
+          {# Téléphone #}
+          {% if demande.client and demande.client.Contact %}
+          <div class="cli-detail-row">
+            <div class="cli-detail-icon"><i class="bi bi-phone-fill"></i></div>
+            <div>
+              <div class="cli-detail-label">Téléphone</div>
+              <div class="cli-detail-val">{{ demande.client.Contact }}</div>
+            </div>
+          </div>
+          {% elif demande.client_invite %}
+          <div class="cli-detail-row">
+            <div class="cli-detail-icon"><i class="bi bi-phone-fill"></i></div>
+            <div>
+              <div class="cli-detail-label">Téléphone</div>
+              <div class="cli-detail-val">{{ demande.client_invite.telephone }}</div>
+            </div>
+          </div>
+          {% endif %}
+
+          {# Email #}
+          {% if demande.client and demande.client.email %}
+          <div class="cli-detail-row">
+            <div class="cli-detail-icon"><i class="bi bi-envelope-fill"></i></div>
+            <div>
+              <div class="cli-detail-label">Email</div>
+              <div class="cli-detail-val">{{ demande.client.email }}</div>
+            </div>
+          </div>
+          {% elif demande.client_invite and demande.client_invite.email %}
+          <div class="cli-detail-row">
+            <div class="cli-detail-icon"><i class="bi bi-envelope-fill"></i></div>
+            <div>
+              <div class="cli-detail-label">Email</div>
+              <div class="cli-detail-val">{{ demande.client_invite.email }}</div>
+            </div>
+          </div>
+          {% endif %}
+
+          {# Départ #}
+          <div class="cli-detail-row">
+            <div class="cli-detail-icon" style="background:#dcfce7;color:#166534;"><i class="bi bi-circle-fill"></i></div>
+            <div>
+              <div class="cli-detail-label">Départ</div>
+              <div class="cli-detail-val">{{ demande.adresse_depart|truncatechars:50 }}</div>
+            </div>
+          </div>
+
+          {# Destination #}
+          <div class="cli-detail-row">
+            <div class="cli-detail-icon" style="background:#fee2e2;color:#991b1b;"><i class="bi bi-geo-alt-fill"></i></div>
+            <div>
+              <div class="cli-detail-label">Destination</div>
+              <div class="cli-detail-val">{{ demande.adresse_destination|truncatechars:50 }}</div>
+            </div>
+          </div>
+        </div>
+
+        {# Contact buttons #}
+        <div class="cli-actions">
+          {% if demande.client and demande.client.Contact %}
+            {% with ph=demande.client.Contact nom=demande.client.last_name prenom=demande.client.first_name %}
+            <a href="tel:{{ ph }}" class="cli-btn cli-btn-call">
+              <i class="bi bi-telephone-fill"></i> Appeler
+            </a>
+            <a href="https://wa.me/{{ ph|cut:' ' }}?text=Bonjour%20{{ prenom|urlencode }}%20{{ nom|urlencode }}%2C%20concernant%20demande%20{{ demande.ref|urlencode }}"
+               class="cli-btn cli-btn-wa" target="_blank">
+              <i class="bi bi-whatsapp"></i> WhatsApp
+            </a>
+            {% endwith %}
+          {% elif demande.client_invite %}
+            {% with ph=demande.client_invite.telephone prenom=demande.client_invite.prenom nom=demande.client_invite.nom %}
+            <a href="tel:{{ ph }}" class="cli-btn cli-btn-call">
+              <i class="bi bi-telephone-fill"></i> Appeler
+            </a>
+            <a href="https://wa.me/{{ ph|cut:' ' }}?text=Bonjour%20{{ prenom|urlencode }}%20{{ nom|urlencode }}%2C%20concernant%20demande%20{{ demande.ref|urlencode }}"
+               class="cli-btn cli-btn-wa" target="_blank">
+              <i class="bi bi-whatsapp"></i> WhatsApp
+            </a>
+            {% endwith %}
+          {% else %}
+            <button class="cli-btn" style="background:#f1f5f9;color:var(--t3);" disabled>
+              <i class="bi bi-telephone-x"></i> Non disponible
+            </button>
+          {% endif %}
+
+          {% if demande.client and demande.client.email %}
+          <a href="mailto:{{ demande.client.email }}" class="cli-btn cli-btn-mail">
+            <i class="bi bi-envelope-fill"></i>
+          </a>
+          {% elif demande.client_invite and demande.client_invite.email %}
+          <a href="mailto:{{ demande.client_invite.email }}" class="cli-btn cli-btn-mail">
+            <i class="bi bi-envelope-fill"></i>
+          </a>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+
+    {# ── Actions ── #}
+    <div class="dc anim d2">
+      <div class="dc-head">
+        <h3><i class="bi bi-lightning-fill"></i> Actions</h3>
+      </div>
+      <div class="dc-body">
+        <div class="act-list">
+          <button class="act-btn" data-bs-toggle="modal" data-bs-target="#modifierPrixModal">
+            <i class="bi bi-currency-dollar" style="color:var(--orange);"></i>
+            <span>Définir / modifier le prix</span>
+            {% if demande.cout_livraison %}
+            <span style="margin-left:auto;font-size:.78rem;color:var(--t3);">{{ demande.cout_livraison|floatformat:0 }} FCFA</span>
+            {% endif %}
+          </button>
+
+          {% if not demande.coursier %}
+          <button class="act-btn" data-bs-toggle="modal" data-bs-target="#assignerLivreurModal">
+            <i class="bi bi-person-plus-fill" style="color:var(--g-info);"></i>
+            <span>Assigner un livreur</span>
+          </button>
+          {% endif %}
+
+          <button class="act-btn" data-bs-toggle="modal" data-bs-target="#changerStatutModal">
+            <i class="bi bi-arrow-repeat" style="color:var(--g-purple);"></i>
+            <span>Changer le statut</span>
+          </button>
+
+          <div class="act-divider"></div>
+
+          {% if demande.statut != 'TERMINEE' and demande.statut != 'ANNULEE' %}
+          <a href="{% url 'Gestionnaire:changer_statut' demande.pk 'TERMINEE' %}"
+             class="act-btn act-success"
+             onclick="return confirm('Marquer cette demande comme livrée ?')">
+            <i class="bi bi-check2-circle"></i>
+            <span>Marquer comme livrée</span>
+          </a>
+          <a href="{% url 'Gestionnaire:changer_statut' demande.pk 'ANNULEE' %}"
+             class="act-btn act-danger"
+             onclick="return confirm('Annuler cette demande ? Cette action ne peut pas être annulée.')">
+            <i class="bi bi-x-circle"></i>
+            <span>Annuler la demande</span>
+          </a>
+          {% endif %}
+
+          {% if demande.statut == 'TERMINEE' %}
+          <a href="{% url 'Gestionnaire:recu_pdf' demande.pk %}" target="_blank" class="act-btn">
+            <i class="bi bi-file-earmark-pdf-fill" style="color:#16a34a;"></i>
+            <span>Télécharger le reçu PDF</span>
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    {# ── Coursier ── #}
+    <div class="dc anim d3">
+      <div class="dc-head">
+        <h3><i class="bi bi-bicycle"></i> Coursier assigné</h3>
+      </div>
+      <div class="dc-body">
+        {% if demande.coursier %}
+        <div class="cour-header">
+          <div class="cour-av" id="livreurAssignation">
+            {{ demande.coursier.get_full_name|default:demande.coursier.username|slice:":1"|upper }}
+          </div>
+          <div>
+            <div class="cour-name">{{ demande.coursier.get_full_name|default:demande.coursier.username }}</div>
+            <div class="cour-ok"><i class="bi bi-check-circle-fill"></i> Assigné</div>
+          </div>
+        </div>
+        <div class="cli-details">
+          {% if demande.coursier.Contact %}
+          <div class="cli-detail-row">
+            <div class="cli-detail-icon"><i class="bi bi-phone-fill"></i></div>
+            <div>
+              <div class="cli-detail-label">Téléphone</div>
+              <div class="cli-detail-val">{{ demande.coursier.Contact }}</div>
+            </div>
+          </div>
+          {% endif %}
+          {% if demande.coursier.email %}
+          <div class="cli-detail-row">
+            <div class="cli-detail-icon"><i class="bi bi-envelope-fill"></i></div>
+            <div>
+              <div class="cli-detail-label">Email</div>
+              <div class="cli-detail-val">{{ demande.coursier.email }}</div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+        <div class="cli-actions">
+          {% if demande.coursier.Contact %}
+          <a href="tel:{{ demande.coursier.Contact }}" class="cli-btn cli-btn-call">
+            <i class="bi bi-telephone-fill"></i> Appeler
+          </a>
+          {% endif %}
+          <a href="{% url 'Gestionnaire:livreur_disponible' %}" class="cli-btn cli-btn-mail">
+            <i class="bi bi-geo-alt-fill"></i> Localiser
+          </a>
+        </div>
+        {% else %}
+        <div class="cour-empty" id="livreurAssignation">
+          <i class="bi bi-person-x"></i>
+          <p style="margin:0; font-size:.88rem;">Aucun livreur assigné</p>
+          <button class="act-btn" style="margin-top:.8rem;justify-content:center;" data-bs-toggle="modal" data-bs-target="#assignerLivreurModal">
+            <i class="bi bi-person-plus-fill"></i> Assigner maintenant
+          </button>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>{# /det-right #}
+</div>{# /det-grid #}
+
+ 
+
+{# ── Modal : Modifier prix ── #}
+<div class="modal fade" id="modifierPrixModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header modal-header-navy">
+        <h5 class="modal-title"><i class="bi bi-currency-dollar me-2"></i>Définir le prix</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post" action="{% url 'Gestionnaire:modifier_prix' demande.id %}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-bold">Prix de livraison (FCFA)</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-cash-coin"></i></span>
+              <input type="number" class="form-control" name="prix"
+                     value="{{ demande.cout_livraison|default:'' }}"
+                     min="0" step="0.01" required
+                     placeholder="Montant en FCFA">
+            </div>
+            <div class="form-text">Le statut passera à « Prix validé par le client ».</div>
+            <input type="hidden" name="nouveau_statut" value="VALIDATION_CLIENT">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-circle me-1"></i>Enregistrer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 
-<!-- Modal de modification de prix -->
-<div class="modal fade" id="modifierPrixModal" tabindex="-1" aria-labelledby="modifierPrixModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="modifierPrixModalLabel">
-                    <i class="bi bi-currency-exchange me-2"></i>
-                    Définir le prix de la livraison
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
-            </div>
-            <form method="post" action="{% url 'Gestionnaire:modifier_prix' demande.id %}">
-                {% csrf_token %}
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="prix" class="form-label fw-bold">Prix de la livraison (FCFA)</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-cash-coin"></i></span>
-                            <input type="number" 
-                                   class="form-control" 
-                                   id="prix" 
-                                   name="prix" 
-                                   value="{{ demande.cout_livraison|default:'' }}" 
-                                   min="0" 
-                                   step="0.01" 
-                                   required
-                                   placeholder="Entrez le montant en FCFA">
-                        </div>
-                        <div class="form-text">
-                            Le statut passera à "Validation client" après enregistrement.
-                        </div>
-                        <input type="hidden" name="nouveau_statut" value="VALIDATION_CLIENT">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="bi bi-x-circle me-1"></i> Annuler
-                    </button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-circle me-1"></i> Enregistrer
-                    </button>
-                </div>
-            </form>
+{# ── Modal : Changer statut ── #}
+<div class="modal fade" id="changerStatutModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header modal-header-navy">
+        <h5 class="modal-title"><i class="bi bi-arrow-repeat me-2"></i>Changer le statut</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted" style="font-size:.88rem;">
+          Statut actuel :
+          <strong><span class="sbadge sbadge-{{ demande.statut }}">{{ demande.get_statut_display }}</span></strong>
+        </p>
+        <div class="mb-3">
+          <label class="form-label fw-bold">Nouveau statut</label>
+          <select class="form-select" id="newStatutSelect">
+            {% for s in statut_choices %}
+            <option value="{{ s.0 }}" {% if s.0 == demande.statut %}selected{% endif %}>{{ s.1 }}</option>
+            {% endfor %}
+          </select>
         </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-primary" id="btnAppliquerStatut">
+          <i class="bi bi-check-circle me-1"></i>Appliquer
+        </button>
+      </div>
     </div>
+  </div>
 </div>
 
-<script>
-// Script pour gérer le modal de modification de prix
-document.addEventListener('DOMContentLoaded', function() {
-    const modal = document.getElementById('modifierPrixModal');
-    
-    if (modal) {
-        // Réinitialiser le formulaire quand le modal est fermé
-        modal.addEventListener('hidden.bs.modal', function () {
-            this.querySelector('form').reset();
-        });
-        
-        // Validation du formulaire avant soumission
-        const form = modal.querySelector('form');
-        form.addEventListener('submit', function(e) {
-            const prixInput = document.getElementById('prix');
-            if (parseFloat(prixInput.value) <= 0) {
-                e.preventDefault();
-                alert('Veuillez saisir un montant valide supérieur à 0');
-                prixInput.focus();
-            }
-        });
-    }
-});
-</script>
-
+{# ── Modal : Assigner livreur ── #}
 {% include 'Gestionnaire/modals/assigner_livreur_modal.html' with demande_id=demande.id %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+/* ── Mapbox map ── */
+{% if map_data %}
+(function() {
+  const MD    = {{ map_data|safe }};
+  const TOKEN = MD.token;
+  const DEP   = MD.dep;
+  const DEST  = MD.dest;
+
+  mapboxgl.accessToken = TOKEN;
+  const map = new mapboxgl.Map({
+    container: 'detMap',
+    style: 'mapbox://styles/mapbox/streets-v12',
+    center: [(DEP[0]+DEST[0])/2, (DEP[1]+DEST[1])/2],
+    zoom: 11,
+  });
+
+  map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+  map.addControl(new mapboxgl.FullscreenControl(), 'top-right');
+
+  /* Markers */
+  new mapboxgl.Marker({ color: '#10b981' })
+    .setLngLat(DEP)
+    .setPopup(new mapboxgl.Popup().setHTML(
+      '<strong style="color:#166534">Départ</strong><br>' + MD.dep_addr
+    ))
+    .addTo(map);
+
+  new mapboxgl.Marker({ color: '#ef4444' })
+    .setLngLat(DEST)
+    .setPopup(new mapboxgl.Popup().setHTML(
+      '<strong style="color:#991b1b">Destination</strong><br>' + MD.dest_addr
+    ))
+    .addTo(map);
+
+  /* Route via Directions API */
+  map.on('load', async () => {
+    try {
+      const url = `https://api.mapbox.com/directions/v5/mapbox/driving/`
+        + `${DEP[0]},${DEP[1]};${DEST[0]},${DEST[1]}`
+        + `?geometries=geojson&overview=full&access_token=${TOKEN}`;
+      const r    = await fetch(url);
+      const data = await r.json();
+
+      if (!data.routes?.length) return;
+      const route = data.routes[0];
+
+      map.addSource('route', {
+        type: 'geojson',
+        data: { type: 'Feature', properties: {}, geometry: route.geometry }
+      });
+      map.addLayer({
+        id: 'route-line',
+        type: 'line',
+        source: 'route',
+        layout: { 'line-join': 'round', 'line-cap': 'round' },
+        paint: { 'line-color': '#000080', 'line-width': 4, 'line-opacity': .8 }
+      });
+      map.addLayer({
+        id: 'route-arrow',
+        type: 'line',
+        source: 'route',
+        layout: { 'line-join': 'round', 'line-cap': 'round' },
+        paint: { 'line-color': '#FF6B00', 'line-width': 2, 'line-opacity': .5, 'line-dasharray': [2, 4] }
+      });
+
+      /* Update distance/duration overlay */
+      const km  = (route.distance / 1000).toFixed(1) + ' km';
+      const min = Math.round(route.duration / 60);
+      const dur = min >= 60 ? Math.floor(min/60) + 'h ' + (min%60) + 'min' : min + ' min';
+
+      document.getElementById('mapDistVal').textContent  = km;
+      document.getElementById('mapDurVal').textContent   = dur;
+      document.getElementById('statDistance').textContent = km;
+      document.getElementById('statDuration').textContent = dur;
+
+      /* Fit bounds */
+      const bounds = new mapboxgl.LngLatBounds();
+      route.geometry.coordinates.forEach(c => bounds.extend(c));
+      map.fitBounds(bounds, { padding: 50 });
+
+    } catch(e) { console.warn('Route fetch error', e); }
+  });
+})();
+{% endif %}
+
+/* ── Changer statut ── */
+document.getElementById('btnAppliquerStatut').addEventListener('click', function() {
+  const statut = document.getElementById('newStatutSelect').value;
+  const label  = document.getElementById('newStatutSelect').selectedOptions[0].text.trim();
+  if (confirm(`Changer le statut vers : "${label}" ?`)) {
+    window.location.href = "{% url 'Gestionnaire:changer_statut' demande.pk 'PLACEHOLDER' %}"
+      .replace('PLACEHOLDER', statut);
+  }
+});
+
+/* ── Lightbox config ── */
+lightbox.option({ resizeDuration: 150, wrapAround: true, albumLabel: 'Photo %1 / %2' });
+
+}); /* end DOMContentLoaded */
+</script>
 {% endblock %}

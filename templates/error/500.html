@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>500 — Erreur Serveur | Mon Livreur Pro</title>
+<style>
+  :root {
+    --navy: #000080;
+    --orange: #FF6B00;
+    --red: #e63946;
+    --dark: #0d0010;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--dark);
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ---- particules fumée ---- */
+  .smoke-wrap { position: fixed; bottom: 0; left: 0; right: 0; pointer-events: none; }
+  .smoke {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(180,100,0,.2);
+    animation: rise var(--dur,6s) ease-out var(--delay,0s) infinite;
+    transform-origin: center bottom;
+  }
+  @keyframes rise {
+    0%   { transform: translateY(0)   scale(1);   opacity: .7; }
+    100% { transform: translateY(-80vh) scale(4); opacity: 0; }
+  }
+
+  /* ---- serveur ---- */
+  .server-container {
+    position: relative;
+    margin: 0 auto 1.5rem;
+    width: 120px;
+  }
+  .server {
+    font-size: 5rem;
+    display: block;
+    text-align: center;
+    animation: shake .15s ease-in-out infinite alternate;
+    filter: drop-shadow(0 0 20px rgba(230,57,70,.7));
+  }
+  @keyframes shake {
+    from { transform: rotate(-2deg) translateX(-2px); }
+    to   { transform: rotate(2deg)  translateX(2px); }
+  }
+
+  /* flammes */
+  .flame {
+    position: absolute;
+    bottom: 100%;
+    animation: flicker .3s ease-in-out infinite alternate;
+    font-size: 1.5rem;
+  }
+  .flame:nth-child(1) { left: 20%; animation-delay: 0s; }
+  .flame:nth-child(2) { left: 50%; animation-delay: .1s; font-size: 2rem; }
+  .flame:nth-child(3) { left: 70%; animation-delay: .2s; }
+  @keyframes flicker {
+    from { transform: scaleY(1)   translateY(0); }
+    to   { transform: scaleY(1.3) translateY(-6px); }
+  }
+
+  /* ---- écran glitch ---- */
+  .screen {
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,107,0,.2);
+    border-radius: 12px;
+    padding: 1rem 2rem;
+    margin: 0 auto 1.5rem;
+    max-width: 380px;
+    font-family: 'Courier New', monospace;
+    font-size: .8rem;
+    color: #ff6b6b;
+    line-height: 1.8;
+    animation: flicker-screen 4s ease-in-out infinite;
+  }
+  @keyframes flicker-screen {
+    0%, 97%, 100% { opacity: 1; }
+    98%            { opacity: .3; }
+    99%            { opacity: .9; }
+  }
+  .screen .ok   { color: #6bff8a; }
+  .screen .warn { color: var(--orange); }
+
+  /* ---- contenu ---- */
+  .content { text-align: center; z-index: 10; padding: 2rem; max-width: 600px; }
+
+  .error-code {
+    font-size: clamp(5rem, 18vw, 11rem);
+    font-weight: 900;
+    line-height: 1;
+    color: var(--red);
+    text-shadow: 0 0 40px rgba(230,57,70,.6), 0 0 80px rgba(230,57,70,.3);
+    animation: glow-pulse 1.5s ease-in-out infinite alternate;
+    letter-spacing: -4px;
+  }
+  @keyframes glow-pulse {
+    from { text-shadow: 0 0 30px rgba(230,57,70,.5); }
+    to   { text-shadow: 0 0 60px rgba(230,57,70,.9), 0 0 100px rgba(255,107,0,.4); }
+  }
+
+  .tag {
+    font-size: 1rem;
+    color: var(--red);
+    text-transform: uppercase;
+    letter-spacing: 5px;
+    margin: .4rem 0 1rem;
+  }
+
+  .title {
+    font-size: clamp(1.3rem, 4vw, 1.9rem);
+    font-weight: 700;
+    color: #ffe8e8;
+    margin-bottom: .7rem;
+  }
+  .subtitle {
+    color: #aa8888;
+    font-size: .95rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+  }
+
+  /* ---- boutons ---- */
+  .btn-group { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    padding: .75rem 2rem; border-radius: 50px;
+    font-weight: 600; font-size: .9rem;
+    text-decoration: none; transition: transform .2s, box-shadow .2s;
+    cursor: pointer; border: none;
+  }
+  .btn:hover { transform: translateY(-3px); }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--orange), #c44a00);
+    color: #fff;
+    box-shadow: 0 6px 24px rgba(255,107,0,.4);
+  }
+  .btn-primary:hover { box-shadow: 0 10px 32px rgba(255,107,0,.6); }
+  .btn-outline {
+    background: transparent; color: #fff;
+    border: 2px solid rgba(255,255,255,.2);
+  }
+  .btn-outline:hover { border-color: var(--orange); color: var(--orange); }
+
+  /* barre de progression "redémarrage" */
+  .restart-bar {
+    width: 220px; height: 4px;
+    background: rgba(255,255,255,.1);
+    border-radius: 2px;
+    margin: 1.5rem auto 0;
+    overflow: hidden;
+  }
+  .restart-fill {
+    height: 100%;
+    background: linear-gradient(to right, var(--red), var(--orange));
+    border-radius: 2px;
+    animation: restart 8s linear infinite;
+  }
+  @keyframes restart {
+    0%   { width: 0%; }
+    100% { width: 100%; }
+  }
+  .restart-label {
+    font-size: .72rem; color: #888; margin-top: .4rem;
+    font-family: monospace; letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+<div class="smoke-wrap" id="smoke"></div>
+
+<div class="content">
+  <div class="server-container">
+    <span class="flame">🔥</span>
+    <span class="flame">🔥</span>
+    <span class="flame">🔥</span>
+    <span class="server">🖥️</span>
+  </div>
+
+  <div class="screen">
+    <span class="ok">[OK]</span> Connexion réseau…<br>
+    <span class="ok">[OK]</span> Base de données…<br>
+    <span class="warn">[WARN]</span> Charge serveur élevée…<br>
+    <span style="color:var(--red)">[ERREUR]</span> Crash inattendu ☠️
+  </div>
+
+  <div class="error-code">500</div>
+  <p class="tag">Erreur Interne</p>
+  <h1 class="title">Notre serveur a pris feu 🔥</h1>
+  <p class="subtitle">
+    Quelque chose s'est mal passé de notre côté. Nos ingénieurs ont été alertés
+    et travaillent déjà à éteindre l'incendie. Merci de réessayer dans quelques instants.
+  </p>
+
+  <div class="btn-group">
+    <a href="/" class="btn btn-primary">🏠 Retour à l'accueil</a>
+    <a href="javascript:location.reload()" class="btn btn-outline">↻ Réessayer</a>
+  </div>
+
+  <div class="restart-bar"><div class="restart-fill"></div></div>
+  <p class="restart-label">Redémarrage automatique en cours…</p>
+</div>
+
+<script>
+  // Fumée
+  const sw = document.getElementById('smoke');
+  for (let i = 0; i < 18; i++) {
+    const d = document.createElement('div');
+    d.className = 'smoke';
+    const sz = Math.random() * 60 + 20;
+    d.style.cssText = `
+      width:${sz}px; height:${sz}px;
+      left:${Math.random()*100}%;
+      --dur:${(Math.random()*4+4).toFixed(1)}s;
+      --delay:${(Math.random()*6).toFixed(1)}s;
+    `;
+    sw.appendChild(d);
+  }
+</script>
+</body>
+</html>

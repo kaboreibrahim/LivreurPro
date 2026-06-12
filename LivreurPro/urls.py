@@ -21,7 +21,6 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from Auth.views import error
-from django.conf.urls import handler404, handler403, handler500, handler400
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -42,12 +41,18 @@ urlpatterns = [
     #####  url Livreur #####
     path ("livreur/",include('Livreur.urls')),
 
+    ##### url Notifications #####
+    path('notifications/', include(('Demande.urls', 'notifications'))),
+
 ]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)\
 + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
 
-handler404 = error.custom_page_not_found
-handler403 = error.custom_permission_denied
-handler500 = error.custom_server_error
 handler400 = error.custom_bad_request
+handler403 = error.custom_permission_denied
+handler404 = error.custom_page_not_found
+handler500 = error.custom_server_error
+
+# 505 déclenché manuellement via l'URL ci-dessous (Django ne le gère pas nativement)
+urlpatterns += [path('505/', error.custom_505, name='error_505')]

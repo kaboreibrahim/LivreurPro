@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>505 — Version HTTP Non Supportée | Mon Livreur Pro</title>
+<style>
+  :root {
+    --navy: #000080;
+    --orange: #FF6B00;
+    --purple: #6600cc;
+    --dark: #070010;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--dark);
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ---- réseau de câbles ---- */
+  .net {
+    position: fixed; inset: 0; pointer-events: none;
+    overflow: hidden;
+  }
+  .wire {
+    position: absolute;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(102,0,204,.4), transparent);
+    animation: wire-pulse var(--dur, 4s) ease-in-out var(--delay, 0s) infinite;
+  }
+  @keyframes wire-pulse {
+    0%, 100% { opacity: .1; }
+    50%       { opacity: .5; }
+  }
+  .node {
+    position: absolute;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--orange);
+    animation: node-blink var(--dur, 2s) ease-in-out var(--delay, 0s) infinite;
+    box-shadow: 0 0 8px var(--orange);
+  }
+  @keyframes node-blink {
+    0%, 100% { opacity: .3; transform: scale(1); }
+    50%       { opacity: 1;  transform: scale(1.5); }
+  }
+
+  /* ---- icône protocole ---- */
+  .proto-icon {
+    font-size: 4rem;
+    display: block;
+    margin: 0 auto 1rem;
+    filter: drop-shadow(0 0 16px var(--purple));
+    animation: proto-spin 6s ease-in-out infinite alternate;
+  }
+  @keyframes proto-spin {
+    from { transform: rotateY(0deg); filter: drop-shadow(0 0 16px var(--purple)); }
+    to   { transform: rotateY(20deg); filter: drop-shadow(0 0 28px var(--orange)); }
+  }
+
+  /* ---- contenu ---- */
+  .content {
+    text-align: center;
+    z-index: 10;
+    padding: 2rem;
+    max-width: 580px;
+  }
+
+  .error-code {
+    font-size: clamp(5rem, 18vw, 12rem);
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -4px;
+    background: linear-gradient(135deg, var(--purple), var(--orange), var(--navy));
+    background-size: 300%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradient-flow 3s linear infinite;
+  }
+  @keyframes gradient-flow {
+    0%   { background-position: 0% 50%; }
+    100% { background-position: 300% 50%; }
+  }
+
+  .tag {
+    font-size: 1rem;
+    color: #aa66ff;
+    text-transform: uppercase;
+    letter-spacing: 5px;
+    margin: .4rem 0 1rem;
+  }
+
+  .title {
+    font-size: clamp(1.3rem, 4vw, 1.9rem);
+    font-weight: 700;
+    color: #e8d8ff;
+    margin-bottom: .7rem;
+  }
+  .subtitle {
+    color: #887799;
+    font-size: .95rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+  }
+
+  /* comparaison versions */
+  .version-box {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  .ver {
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 10px;
+    padding: .8rem 1.4rem;
+    font-family: monospace;
+    font-size: .85rem;
+    color: #aaa;
+    line-height: 1.8;
+  }
+  .ver .label { color: #888; font-size: .72rem; text-transform: uppercase; letter-spacing: 2px; }
+  .ver .value { font-size: 1rem; color: #fff; font-weight: 600; }
+  .ver.bad  { border-color: rgba(204,0,0,.5);  background: rgba(204,0,0,.08); }
+  .ver.bad  .value { color: #ff6666; }
+  .ver.good { border-color: rgba(0,200,100,.5); background: rgba(0,200,100,.08); }
+  .ver.good .value { color: #66ff99; }
+
+  /* ---- boutons ---- */
+  .btn-group { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    padding: .75rem 2rem; border-radius: 50px;
+    font-weight: 600; font-size: .9rem;
+    text-decoration: none; transition: transform .2s, box-shadow .2s;
+    border: none; cursor: pointer;
+  }
+  .btn:hover { transform: translateY(-3px); }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--orange), #c44a00);
+    color: #fff;
+    box-shadow: 0 6px 24px rgba(255,107,0,.4);
+  }
+  .btn-primary:hover { box-shadow: 0 10px 32px rgba(255,107,0,.6); }
+  .btn-outline {
+    background: transparent; color: #ccc;
+    border: 2px solid rgba(255,255,255,.2);
+  }
+  .btn-outline:hover { border-color: var(--orange); color: var(--orange); }
+</style>
+</head>
+<body>
+
+<div class="net" id="net"></div>
+
+<div class="content">
+  <span class="proto-icon">🔌</span>
+
+  <div class="error-code">505</div>
+  <p class="tag">Protocole Incompatible</p>
+  <h1 class="title">Version HTTP Non Supportée</h1>
+  <p class="subtitle">
+    Votre navigateur utilise une version du protocole HTTP que notre serveur ne supporte pas.
+    Essayez de mettre à jour votre navigateur ou de contacter le support.
+  </p>
+
+  <div class="version-box">
+    <div class="ver bad">
+      <div class="label">Votre requête</div>
+      <div class="value">HTTP/0.9 ✗</div>
+    </div>
+    <div class="ver good">
+      <div class="label">Supporté</div>
+      <div class="value">HTTP/1.1+ ✓</div>
+    </div>
+  </div>
+
+  <div class="btn-group">
+    <a href="/" class="btn btn-primary">🏠 Retour à l'accueil</a>
+    <a href="javascript:history.back()" class="btn btn-outline">← Page précédente</a>
+  </div>
+</div>
+
+<script>
+  // Génère le réseau de câbles
+  const net = document.getElementById('net');
+  for (let i = 0; i < 12; i++) {
+    const w = document.createElement('div');
+    w.className = 'wire';
+    w.style.cssText = `
+      top:${Math.random()*100}%; left:0; right:0;
+      --dur:${(Math.random()*3+3).toFixed(1)}s;
+      --delay:${(Math.random()*3).toFixed(1)}s;
+    `;
+    net.appendChild(w);
+  }
+  for (let i = 0; i < 20; i++) {
+    const n = document.createElement('div');
+    n.className = 'node';
+    n.style.cssText = `
+      top:${Math.random()*100}%; left:${Math.random()*100}%;
+      --dur:${(Math.random()*2+1).toFixed(1)}s;
+      --delay:${(Math.random()*3).toFixed(1)}s;
+    `;
+    net.appendChild(n);
+  }
+</script>
+</body>
+</html>

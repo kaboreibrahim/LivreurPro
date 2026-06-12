@@ -1,6 +1,50 @@
 {% extends 'layouts/base_site.html' %}
 {% load static %}
 
+{% block title %}Nos Services de Livraison - Colis, Documents, E-commerce | Mon Livreur Pro{% endblock %}
+{% block meta_description %}Découvrez les services de Mon Livreur Pro : livraison de colis, documents administratifs, e-commerce, livraison express et solutions logistiques à Grand-Bassam et Abidjan, Côte d'Ivoire.{% endblock %}
+{% block og_title %}Nos Services de Livraison - Mon Livreur Pro{% endblock %}
+{% block og_description %}Livraison de colis, documents, e-commerce et solutions logistiques à Grand-Bassam et Abidjan. Rapide, fiable et abordable.{% endblock %}
+{% block twitter_title %}Nos Services de Livraison - Mon Livreur Pro{% endblock %}
+{% block twitter_description %}Livraison de colis, documents, e-commerce et solutions logistiques à Grand-Bassam et Abidjan.{% endblock %}
+
+{% block json_ld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "serviceType": "Service de livraison",
+  "provider": {
+    "@type": "LocalBusiness",
+    "name": "Mon Livreur Pro",
+    "url": "{{ request.scheme }}://{{ request.get_host }}/accueil/",
+    "telephone": "+2250150200509",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Cité AGD, Modeste",
+      "addressLocality": "Grand-Bassam",
+      "addressCountry": "CI"
+    }
+  },
+  "areaServed": [
+    {"@type": "City", "name": "Grand-Bassam"},
+    {"@type": "City", "name": "Abidjan"}
+  ],
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "Services de livraison",
+    "itemListElement": [
+      {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Livraison de Colis"}},
+      {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Livraison Express"}},
+      {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Livraison de Documents Administratifs"}},
+      {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Services E-commerce"}},
+      {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Solutions Logistiques"}}
+    ]
+  }
+}
+</script>
+{% endblock json_ld %}
+
 {% block content %}
 <style>
     :root {

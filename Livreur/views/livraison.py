@@ -1,0 +1,54 @@
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+from django.contrib import messages
+from django.utils import timezone
+from Demande.models import DCL
+
+
+@login_required
+@require_POST
+def commencer_livraison(request, pk):
+    """Le livreur confirme qu'il a récupéré le colis et démarre la livraison."""
+    demande = get_object_or_404(DCL, id=pk, coursier=request.user)
+
+    if demande.statut != 'RECEPTION_COLIS':
+        messages.error(request, "Cette action n'est pas disponible pour cette demande.")
+        return redirect('Livreur:detail_demande_livreur', pk=pk)
+
+    demande.statut = 'LIVRAISON_EN_ROUTE'
+    demande.save()
+
+    messages.success(
+        request,
+        f"Vous avez démarré la livraison de la demande {demande.ref}. "
+        "Rendez-vous à l'adresse du destinataire."
+    )
+    return redirect('Livreur:detail_demande_livreur', pk=pk)
+
+
+@login_required
+@require_POST
+def confirmer_livraison(request, pk):
+    """Le livreur enregistre la signature du destinataire et termine la livraison."""
+    demande = get_object_or_404(DCL, id=pk, coursier=request.user)
+
+    if demande.statut != 'LIVRAISON_EN_ROUTE':
+        messages.error(request, "Cette action n'est pas disponible pour cette demande.")
+        return redirect('Livreur:detail_demande_livreur', pk=pk)
+
+    signature = request.POST.get('signature', '').strip()
+    if not signature or not signature.startswith('data:image/png;base64,'):
+        messages.error(request, "La signature du destinataire est requise.")
+        return redirect('Livreur:detail_demande_livreur', pk=pk)
+
+    demande.signature_destinataire = signature
+    demande.date_livraison = timezone.now()
+    demande.statut = 'TERMINEE'
+    demande.save()
+
+    messages.success(
+        request,
+        f"La livraison de la demande {demande.ref} est terminée. Merci !"
+    )
+    return redirect('Livreur:detail_demande_livreur', pk=pk)

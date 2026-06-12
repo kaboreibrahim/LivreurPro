@@ -6,6 +6,7 @@ from django.utils import timezone
 from Demande.models import DCL
 from Livreur.models import Livreur
 from django.http import JsonResponse
+
  
 
 
@@ -17,50 +18,67 @@ class ListeDemandesView(ListView):
     
     def get_queryset(self):
         queryset = DCL.objects.all().order_by('-date_demande')
-        
-        # Filtre par statut 
+
+        # Filtre par statut
         statut = self.request.GET.get('statut')
         if statut:
             queryset = queryset.filter(statut=statut)
-            
+
         # Filtre par type de course
         type_course = self.request.GET.get('type_course')
         if type_course:
             queryset = queryset.filter(type_course=type_course)
-            
-        # Recherche par référence, adresse ou client
+
+        # Filtre par origine : publique (invité) ou privée (client connecté)
+        origine = self.request.GET.get('origine')
+        if origine == 'public':
+            queryset = queryset.filter(client__isnull=True)
+        elif origine == 'prive':
+            queryset = queryset.filter(client__isnull=False)
+
+        # Recherche — couvre clients connectés ET invités
         search_query = self.request.GET.get('q')
         if search_query:
             queryset = queryset.filter(
                 Q(ref__icontains=search_query) |
                 Q(adresse_depart__icontains=search_query) |
                 Q(adresse_destination__icontains=search_query) |
+                Q(Contact_destinateur__icontains=search_query) |
                 Q(client__username__icontains=search_query) |
-                Q(Contact_destinateur__icontains=search_query)
+                Q(client__first_name__icontains=search_query) |
+                Q(client__last_name__icontains=search_query) |
+                Q(client_invite__nom__icontains=search_query) |
+                Q(client_invite__prenom__icontains=search_query) |
+                Q(client_invite__telephone__icontains=search_query)
             )
-            
+
         return queryset
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        
-        # Récupérer les paramètres de filtrage pour les garder dans le formulaire
+
         context['search_query'] = self.request.GET.get('q', '')
         context['selected_statut'] = self.request.GET.get('statut', '')
         context['selected_type'] = self.request.GET.get('type_course', '')
-        
-        # Options pour les filtres
+        context['selected_origine'] = self.request.GET.get('origine', '')
+
         context['statut_choices'] = DCL.STATUT_CHOICES
         context['type_course_choices'] = DCL.TYPE_COURSE_CHOICES
-        
-        # Statistiques pour le tableau de bord
+
         context['total_demandes'] = DCL.objects.count()
         context['demandes_en_attente'] = DCL.objects.filter(statut='EN_ATTENTE').count()
         context['demandes_en_cours'] = DCL.objects.filter(
             statut__in=['VALIDATION_CLIENT', 'VALIDATION_LIVREUR', 'LIVREUR_ROUTE', 'RECEPTION_COLIS', 'LIVRAISON_EN_ROUTE']
         ).count()
         context['demandes_terminees'] = DCL.objects.filter(statut='TERMINEE').count()
-        
+        context['demandes_annulees'] = DCL.objects.filter(statut='ANNULEE').count()
+        context['demandes_publiques'] = DCL.objects.filter(client__isnull=True).count()
+
+        # Livreurs disponibles pour le modal d'assignation rapide
+        context['livreurs_disponibles'] = (
+            Livreur.objects.filter(is_available='LIBRE').select_related('user')
+        )
+
         return context
 
 
@@ -68,7 +86,7 @@ class ListeDemandesView(ListView):
 def changer_statut(request, pk, nouveau_statut):
     if not request.user.is_authenticated or not request.user.is_staff:
         messages.error(request, "Vous n'avez pas la permission d'effectuer cette action.")
-        return redirect('Gestionnaire:liste_demandes')
+        return redirect('Gestionnaire:liste_demandes_gestionnaire')
         
     demande = get_object_or_404(DCL, pk=pk)
     ancien_statut = demande.get_statut_display()

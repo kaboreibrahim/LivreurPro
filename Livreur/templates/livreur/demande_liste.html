@@ -1,572 +1,422 @@
 {% extends 'base_livreur.html' %}
 {% load static %}
 
-{% block title %}Mes Demandes de Livraison{% endblock %}
+{% block page_title %}Mes Courses — Mon Livreur Pro{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 <style>
     :root {
-        --primary: #4e73df;
-        --primary-hover: #2e59d9;
-        --success: #1cc88a;
-        --info: #36b9cc;
-        --warning: #f6c23e;
-        --danger: #e74a3b;
-        --secondary: #858796;
-        --light: #f8f9fc;
-        --dark: #5a5c69;
+        --primary:      #000080;
+        --primary-dark: #000060;
+        --secondary:    #FF6B00;
+        --bg:           #F0F2F7;
+        --card-bg:      #ffffff;
+        --border:       #e8ecf0;
+        --t1:           #0f172a;
+        --t2:           #475569;
+        --t3:           #94a3b8;
+        --shadow-sm:    0 1px 4px rgba(0,0,0,.07);
+        --shadow-md:    0 4px 16px rgba(0,0,0,.10);
+        --shadow-lg:    0 8px 28px rgba(0,0,0,.12);
+        --tr:           .22s cubic-bezier(.4,0,.2,1);
     }
-    
-    body {
-        background-color: #f8f9fc;
-        min-height: 100vh;
-        font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-        font-size: 0.9rem;
-    }
-    
-    .container {
-        max-width: 1200px;
-        padding: 20px;
-    }
-    
-    h1 {
-        color: var(--dark);
-        font-weight: 700;
+
+    /* ── Page header ── */
+    .page-top {
+        background: linear-gradient(135deg, var(--primary) 0%, #1a237e 60%, #283593 100%);
+        border-radius: 16px;
+        padding: 1.5rem 1.75rem;
         margin-bottom: 1.5rem;
-        font-size: 1.75rem;
+        position: relative; overflow: hidden;
+        box-shadow: var(--shadow-md);
+        display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
     }
-    
-    h1 i {
-        color: #667eea;
+    .page-top::before {
+        content:''; position:absolute; inset:0;
+        background:url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='g' width='30' height='30' patternUnits='userSpaceOnUse'%3E%3Cpath d='M30 0L0 0 0 30' fill='none' stroke='rgba(255,255,255,.04)' stroke-width='1'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='60' height='60' fill='url(%23g)'/%3E%3C/svg%3E");
+        opacity:.6; pointer-events:none;
     }
-    
-    .dashboard-stats {
-        margin-bottom: 30px;
+    .page-top .pt-inner { position:relative; z-index:1; }
+    .page-top h4 {
+        font-weight: 800; color: #fff; margin: 0; font-size: 1.35rem; letter-spacing: -.3px;
     }
-    
+    .page-top p { color:rgba(255,255,255,.7); font-size:.82rem; margin:0; }
+
+    /* ── Stats ── */
+    .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
     .stat-card {
-        background: white;
-        border-radius: 8px;
-        padding: 20px;
-        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
-        text-align: left;
-        transition: all 0.3s ease;
-        border-left: 4px solid;
-        height: 100%;
-        margin-bottom: 1.5rem;
+        background: white; border-radius: 14px; padding: 1.1rem 1.25rem;
+        display: flex; align-items: center; gap: 1rem;
+        box-shadow: var(--shadow-sm); border-top: 3px solid transparent;
+        transition: var(--tr); position: relative; overflow: hidden;
     }
-    
-    .stat-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+    .stat-card.assignees { border-top-color: #f59e0b; }
+    .stat-card.en-cours  { border-top-color: #3b82f6; }
+    .stat-card.terminees { border-top-color: #10b981; }
+    .stat-icon-wrap {
+        width: 46px; height: 46px; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0;
     }
-    
-    .stat-card.primary {
-        border-left-color: var(--primary);
+    .stat-card.assignees .stat-icon-wrap { background:#fff3cd; color:#f59e0b; }
+    .stat-card.en-cours  .stat-icon-wrap { background:#dbeafe; color:#3b82f6; }
+    .stat-card.terminees .stat-icon-wrap { background:#d1fae5; color:#10b981; }
+    .stat-num { font-size: 1.7rem; font-weight: 800; color: var(--t1); line-height: 1; }
+    .stat-label { font-size: 0.76rem; color: var(--t3); font-weight: 600; margin-top: 2px; text-transform: uppercase; letter-spacing:.3px; }
+
+    /* ── Filter bar ── */
+    .filter-bar {
+        background: white; border-radius: 14px;
+        padding: 1rem 1.25rem; margin-bottom: 1.25rem;
+        box-shadow: var(--shadow-sm); border: 1px solid var(--border);
+        display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: flex-end;
     }
-    
-    .stat-card.success {
-        border-left-color: var(--success);
+    .filter-bar .form-control, .filter-bar .form-select {
+        border-radius: 10px; border: 1.5px solid var(--border);
+        font-size: 0.85rem; padding: 0.55rem 0.85rem; background: #f8fafc;
+        transition: var(--tr);
     }
-    
-    .stat-card.warning {
-        border-left-color: var(--warning);
+    .filter-bar .form-control:focus, .filter-bar .form-select:focus {
+        border-color: var(--secondary);
+        box-shadow: 0 0 0 3px rgba(255,107,0,.10); background: white;
     }
-    
-    .stat-card.en-cours {
-        border-top-color: #f6ad55;
+    .btn-filter {
+        background: var(--primary); color: white; border: none; border-radius: 10px;
+        padding: 0.55rem 1.1rem; font-weight: 600; font-size: 0.85rem;
+        cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; transition: var(--tr);
     }
-    
-    .stat-card.terminees {
-        border-top-color: #48bb78;
+    .btn-filter:hover { background: var(--primary-dark); transform: translateY(-1px); }
+    .btn-reset-filter {
+        background: #64748b; color: white; border: none; border-radius: 10px;
+        padding: 0.55rem 1.1rem; font-weight: 600; font-size: 0.85rem;
+        display: inline-flex; align-items: center; gap: 0.35rem; text-decoration: none; transition: var(--tr);
     }
-    
-    .stat-card .stat-icon {
-        font-size: 1.5rem;
-        margin-bottom: 10px;
-        opacity: 0.5;
+    .btn-reset-filter:hover { background: #475569; color: white; transform: translateY(-1px); }
+
+    /* ── Course cards ── */
+    .course-card {
+        background: white; border-radius: 16px; margin-bottom: 1rem;
+        box-shadow: var(--shadow-sm); overflow: hidden;
+        border: 1.5px solid var(--border); transition: var(--tr);
     }
-    
-    .stat-card.total .stat-icon {
-        color: #667eea;
+    .course-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: #d1d9e0; }
+    .course-card.needs-action { border-color: #f59e0b; }
+
+    /* accent top strip */
+    .card-accent-strip { height: 3px; background: var(--c-accent, var(--primary)); }
+    .accent-VALIDATION_LIVREUR { --c-accent: #f59e0b; }
+    .accent-LIVREUR_ROUTE      { --c-accent: #f97316; }
+    .accent-RECEPTION_COLIS    { --c-accent: #8b5cf6; }
+    .accent-LIVRAISON_EN_ROUTE { --c-accent: #0ea5e9; }
+    .accent-TERMINEE           { --c-accent: #10b981; }
+    .accent-ANNULEE            { --c-accent: #ef4444; }
+    .accent-EN_ATTENTE         { --c-accent: #FF6B00; }
+
+    .card-header-row {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 0.9rem 1.25rem; border-bottom: 1px solid var(--border); background: #fafbfc;
     }
-    
-    .stat-card.en-cours .stat-icon {
-        color: #f6ad55;
+    .card-ref { font-weight: 800; color: var(--t1); font-size: 1rem; font-family: monospace; }
+    .card-date { font-size: 0.74rem; color: var(--t3); margin-top: 2px; display:flex; align-items:center; gap:.28rem; }
+
+    /* Status badges */
+    .status-pill {
+        display: inline-flex; align-items: center; gap: 0.3rem;
+        padding: 0.3rem 0.8rem; border-radius: 20px;
+        font-size: 0.73rem; font-weight: 700; white-space: nowrap;
     }
-    
-    .stat-card.terminees .stat-icon {
-        color: #48bb78;
+    .status-VALIDATION_LIVREUR { background: #fff3cd; color: #92400e; }
+    .status-LIVREUR_ROUTE      { background: #dbeafe; color: #1e40af; }
+    .status-RECEPTION_COLIS    { background: #e0e7ff; color: #4338ca; }
+    .status-LIVRAISON_EN_ROUTE { background: #cffafe; color: #0e7490; }
+    .status-TERMINEE           { background: #d1fae5; color: #065f46; }
+    .status-ANNULEE            { background: #fee2e2; color: #991b1b; }
+    .status-EN_ATTENTE         { background: #fef3c7; color: #92400e; }
+
+    /* Type tags */
+    .type-pill {
+        display: inline-flex; align-items: center; gap: .25rem;
+        padding: 0.22rem 0.65rem; border-radius: 20px;
+        font-size: 0.71rem; font-weight: 700;
     }
-    
-    .stat-card h3 {
-        font-size: 1.5rem;
-        margin: 5px 0;
-        font-weight: 700;
-        color: var(--dark);
+    .type-EXPRESSE  { background: #fce7f3; color: #9d174d; }
+    .type-CLASSIQUE { background: #e0e7ff; color: #3730a3; }
+
+    /* ── Route block ── */
+    .route-block {
+        margin: .85rem 1.25rem; background: #f8fafc;
+        border-radius: 10px; padding: .8rem .9rem; position: relative;
     }
-    
-    .stat-card p {
-        color: #718096;
-        margin: 0;
-        font-weight: 500;
-        font-size: 0.95rem;
+    .route-block::before {
+        content:''; position:absolute;
+        left: 1.3rem; top: 2rem; bottom: 2rem;
+        width: 2px; background: linear-gradient(to bottom, #22c55e, #ef4444);
+        border-radius: 2px;
     }
-    
-    .filters-section {
-        background: white;
-        border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
-        border: 1px solid #e3e6f0;
+    .rrow { display:flex; align-items:flex-start; gap:.6rem; position:relative; z-index:1; }
+    .rrow + .rrow { margin-top:.6rem; }
+    .rdot {
+        width: 18px; height: 18px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: .55rem; flex-shrink: 0; margin-top: 1px;
     }
-    
-    .filters-section label {
-        color: var(--dark);
-        font-weight: 600;
-        margin-bottom: 8px;
-        font-size: 0.9rem;
+    .rdot.dep  { background: #dcfce7; color: #166534; }
+    .rdot.dest { background: #fee2e2; color: #991b1b; }
+    .rlbl { font-size:.64rem; font-weight:700; color:var(--t3); text-transform:uppercase; letter-spacing:.4px; margin-bottom:1px; }
+    .raddr { font-size:.82rem; font-weight:500; color:var(--t2); line-height:1.35; word-break:break-word; }
+
+    /* ── Info chips ── */
+    .card-chips {
+        display: flex; gap: .4rem; flex-wrap: wrap;
+        padding: 0 1.25rem .85rem;
     }
-    
-    .filters-section .form-control,
-    .filters-section .form-select {
-        border-radius: 4px;
-        border: 1px solid #d1d3e2;
-        padding: 8px 12px;
-        font-size: 0.9rem;
-        background-color: #f8f9fc;
+    .chip {
+        display: inline-flex; align-items: center; gap: .28rem;
+        background: #f1f5f9; border-radius: 6px;
+        padding: .25rem .6rem; font-size: .76rem; color: var(--t2); font-weight: 500;
     }
-    
-    .filters-section .btn-primary {
-        background: var(--primary);
-        color: white;
-        border: none;
-        border-radius: 4px;
-        padding: 8px 16px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        width: 100%;
+    .chip i { font-size: .78rem; color: var(--t3); }
+    .chip.green { background:#d1fae5; color:#065f46; }
+    .chip.blue  { background:#dbeafe; color:#1e3a8a; }
+
+    /* ── Card footer ── */
+    .card-footer-row {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 0.7rem 1.25rem; border-top: 1px solid var(--border); background: #fafbfc;
     }
-    
-    .filters-section .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(0,0,0,0.2);
-        background: #f8f9fa;
-        color: #5a67d8;
+
+    /* Action badge for VALIDATION_LIVREUR */
+    .action-required-tag {
+        display: inline-flex; align-items: center; gap: 0.3rem;
+        background: #fff3cd; color: #92400e; border: 1px solid #f59e0b;
+        border-radius: 20px; padding: 0.25rem 0.75rem;
+        font-size: 0.73rem; font-weight: 700;
+        animation: pulse-tag 1.8s infinite;
     }
-    
-    .demande-card {
-        background: white;
-        border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
-        transition: all 0.3s ease;
-        border: 1px solid #e3e6f0;
+    @keyframes pulse-tag {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(245,158,11,0.35); }
+        50%       { box-shadow: 0 0 0 5px rgba(245,158,11,0); }
     }
-    
-    .demande-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.12);
-        border-left-color: #667eea;
+
+    .btn-voir {
+        display: inline-flex; align-items: center; gap: 0.35rem;
+        background: var(--primary); color: white; text-decoration: none;
+        border-radius: 10px; padding: 0.45rem 1.1rem;
+        font-size: 0.82rem; font-weight: 600; transition: var(--tr);
     }
-    
-    .demande-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 15px;
-        padding-bottom: 15px;
-        border-bottom: 1px solid #e3e6f0;
+    .btn-voir:hover { background: var(--secondary); color: white; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255,107,0,.3); }
+
+    /* ── Empty state ── */
+    .empty-box {
+        background: white; border-radius: 16px; padding: 3.5rem 2rem;
+        text-align: center; box-shadow: var(--shadow-sm); border: 1.5px dashed var(--border);
     }
-    
-    .demande-ref {
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: var(--dark);
-        margin: 0;
+    .empty-icon {
+        width: 70px; height: 70px; border-radius: 50%;
+        background: #e8eaf6; display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 1rem; font-size: 1.9rem; color: var(--primary);
     }
-    
-    .demande-type {
-        padding: 6px 18px;
-        border-radius: 25px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
+    .empty-box h5 { color: var(--t2); font-weight: 700; margin-bottom: 0.5rem; }
+    .empty-box p  { color: var(--t3); font-size: 0.88rem; }
+
+    /* ── Pagination ── */
+    .pag-wrap { display: flex; justify-content: center; margin-top: 1.5rem; gap: 0.35rem; flex-wrap: wrap; }
+    .pag-btn {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 36px; height: 36px; border-radius: 9px;
+        border: 1.5px solid var(--border); background: white;
+        color: var(--t2); font-size: 0.85rem; font-weight: 600;
+        text-decoration: none; transition: var(--tr);
     }
-    
-    .demande-info {
-        margin-bottom: 15px;
-    }
-    
-    .info-row {
-        display: flex;
-        align-items: flex-start;
-        margin-bottom: 10px;
-        padding: 5px 0;
-    }
-    
-    .info-row:hover {
-        background-color: #f7fafc;
-    }
-    
-    .info-row i {
-        margin-right: 10px;
-        color: var(--primary);
-        min-width: 20px;
-        font-size: 1rem;
-        margin-top: 2px;
-    }
-    
-    .info-row .info-label {
-        font-weight: 600;
-        color: var(--secondary);
-        margin-right: 5px;
-        font-size: 0.9rem;
-    }
-    
-    .demande-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding-top: 15px;
-        border-top: 1px solid #e3e6f0;
-        margin-top: 15px;
-    }
-    
-    .demande-footer .btn-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: none;
-        border-radius: 4px;
-        padding: 8px 16px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-    
-    .demande-footer .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
-    }
-    
-    .statut-badge {
-        padding: 5px 10px;
-        border-radius: 4px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.7rem;
-        letter-spacing: 0.5px;
-    }
-    
-    .statut-en-attente {
-        background: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%);
-        color: white;
-    }
-    
-    .statut-livraison-en-route {
-        background: linear-gradient(135deg, #4299e1 0%, #2b6cb0 100%);
-        color: white;
-    }
-    
-    .statut-terminee {
-        background-color: #e6f7f0;
-        color: #1cc88a;
-    }
-    
-    .statut-annulee {
-        background: linear-gradient(135deg, #fc8181 0%, #f56565 100%);
-        color: white;
-    }
-    
-    .empty-state {
-        text-align: center;
-        padding: 60px 20px;
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
-        border: 1px solid #e3e6f0;
-        margin-top: 20px;
-    }
-    
-    .empty-state i {
-        font-size: 5rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-    
-    .empty-state .btn-link:hover {
-        color: #764ba2;
-        text-decoration: underline;
-    }
-    
-    .pagination {
-        justify-content: center;
-        margin-top: 20px;
-    }
-    
-    .pagination .page-link {
-        border: 1px solid #e3e6f0;
-        color: var(--primary);
-        margin: 0 2px;
-        border-radius: 4px;
-        padding: 6px 12px;
-        font-size: 0.9rem;
-    }
-    
-    .pagination .page-item.active .page-link {
-        background-color: var(--primary);
-        border-color: var(--primary);
-    }
-    
-    .pagination .page-link:hover {
-        background-color: #f8f9fc;
+    .pag-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+    .pag-btn.active { background: var(--secondary); color: white; border-color: var(--secondary); box-shadow: 0 3px 10px rgba(255,107,0,.25); }
+
+    /* ── Animation ── */
+    @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+    .course-card { animation: fadeUp .3s ease both; }
+
+    @media (max-width: 640px) {
+        .stat-grid { grid-template-columns: 1fr 1fr; }
+        .filter-bar { flex-direction: column; }
+        .filter-bar > * { width: 100%; }
+        .page-top { padding: 1.1rem 1rem; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0 text-gray-800">
-            <i class="fas fa-truck-loading text-primary"></i> Mes Demandes de Livraison
-        </h1>
+<div class="page-top">
+    <div class="pt-inner">
+        <h4><i class="bi bi-truck me-2"></i>Mes Courses</h4>
+        <p>Gérez et suivez vos livraisons assignées</p>
     </div>
-    
-    <!-- Statistiques -->
-    <div class="dashboard-stats">
-        <div class="row">
-            <div class="col-xl-4 col-md-6 mb-4">
-                <div class="stat-card primary">
-                    <div class="stat-icon">
-                        <i class="fas fa-box text-primary"></i>
-                    </div>
-                    <h3>{{ total_demandes }}</h3>
-                    <p>Total des demandes</p>
-                </div>
-            </div>
-            <div class="col-xl-4 col-md-6 mb-4">
-                <div class="stat-card success">
-                    <div class="stat-icon">
-                        <i class="fas fa-sync-alt text-success"></i>
-                    </div>
-                    <h3>{{ demandes_en_cours }}</h3>
-                    <p>En cours</p>
-                </div>
-            </div>
-            <div class="col-xl-4 col-md-6 mb-4">
-                <div class="stat-card warning">
-                    <div class="stat-icon">
-                        <i class="fas fa-check-circle text-warning"></i>
-                    </div>
-                    <h3>{{ demandes_terminees }}</h3>
-                    <p>Terminées</p>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Filtres -->
-    <div class="filters-section">
-        <form method="get" class="row g-3 align-items-end">
-            <div class="col-md-5">
-                <label class="form-label">
-                    <i class="bi bi-search"></i> Rechercher une demande
-                </label>
-                <input type="text" 
-                       class="form-control" 
-                       name="search" 
-                       placeholder="Référence, adresse, nom du client..."
-                       value="{{ search_query }}">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">
-                    <i class="bi bi-lightning-charge"></i> Type de course
-                </label>
-                <select class="form-select" name="type_course">
-                    <option value="">Tous les types</option>
-                    {% for value, label in type_course %}
-                    <option value="{{ value }}" {% if type_course == value %}selected{% endif %}>
-                        {{ label }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-3">
-                <button type="submit" class="btn btn-primary w-100">
-                    <i class="bi bi-funnel-fill"></i> Filtrer
-                </button>
-            </div>
-        </form>
-    </div>
-    
-    <!-- Liste des demandes -->
-    {% if demandes %}
-        <div class="demandes-list">
-            {% for demande in demandes %}
-            <div class="demande-card">
-                <div class="demande-header">
-                    <div>
-                        <span class="demande-ref">{{ demande.ref }}</span>
-                        <br>
-                        <small class="text-muted">
-                            <i class="bi bi-calendar"></i> 
-                            {{ demande.date_demande|date:"d/m/Y à H:i" }}
-                        </small>
-                    </div>
-                    <span class="demande-type {% if demande.type_course == 'EXPRESSE' %}type-expresse{% else %}type-classique{% endif %}">
-                        {{ demande.get_type_course_display }}
-                    </span>
-                </div>
-                
-                <div class="demande-info">
-                    <div class="info-row">
-                        <i class="bi bi-person"></i>
-                        <div>
-                            <span class="info-label">Client:</span>
-                            {{ demande.client.get_full_name|default:demande.client.username }}
-                        </div>
-                    </div>
-                    
-                    <div class="info-row">
-                        <i class="bi bi-geo-alt-fill text-success"></i>
-                        <div>
-                            <span class="info-label">Départ:</span>
-                            {{ demande.adresse_depart }}
-                        </div>
-                    </div>
-                    
-                    <div class="info-row">
-                        <i class="bi bi-geo-alt text-danger"></i>
-                        <div>
-                            <span class="info-label">Destination:</span>
-                            {{ demande.adresse_destination }}
-                        </div>
-                    </div>
-                    
-                    <div class="info-row">
-                        <i class="bi bi-box"></i>
-                        <div>
-                            <span class="info-label">Description:</span>
-                            {{ demande.description_colis|truncatewords:10 }}
-                        </div>
-                    </div>
-                    
-                    <div class="info-row">
-                        <i class="bi bi-clock"></i>
-                        <div>
-                            <span class="info-label">Récupération prévue:</span>
-                            {{ demande.date_recuperation|date:"d/m/Y à H:i" }}
-                        </div>
-                    </div>
-                    
-                    {% if demande.cout_livraison %}
-                    <div class="info-row">
-                        <i class="bi bi-cash"></i>
-                        <div>
-                            <span class="info-label">Coût:</span>
-                            {{ demande.cout_livraison }} FCFA
-                        </div>
-                    </div>
-                    {% endif %}
-                    
-                    {% if demande.distance %}
-                    <div class="info-row">
-                        <i class="bi bi-signpost"></i>
-                        <div>
-                            <span class="info-label">Distance:</span>
-                            {{ demande.distance }} km
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-                
-                <div class="demande-footer">
-                    <span class="statut-badge statut-{{ demande.statut|lower}}">
-                        {{ demande.get_statut_display }}
-                    </span>
-                    <a href="{% url 'Livreur:detail_demande_livreur' demande.id %}" 
-                       class="btn btn-primary btn-sm">
-                        <i class="bi bi-eye"></i> Voir détails
-                    </a>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        
-        <!-- Pagination -->
-        {% if is_paginated %}
-                        <nav aria-label="Navigation des pages">
-            <ul class="pagination">
-                {% if page_obj.has_previous %}
-                <li class="page-item">
-                    <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if type_course %}&type_course={{ type_course }}{% endif %}">
-                        <i class="bi bi-chevron-double-left"></i>
-                    </a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if type_course %}&type_course={{ type_course }}{% endif %}">
-                        <i class="bi bi-chevron-left"></i>
-                    </a>
-                </li>
-                {% endif %}
-                
-                <li class="page-item active">
-                    <span class="page-link">
-                        Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}
-                    </span>
-                </li>
-                
-                {% if page_obj.has_next %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if type_course %}&type_course={{ type_course }}{% endif %}">
-                        <i class="bi bi-chevron-right"></i>
-                    </a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if type_course %}&type_course={{ type_course }}{% endif %}">
-                        <i class="bi bi-chevron-double-right"></i>
-                    </a>
-                </li>
-                {% endif %}
-            </ul>
-        </nav>
-        {% endif %}
-        
-    {% else %}
-        <!-- État vide -->
-        <div class="empty-state">
-            <i class="bi bi-inbox"></i>
-            <h3>Aucune demande trouvée</h3>
-            <p class="text-muted">
-                {% if search_query or type_course %}
-                    Aucune demande ne correspond à vos critères de recherche.
-                    <br>
-                    <a href="{% url 'Livreur:livreur_demandes_liste' %}" class="btn-link">
-                        <i class="bi bi-arrow-counterclockwise"></i> Réinitialiser les filtres
-                    </a>
-                {% else %}
-                    Vous n'avez pas encore de demandes assignées.
-                {% endif %}
-            </p>
-        </div>
-    {% endif %}
 </div>
-{% endblock %}
 
-{% block extra_js %}
-<script>
-    // Fonction pour actualiser automatiquement la page toutes les 30 secondes
-    // (utile pour voir les nouvelles demandes en temps réel)
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('Démarrage du rafraîchissement automatique (30 secondes)');
-        setTimeout(function() {
-            console.log('Actualisation de la page...');
-            location.reload();
-        }, 30000);
-    });
-</script>
+<!-- Statistiques -->
+<div class="stat-grid">
+    <div class="stat-card assignees">
+        <div class="stat-icon-wrap"><i class="bi bi-bell-fill"></i></div>
+        <div>
+            <div class="stat-num">{{ total_demandes }}</div>
+            <div class="stat-label">À accepter</div>
+        </div>
+    </div>
+    <div class="stat-card en-cours">
+        <div class="stat-icon-wrap"><i class="bi bi-arrow-repeat"></i></div>
+        <div>
+            <div class="stat-num">{{ demandes_en_cours }}</div>
+            <div class="stat-label">En cours</div>
+        </div>
+    </div>
+    <div class="stat-card terminees">
+        <div class="stat-icon-wrap"><i class="bi bi-check-circle-fill"></i></div>
+        <div>
+            <div class="stat-num">{{ demandes_terminees }}</div>
+            <div class="stat-label">Terminées</div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtres -->
+<form method="get">
+    <div class="filter-bar">
+        <div style="flex:2; min-width:180px;">
+            <input type="text" class="form-control" name="search"
+                   placeholder="Référence, adresse…" value="{{ search_query }}">
+        </div>
+        <div style="flex:1; min-width:140px;">
+            <select class="form-select" name="type_course">
+                <option value="">Tous les types</option>
+                {% for value, label in type_course %}
+                <option value="{{ value }}" {% if request.GET.type_course == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn-filter">
+            <i class="bi bi-funnel-fill"></i>Filtrer
+        </button>
+        {% if search_query or request.GET.type_course %}
+        <a href="{% url 'Livreur:livreur_demandes_liste' %}" class="btn-reset-filter">
+            <i class="bi bi-x-lg"></i>Réinitialiser
+        </a>
+        {% endif %}
+    </div>
+</form>
+
+<!-- Liste -->
+{% if demandes %}
+    {% for demande in demandes %}
+    <div class="course-card accent-{{ demande.statut }} {% if demande.statut == 'VALIDATION_LIVREUR' %}needs-action{% endif %}"
+         style="animation-delay:{{ forloop.counter0 }}0ms"
+         onclick="window.location.href='{% url 'Livreur:detail_demande_livreur' demande.id %}'">
+
+        <div class="card-accent-strip"></div>
+
+        <div class="card-header-row">
+            <div>
+                <div class="card-ref">{{ demande.ref }}</div>
+                <div class="card-date"><i class="bi bi-calendar3"></i>{{ demande.date_demande|date:"d/m/Y · H:i" }}</div>
+            </div>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="type-pill type-{{ demande.type_course }}">
+                    {% if demande.type_course == 'EXPRESSE' %}<i class="bi bi-lightning-fill"></i> Express
+                    {% else %}<i class="bi bi-bicycle"></i> Classique{% endif %}
+                </span>
+                <span class="status-pill status-{{ demande.statut }}">
+                    {% if demande.statut == 'TERMINEE' %}<i class="bi bi-check2-circle"></i>
+                    {% elif demande.statut == 'ANNULEE' %}<i class="bi bi-x-circle"></i>
+                    {% elif demande.statut == 'LIVRAISON_EN_ROUTE' or demande.statut == 'LIVREUR_ROUTE' %}<i class="bi bi-bicycle"></i>
+                    {% elif demande.statut == 'VALIDATION_LIVREUR' %}<i class="bi bi-bell-fill"></i>
+                    {% else %}<i class="bi bi-arrow-repeat"></i>{% endif %}
+                    {{ demande.get_statut_display|striptags }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Route block -->
+        <div class="route-block">
+            <div class="rrow">
+                <div class="rdot dep"><i class="bi bi-circle-fill"></i></div>
+                <div>
+                    <div class="rlbl">Départ</div>
+                    <div class="raddr">{{ demande.adresse_depart|truncatechars:55 }}</div>
+                </div>
+            </div>
+            <div class="rrow">
+                <div class="rdot dest"><i class="bi bi-geo-alt-fill"></i></div>
+                <div>
+                    <div class="rlbl">Destination</div>
+                    <div class="raddr">{{ demande.adresse_destination|truncatechars:55 }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info chips -->
+        <div class="card-chips">
+            <span class="chip"><i class="bi bi-person-fill"></i>{{ demande.get_client_display|truncatechars:20 }}</span>
+            {% if demande.cout_livraison %}
+            <span class="chip green"><i class="bi bi-cash-stack"></i>{{ demande.cout_livraison }} FCFA</span>
+            {% endif %}
+            {% if demande.distance %}
+            <span class="chip blue"><i class="bi bi-rulers"></i>{{ demande.distance }} km</span>
+            {% endif %}
+            {% if demande.date_recuperation %}
+            <span class="chip"><i class="bi bi-calendar-check"></i>{{ demande.date_recuperation|date:"d/m/Y" }}</span>
+            {% endif %}
+        </div>
+
+        <div class="card-footer-row">
+            {% if demande.statut == 'VALIDATION_LIVREUR' %}
+            <span class="action-required-tag">
+                <i class="bi bi-exclamation-circle-fill"></i>Action requise
+            </span>
+            {% else %}
+            <span></span>
+            {% endif %}
+            <a href="{% url 'Livreur:detail_demande_livreur' demande.id %}" class="btn-voir" onclick="event.stopPropagation()">
+                <i class="bi bi-eye-fill"></i>Voir
+            </a>
+        </div>
+
+    </div>
+    {% endfor %}
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="pag-wrap">
+        {% if page_obj.has_previous %}
+        <a class="pag-btn" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}"><i class="bi bi-chevron-double-left"></i></a>
+        <a class="pag-btn" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}"><i class="bi bi-chevron-left"></i></a>
+        {% else %}
+        <span class="pag-btn" style="opacity:.4;pointer-events:none;"><i class="bi bi-chevron-double-left"></i></span>
+        <span class="pag-btn" style="opacity:.4;pointer-events:none;"><i class="bi bi-chevron-left"></i></span>
+        {% endif %}
+        <span class="pag-btn active" style="width:auto;padding:0 .9rem;font-size:.82rem;">
+            {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+        </span>
+        {% if page_obj.has_next %}
+        <a class="pag-btn" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}"><i class="bi bi-chevron-right"></i></a>
+        <a class="pag-btn" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}"><i class="bi bi-chevron-double-right"></i></a>
+        {% else %}
+        <span class="pag-btn" style="opacity:.4;pointer-events:none;"><i class="bi bi-chevron-right"></i></span>
+        <span class="pag-btn" style="opacity:.4;pointer-events:none;"><i class="bi bi-chevron-double-right"></i></span>
+        {% endif %}
+    </div>
+    {% endif %}
+
+{% else %}
+    <div class="empty-box">
+        <div class="empty-icon"><i class="bi bi-inbox"></i></div>
+        <h5>Aucune course trouvée</h5>
+        <p>
+            {% if search_query or request.GET.type_course %}
+            Aucun résultat pour ces filtres.
+            <br><a href="{% url 'Livreur:livreur_demandes_liste' %}" style="color:var(--secondary);">Réinitialiser</a>
+            {% else %}
+            Vous n'avez pas encore de courses assignées.
+            {% endif %}
+        </p>
+    </div>
+{% endif %}
 {% endblock %}

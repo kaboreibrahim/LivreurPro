@@ -5,18 +5,60 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Mon Livreur Pro - Service de Livraison Professionnel</title>
+    <title>{% block title %}Mon Livreur Pro - Service de Livraison Professionnel à Grand-Bassam & Abidjan{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="keywords" content=" Mon livreur pro ,livraison, coursier, transport rapide, colis express, service fiable, logistique urbaine, livraison à domicile, e-commerce, entreprise, messagerie, envoi, réception, suivi colis, transporteur, Grand-Bassam, Abidjan, Côte d’Ivoire, modeste,cite agb, transfert, retrait colis, distribution, expédition, livraison sécurisée, ponctualité, tarif abordable">
-    <meta name="description" content="Service de livraison professionnel pour entreprises et e-commerce, livraison express, rapide et fiable de vos colis et documents administratifs">
+    <meta name="description" content="{% block meta_description %}Service de livraison professionnel pour entreprises et e-commerce à Grand-Bassam et Abidjan, Côte d’Ivoire. Livraison express, rapide et fiable de colis, documents administratifs et marchandises.{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}Mon Livreur Pro, livraison, coursier, transport rapide, colis express, service fiable, logistique urbaine, livraison à domicile, e-commerce, messagerie, suivi colis, transporteur, Grand-Bassam, Abidjan, Côte d’Ivoire, Modeste, Cité AGD, livraison sécurisée, ponctualité, tarif abordable{% endblock %}">
     <meta name="author" content="Ibrak Dev">
-    
+    <meta name="robots" content="{% block meta_robots %}index, follow{% endblock %}">
+
+    <!-- Canonical -->
+    {% block canonical %}<link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">{% endblock %}
+
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ request.build_absolute_uri }}">
-    <meta property="og:title" content="Mon Livreur Pro - Service de Livraison Professionnel">
-    <meta property="og:description" content="Service de livraison professionnel pour entreprises et e-commerce">
-    <meta property="og:image" content="{% static 'site/img/logo.png' %}">
+    <meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
+    <meta property="og:title" content="{% block og_title %}Mon Livreur Pro - Service de Livraison Professionnel{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Service de livraison professionnel pour entreprises et e-commerce à Grand-Bassam et Abidjan, Côte d’Ivoire.{% endblock %}">
+    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static ‘site/img/logo.png’ %}">
+    <meta property="og:locale" content="fr_CI">
+    <meta property="og:site_name" content="Mon Livreur Pro">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% block twitter_title %}Mon Livreur Pro - Service de Livraison Professionnel{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}Service de livraison professionnel pour entreprises et e-commerce à Grand-Bassam et Abidjan, Côte d’Ivoire.{% endblock %}">
+    <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% static ‘site/img/logo.png’ %}">
+
+    <!-- JSON-LD Structured Data -->
+    {% block json_ld %}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "Mon Livreur Pro",
+      "description": "Service de livraison professionnel à Grand-Bassam et Abidjan, Côte d’Ivoire. Livraison express de colis, documents et marchandises pour entreprises et e-commerce.",
+      "url": "{{ request.scheme }}://{{ request.get_host }}/accueil/",
+      "telephone": "+2250150200509",
+      "email": "infos@mon-livreur-pro.com",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Cité AGD, Modeste",
+        "addressLocality": "Grand-Bassam",
+        "addressRegion": "Lagunes",
+        "addressCountry": "CI"
+      },
+      "areaServed": [
+        {"@type": "City", "name": "Grand-Bassam"},
+        {"@type": "City", "name": "Abidjan"}
+      ],
+      "image": "{{ request.scheme }}://{{ request.get_host }}{% static ‘site/img/logo.png’ %}",
+      "priceRange": "$$",
+      "openingHours": "Mo-Sa 07:00-20:00",
+      "sameAs": []
+    }
+    </script>
+    {% endblock json_ld %}
 
     <!-- Favicon -->
     <link rel="icon" href="{% static 'site/img/logo.png' %}">
@@ -48,13 +90,13 @@
     <!-- Custom CSS Variables -->
      <style>
         :root {
-            --primary-color: #000080;
-            --primary-gradient: linear-gradient(135deg, #000080, #1e3c72, #2a5298);
-            --secondary-color: rgb(255, 172, 7);
-            --text-light: #f5f5dc;
-            --font-primary: 'Inter', sans-serif;
-            --font-secondary: 'Poppins', sans-serif;
-            --transition: all 0.3s ease;
+            --primary-color:    #000080;
+            --primary-gradient: linear-gradient(135deg, #000080 0%, #00006a 55%, #000055 100%);
+            --secondary-color:  #FF6B00;   /* CORRIGÉ: était rgb(255,172,7) */
+            --text-light:       #f5f5dc;
+            --font-primary:     'Inter', sans-serif;
+            --font-secondary:   'Poppins', sans-serif;
+            --transition:       all 0.25s cubic-bezier(.4,0,.2,1);
         }
 
         body {
@@ -72,8 +114,10 @@
         }
 
         .navbar.scrolled {
-            background: rgba(0, 0, 128, 0.3) !important;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            background: rgba(0, 0, 128, 0.92) !important;
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
         }
 
         .navbar-brand {
@@ -107,25 +151,57 @@
         }
 
         .nav-link.active {
-            color: var(--secondary-color) !important;
-            background: rgba(255, 172, 7, 0.1);
+            color: #fff !important;
+            background: rgba(255, 107, 0, 0.12);
+            position: relative;
         }
 
-        /* CTA Button simple et élégant */
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 2px;
+            background: #FF6B00;
+            border-radius: 2px;
+        }
+
+        /* CTA Button avec gradient orange */
         .btn-cta {
-            background: var(--secondary-color);
+            background: linear-gradient(135deg, #FF6B00 0%, #e05e00 100%);
             border: none;
             font-weight: 600;
             padding: 10px 24px;
             border-radius: 20px;
-            transition: var(--transition);
-            color: #000 !important;
+            transition: transform .2s ease, box-shadow .2s ease;
+            color: #fff !important;
+            box-shadow: 0 4px 14px rgba(255, 107, 0, 0.35);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-cta::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -75%;
+            width: 50%;
+            height: 200%;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,.22), transparent);
+            transform: skewX(-20deg);
+            transition: left .5s ease;
         }
 
         .btn-cta:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 172, 7, 0.4);
-            background: rgb(255, 193, 7);
+            box-shadow: 0 8px 24px rgba(255, 107, 0, 0.50);
+            color: #fff !important;
+        }
+
+        .btn-cta:hover::after {
+            left: 125%;
         }
 
         /* Navbar toggler */
@@ -173,7 +249,31 @@
 
         .btn-social:hover {
             transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.3);
+            background: #FF6B00 !important;
+            border-color: #FF6B00 !important;
+            color: #fff !important;
+            box-shadow: 0 6px 16px rgba(255, 107, 0, 0.40);
+        }
+
+        .footer h5 {
+            position: relative;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+        }
+
+        .footer h5::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 30px;
+            height: 2px;
+            background: #FF6B00;
+            border-radius: 2px;
+        }
+
+        .footer a:hover {
+            color: #fff !important;
         }
 
         /* Responsive */
@@ -193,9 +293,181 @@
             }
         }
     </style>
+
+    <!-- ══ MLP Loader Styles ══ -->
+    <style>
+        #mlp-loader {
+            position: fixed;
+            inset: 0;
+            z-index: 999999;
+            background: linear-gradient(135deg, #000080 0%, #00006a 55%, #000050 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            transition: opacity .55s ease, visibility .55s ease;
+        }
+        #mlp-loader.mlp-out {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        #mlp-loader::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='g' width='30' height='30' patternUnits='userSpaceOnUse'%3E%3Cpath d='M30 0L0 0 0 30' fill='none' stroke='rgba(255,255,255,.04)' stroke-width='1'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='60' height='60' fill='url(%23g)'/%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+        #mlp-loader::after {
+            content: '';
+            position: absolute;
+            width: 420px; height: 420px;
+            background: radial-gradient(circle, rgba(255,107,0,.14) 0%, transparent 65%);
+            bottom: -100px; right: -100px;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .mlp-scene {
+            position: relative;
+            width: min(520px, 92vw);
+            height: 100px;
+            margin-bottom: 2.2rem;
+            z-index: 1;
+        }
+        .mlp-road {
+            position: absolute;
+            bottom: 0; left: -8%; right: -8%;
+            height: 38px;
+            background: #0a0a1a;
+            border-top: 3px solid #FF6B00;
+            border-radius: 4px 4px 0 0;
+            overflow: hidden;
+        }
+        .mlp-road::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 0; right: 0;
+            height: 3px;
+            transform: translateY(-50%);
+            background: repeating-linear-gradient(
+                90deg,
+                transparent 0px, transparent 28px,
+                rgba(255,255,255,.25) 28px, rgba(255,255,255,.25) 56px
+            );
+            animation: mlpRoadScroll .7s linear infinite;
+        }
+        @keyframes mlpRoadScroll {
+            from { background-position-x: 0; }
+            to   { background-position-x: 56px; }
+        }
+        .mlp-v {
+            position: absolute;
+            bottom: 36px;
+            left: 0;
+            opacity: 0;
+            line-height: 1;
+            filter: drop-shadow(0 3px 6px rgba(0,0,0,.6));
+            will-change: transform, opacity;
+            z-index: 2;
+        }
+        .mlp-moto {
+            font-size: 2.3rem;
+            animation: mlpVehicle .85s cubic-bezier(.4,0,.2,1) .1s 1 both;
+        }
+        .mlp-truck {
+            font-size: 3rem;
+            bottom: 34px;
+            animation: mlpVehicle 1.2s cubic-bezier(.3,0,.2,1) .65s 1 both;
+        }
+        .mlp-car {
+            font-size: 2.5rem;
+            animation: mlpVehicle .95s cubic-bezier(.4,0,.2,1) 1.6s 1 both;
+        }
+        @keyframes mlpVehicle {
+            0%   { transform: translateX(-140px); opacity: 1; }
+            85%  { opacity: 1; }
+            100% { transform: translateX(calc(min(520px, 92vw) + 160px)); opacity: 0; }
+        }
+        .mlp-brand {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: .7rem;
+            z-index: 1;
+            animation: mlpFadeUp .55s ease .1s both;
+        }
+        .mlp-logo-img {
+            width: 50px; height: 50px;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 8px rgba(255,107,0,.5));
+        }
+        .mlp-brand-name {
+            font-family: 'Poppins', sans-serif;
+            font-size: clamp(1.5rem, 5vw, 2rem);
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: .5px;
+            line-height: 1;
+        }
+        .mlp-brand-name em {
+            font-style: normal;
+            color: #FF6B00;
+        }
+        .mlp-tagline {
+            font-size: .78rem;
+            color: rgba(255,255,255,.50);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+        .mlp-prog-wrap {
+            width: min(280px, 80vw);
+            height: 4px;
+            background: rgba(255,255,255,.12);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .mlp-prog-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #FF6B00, #ffb347);
+            border-radius: 4px;
+            animation: mlpProgress 2.8s ease-out .2s both;
+        }
+        @keyframes mlpProgress {
+            0%   { width: 0%; }
+            30%  { width: 35%; }
+            60%  { width: 65%; }
+            88%  { width: 88%; }
+            100% { width: 100%; }
+        }
+        @keyframes mlpFadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
 
 <body>
+
+    <!-- ══ MLP Page Loader ══ -->
+    <div id="mlp-loader" role="status" aria-label="Chargement…">
+        <div class="mlp-scene">
+            <div class="mlp-road"></div>
+            <span class="mlp-v mlp-moto" aria-hidden="true">🏍️</span>
+            <span class="mlp-v mlp-truck" aria-hidden="true">🚛</span>
+            <span class="mlp-v mlp-car" aria-hidden="true">🚗</span>
+        </div>
+        <div class="mlp-brand">
+            <img src="{% static 'site/img/logo.png' %}" alt="" class="mlp-logo-img" onerror="this.style.display='none'">
+            <p class="mlp-brand-name">Mon <em>Livreur</em> Pro</p>
+            <p class="mlp-tagline">Livraison rapide &amp; professionnelle</p>
+            <div class="mlp-prog-wrap"><div class="mlp-prog-bar"></div></div>
+        </div>
+    </div>
+
     <!-- Loading Spinner (optional) -->
     {% comment %} <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center" style="z-index: 9999;">
         <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
@@ -230,7 +502,7 @@
                         <a class="nav-link {% if request.resolver_match.url_name == 'Contact' %}active{% endif %} mx-2" href="{% url 'Contact' %}">Contact</a>
                     </li>
                     <li class="nav-item ms-3">
-                        <a href="{% url 'login' %}" class="btn btn-cta text-dark">
+                        <a href="{% url 'demande_publique' %}" class="btn btn-cta text-dark">
                             <i class="fas fa-motorcycle me-2"></i>Demander un coursier
                         </a>
                     </li>
@@ -403,10 +675,80 @@
             }
         });
 
-        // Initialize WOW.js
-        if (typeof WOW !== 'undefined') {
-            new WOW().init();
+        // WOW.js initialized in main.js (éviter double init)
+    </script>
+
+    <!-- ══ MLP Loader Logic ══ -->
+    <script>
+    (function () {
+        var loader = document.getElementById('mlp-loader');
+        if (!loader) return;
+
+        var NAV_KEY   = 'mlp_nav_skip';
+        var ANIM_DURATION = 2800;
+
+        // ── Si la page précédente a mis le flag de navigation → masquer immédiatement ──
+        if (sessionStorage.getItem(NAV_KEY) === '1') {
+            sessionStorage.removeItem(NAV_KEY);
+            loader.style.display = 'none';
+            return;   // rien d'autre à faire
         }
+
+        // ── Affichage normal de l'animation ──────────────────────────────
+        var animDone = false;
+        var pageDone = false;
+
+        function tryHide() {
+            if (!animDone || !pageDone) return;
+            loader.classList.add('mlp-out');
+            setTimeout(function () { loader.style.display = 'none'; }, 560);
+        }
+
+        setTimeout(function () { animDone = true; tryHide(); }, ANIM_DURATION);
+
+        if (document.readyState === 'complete') {
+            pageDone = true;
+        } else {
+            window.addEventListener('load', function () { pageDone = true; tryHide(); });
+        }
+
+        // Sécurité : cacher au max à 7 s
+        setTimeout(function () { animDone = true; pageDone = true; tryHide(); }, 7000);
+
+        // ── Marquer les clics sur les liens de navigation (navbar) ───────
+        document.addEventListener('DOMContentLoaded', function () {
+            // Sélectionne les liens de la barre de navigation principale
+            document.querySelectorAll('.navbar-nav .nav-link, .navbar-brand')
+                .forEach(function (link) {
+                    link.addEventListener('click', function (e) {
+                        var href = link.getAttribute('href');
+                        // Ignorer les ancrages internes (#) et les liens vides
+                        if (!href || href === '#' || href.startsWith('#')) return;
+                        sessionStorage.setItem(NAV_KEY, '1');
+                    });
+                });
+
+            // ── Anti double-soumission ────────────────────────────────────
+            document.querySelectorAll('form').forEach(function (form) {
+                if (form.dataset.noLoader !== undefined) return;
+
+                form.addEventListener('submit', function () {
+                    form.querySelectorAll('[type="submit"], button:not([type]), .btn-submit')
+                        .forEach(function (btn) {
+                            btn.disabled = true;
+                            btn.style.opacity = '0.65';
+                            btn.style.cursor  = 'not-allowed';
+                        });
+
+                    if (loader) {
+                        loader.style.display = 'flex';
+                        loader.classList.remove('mlp-out');
+                        void loader.offsetWidth;
+                    }
+                });
+            });
+        });
+    })();
     </script>
 </body>
 

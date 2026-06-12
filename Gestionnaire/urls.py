@@ -3,6 +3,7 @@ from django.views.generic import RedirectView
 from django.contrib.auth import views as auth_views
 from Gestionnaire.views import *
 from Gestionnaire.views.assigner import assigner_livreur_modal, assigner_livreur
+from Gestionnaire.views.pdf import recu_pdf_gestionnaire
 
 app_name = 'Gestionnaire'
 
@@ -17,6 +18,10 @@ urlpatterns = [
     path('demandes/<uuid:demande_id>/assigner-livreur/modal/', assigner_livreur_modal, name='assigner_livreur_modal'),
     path('demandes/<uuid:demande_id>/assigner-livreur/', assigner_livreur, name='assigner_livreur'),
     
+    # Changement de statut
+    path('demandes/<uuid:pk>/statut/<str:nouveau_statut>/', changer_statut, name='changer_statut'),
+    path('demandes/<uuid:pk>/recu-pdf/', recu_pdf_gestionnaire, name='recu_pdf'),
+
     # localisatoion des livreurs
     path('api/livreur-positions/', get_livreur_positions, name='get_livreur_positions'),
     path('livreurs/Disponible', LivreurDisponible.as_view(), name='livreur_disponible'),

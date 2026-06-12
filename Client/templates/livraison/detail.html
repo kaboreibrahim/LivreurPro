@@ -1,22 +1,12 @@
 {% extends 'base.html' %}
-{% block page_title %}Detail de la demande{% endblock %}
-{% block content %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Demande {{ demande.ref }}</title>
-    
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+{% block page_title %}Detail de la demande{% endblock %}
+
+{% block extra_css %}
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    
     <!-- Mapbox CSS -->
     <link href='https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css' rel='stylesheet' />
-    
     <style>
         :root {
             --primary-color: #4f46e5;
@@ -26,12 +16,12 @@
             --danger-color: #ef4444;
             --info-color: #3b82f6;
         }
-        
+
         body {
             background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
             min-height: 100vh;
         }
-        
+
         /* Header */
          .page-header {
             background: white;
@@ -39,7 +29,7 @@
             margin-bottom: 1.5rem;
             box-shadow: 0 2px 12px rgba(0,0,0,0.08);
         }
-        
+
         .ref-badge {
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
@@ -49,7 +39,7 @@
             font-size: 1.1rem;
             display: inline-block;
         }
-        
+
         .back-btn {
             background: #f1f5f9;
             border: none;
@@ -62,12 +52,12 @@
             color: #475569;
             transition: all 0.2s;
         }
-        
+
         .back-btn:hover {
             background: #e2e8f0;
             transform: translateX(-2px);
         }
-        
+
         /* Status Banner */
         .status-banner {
             background: white;
@@ -79,7 +69,7 @@
             align-items: center;
             gap: 1rem;
         }
-        
+
         .status-icon {
             width: 56px;
             height: 56px;
@@ -90,41 +80,41 @@
             font-size: 1.5rem;
             flex-shrink: 0;
         }
-        
+
         .status-EN_ATTENTE .status-icon {
             background: #fef3c7;
             color: #92400e;
         }
-        
+
         .status-VALIDATION_CLIENT .status-icon {
             background: #dbeafe;
             color: #1e40af;
         }
-        
+
         .status-VALIDATION_LIVREUR .status-icon {
             background: #e0e7ff;
             color: #4338ca;
         }
-        
+
         .status-LIVREUR_ROUTE .status-icon {
             background: #fed7aa;
             color: #9a3412;
         }
-        
+
         .status-TERMINEE .status-icon {
             background: #d1fae5;
             color: #065f46;
         }
-        
+
         .status-ANNULEE .status-icon {
             background: #fee2e2;
             color: #991b1b;
         }
-        
+
         .status-content {
             flex: 1;
         }
-        
+
         .status-label {
             font-size: 0.85rem;
             color: #64748b;
@@ -132,14 +122,14 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        
+
         .status-text {
             font-size: 1.2rem;
             font-weight: 700;
             color: #1e293b;
             margin: 0.25rem 0 0 0;
         }
-        
+
         /* Map Section */
         .map-container {
             background: white;
@@ -148,7 +138,7 @@
             margin-bottom: 1.5rem;
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
-        
+
         .map-header {
             padding: 1rem 1.5rem;
             border-bottom: 2px solid #f1f5f9;
@@ -156,19 +146,19 @@
             align-items: center;
             gap: 0.75rem;
         }
-        
+
         .map-header h5 {
             margin: 0;
             font-weight: 700;
             color: #1e293b;
             font-size: 1.1rem;
         }
-        
+
         #map {
             height: 300px;
             width: 100%;
         }
-        
+
         .map-footer {
             padding: 1rem 1.5rem;
             background: #f8fafc;
@@ -176,7 +166,7 @@
             justify-content: space-between;
             align-items: center;
         }
-        
+
         .distance-badge {
             background: linear-gradient(135deg, var(--info-color), #60a5fa);
             color: white;
@@ -187,7 +177,7 @@
             align-items: center;
             gap: 0.5rem;
         }
-        
+
         /* Addresses Cards */
         .addresses-section {
             background: white;
@@ -196,7 +186,7 @@
             margin-bottom: 1.5rem;
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
-        
+
         .address-item {
             display: flex;
             gap: 1rem;
@@ -205,11 +195,11 @@
             border-radius: 12px;
             margin-bottom: 1rem;
         }
-        
+
         .address-item:last-child {
             margin-bottom: 0;
         }
-        
+
         .address-icon {
             width: 48px;
             height: 48px;
@@ -220,21 +210,21 @@
             font-size: 1.25rem;
             flex-shrink: 0;
         }
-        
+
         .address-icon.departure {
             background: #dcfce7;
             color: #166534;
         }
-        
+
         .address-icon.destination {
             background: #fee2e2;
             color: #991b1b;
         }
-        
+
         .address-content {
             flex: 1;
         }
-        
+
         .address-label {
             font-size: 0.75rem;
             color: #64748b;
@@ -243,14 +233,14 @@
             letter-spacing: 0.5px;
             margin-bottom: 0.25rem;
         }
-        
+
         .address-text {
             color: #1e293b;
             font-weight: 600;
             margin: 0;
             line-height: 1.5;
         }
-        
+
         /* Info Cards */
         .info-card {
             background: white;
@@ -259,7 +249,7 @@
             margin-bottom: 1.5rem;
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
-        
+
         .info-card-header {
             display: flex;
             align-items: center;
@@ -268,30 +258,30 @@
             padding-bottom: 1rem;
             border-bottom: 2px solid #f1f5f9;
         }
-        
+
         .info-card-header h5 {
             margin: 0;
             font-weight: 700;
             color: #1e293b;
             font-size: 1.1rem;
         }
-        
+
         .info-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 1rem;
         }
-        
+
         .info-item {
             background: #f8fafc;
             padding: 1rem;
             border-radius: 12px;
         }
-        
+
         .info-item.full-width {
             grid-column: 1 / -1;
         }
-        
+
         .info-label {
             font-size: 0.75rem;
             color: #64748b;
@@ -303,7 +293,7 @@
             align-items: center;
             gap: 0.5rem;
         }
-        
+
         .info-value {
             color: #1e293b;
             font-weight: 700;
@@ -311,7 +301,7 @@
             margin: 0;
             word-break: break-word;
         }
-        
+
         /* Cost Card */
         .cost-card {
             background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
@@ -321,12 +311,12 @@
             margin-bottom: 1.5rem;
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
-        
+
         .cost-icon {
             font-size: 2rem;
             margin-bottom: 0.5rem;
         }
-        
+
         .cost-label {
             font-size: 0.85rem;
             color: #0369a1;
@@ -334,14 +324,14 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        
+
         .cost-value {
             font-size: 2rem;
             font-weight: 800;
             color: #0c4a6e;
             margin: 0.5rem 0 0 0;
         }
-        
+
         /* Photos Gallery */
         .photos-grid {
             display: grid;
@@ -349,7 +339,7 @@
             gap: 1rem;
             margin-top: 1rem;
         }
-        
+
         .photo-item {
             border-radius: 12px;
             overflow: hidden;
@@ -358,23 +348,23 @@
             transition: transform 0.2s;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
-        
+
         .photo-item:hover {
             transform: scale(1.05);
         }
-        
+
         .photo-item img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
-        
+
         /* Timeline/Roadmap */
         .timeline {
             position: relative;
             padding-left: 2rem;
         }
-        
+
         .timeline::before {
             content: '';
             position: absolute;
@@ -384,16 +374,16 @@
             width: 2px;
             background: #e2e8f0;
         }
-        
+
         .timeline-item {
             position: relative;
             padding-bottom: 1.5rem;
         }
-        
+
         .timeline-item:last-child {
             padding-bottom: 0;
         }
-        
+
         .timeline-marker {
             position: absolute;
             left: -1.4rem;
@@ -405,18 +395,18 @@
             border: 2px solid white;
             box-shadow: 0 0 0 2px #cbd5e1;
         }
-        
+
         .timeline-item.active .timeline-marker {
             background: var(--primary-color);
             box-shadow: 0 0 0 2px var(--primary-color), 0 0 0 4px rgba(79, 70, 229, 0.2);
             animation: pulse 2s infinite;
         }
-        
+
         .timeline-item.completed .timeline-marker {
             background: var(--success-color);
             box-shadow: 0 0 0 2px var(--success-color);
         }
-        
+
         @keyframes pulse {
             0%, 100% {
                 box-shadow: 0 0 0 2px var(--primary-color), 0 0 0 4px rgba(79, 70, 229, 0.2);
@@ -425,22 +415,22 @@
                 box-shadow: 0 0 0 2px var(--primary-color), 0 0 0 8px rgba(79, 70, 229, 0.1);
             }
         }
-        
+
         .timeline-content {
             font-size: 0.95rem;
             color: #475569;
             line-height: 1.6;
         }
-        
+
         .timeline-item.active .timeline-content {
             color: #1e293b;
             font-weight: 600;
         }
-        
+
         .timeline-item.completed .timeline-content {
             color: #64748b;
         }
-        
+
         /* Marker Styles */
         .marker-depart {
             background: linear-gradient(135deg, #10b981, #059669);
@@ -455,7 +445,7 @@
             color: white;
             font-weight: bold;
         }
-        
+
         .marker-destination {
             background: linear-gradient(135deg, #ef4444, #dc2626);
             width: 32px;
@@ -469,7 +459,7 @@
             color: white;
             font-weight: bold;
         }
-        
+
         /* Tabs */
         .custom-tabs {
             display: flex;
@@ -479,11 +469,11 @@
             padding-bottom: 0.5rem;
             -webkit-overflow-scrolling: touch;
         }
-        
+
         .custom-tabs::-webkit-scrollbar {
             display: none;
         }
-        
+
         .tab-btn {
             flex-shrink: 0;
             padding: 0.75rem 1.5rem;
@@ -495,72 +485,331 @@
             transition: all 0.2s;
             box-shadow: 0 2px 4px rgba(0,0,0,0.04);
         }
-        
+
         .tab-btn.active {
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
             box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
         }
-        
+
         .tab-content {
             display: none;
         }
-        
+
         .tab-content.active {
             display: block;
         }
-        
+
+        /* ===== Bannière validation du prix ===== */
+        .prix-validation-banner {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border: 2px solid #f59e0b;
+            border-radius: 16px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 16px rgba(245, 158, 11, 0.2);
+            animation: slideInDown 0.4s ease;
+        }
+        @keyframes slideInDown {
+            from { opacity: 0; transform: translateY(-12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .prix-validation-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background: #f59e0b;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+        .prix-validation-body { flex: 1; min-width: 0; }
+        .prix-validation-title {
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: #92400e;
+            margin-bottom: 0.2rem;
+        }
+        .prix-validation-amount {
+            font-size: 1.7rem;
+            font-weight: 800;
+            color: #78350f;
+            line-height: 1.1;
+        }
+        .prix-validation-amount span { font-size: 0.95rem; font-weight: 600; }
+        .prix-validation-hint {
+            font-size: 0.78rem;
+            color: #92400e;
+            margin-top: 0.3rem;
+            opacity: 0.85;
+        }
+        .btn-accepter {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: #f59e0b;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 0.75rem 1.4rem;
+            font-weight: 700;
+            font-size: 0.92rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+        }
+        .btn-accepter:hover {
+            background: #d97706;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
+        }
+        /* Modal */
+        .prix-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        .prix-modal-overlay.show { display: flex; }
+        .prix-modal {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            animation: popIn 0.3s ease;
+        }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.92); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+        .prix-modal-header {
+            text-align: center;
+            margin-bottom: 1.25rem;
+        }
+        .prix-modal-header h5 {
+            font-weight: 700;
+            color: #1e293b;
+            margin-top: 0.5rem;
+        }
+        .prix-modal-body {
+            text-align: center;
+            color: #475569;
+            font-size: 0.92rem;
+        }
+        .prix-modal-amount {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #0c4a6e;
+            background: #f0f9ff;
+            border-radius: 12px;
+            padding: 0.6rem 1.2rem;
+            display: inline-block;
+            margin: 0.75rem 0;
+        }
+        .prix-modal-note { font-size: 0.84rem; color: #64748b; margin-top: 0.5rem; }
+        .prix-modal-footer {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+        .btn-modal-cancel {
+            flex: 1;
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            background: white;
+            border-radius: 12px;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-modal-cancel:hover { background: #f1f5f9; }
+        .btn-modal-confirm {
+            flex: 2;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-modal-confirm:hover { background: linear-gradient(135deg, #059669, #047857); }
+
+        /* ===== Bannière confirmation récupération ===== */
+        .recuperation-banner {
+            display: flex; align-items: center; gap: 1rem;
+            background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+            border: 2px solid #fb923c; border-radius: 16px;
+            padding: 1.25rem 1.5rem; margin-bottom: 1.5rem;
+            box-shadow: 0 4px 16px rgba(251,146,60,0.2);
+            animation: slideInDown 0.4s ease;
+        }
+        .recuperation-banner-icon {
+            width: 52px; height: 52px; border-radius: 14px;
+            background: #fb923c; color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; flex-shrink: 0;
+        }
+        .recuperation-banner-body { flex: 1; min-width: 0; }
+        .recuperation-banner-title {
+            font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.6px; color: #9a3412; margin-bottom: 0.25rem;
+        }
+        .recuperation-banner-sub { font-size: 0.87rem; color: #7c2d12; font-weight: 600; }
+        .recuperation-banner-hint { font-size: 0.75rem; color: #9a3412; margin-top: 0.2rem; opacity: 0.85; }
+        .btn-confirmer-rec {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            background: #fb923c; color: white; border: none; border-radius: 12px;
+            padding: 0.75rem 1.4rem; font-weight: 700; font-size: 0.92rem;
+            cursor: pointer; transition: all 0.2s; white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(251,146,60,0.35);
+        }
+        .btn-confirmer-rec:hover { background: #ea580c; transform: translateY(-2px); }
+
+        /* ===== Card info livreur ===== */
+        .livreur-card {
+            background: white; border-radius: 16px; margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow: hidden;
+        }
+        .livreur-card-header {
+            background: linear-gradient(135deg, #000080, #000060);
+            padding: 1rem 1.5rem; display: flex; align-items: center; gap: 0.75rem;
+        }
+        .livreur-card-header h6 { margin: 0; color: white; font-weight: 700; font-size: 1rem; }
+        .livreur-card-body { padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 1.25rem; }
+        .livreur-avatar {
+            width: 64px; height: 64px; border-radius: 50%; object-fit: cover;
+            border: 3px solid #e2e8f0; flex-shrink: 0;
+        }
+        .livreur-avatar-placeholder {
+            width: 64px; height: 64px; border-radius: 50%; background: #e0e7ff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem; color: #4338ca; flex-shrink: 0;
+        }
+        .livreur-info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; flex: 1; }
+        .livreur-info-item { background: #f8fafc; border-radius: 10px; padding: 0.65rem 0.9rem; }
+        .livreur-info-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; margin-bottom: 0.2rem; }
+        .livreur-info-value { font-size: 0.92rem; font-weight: 700; color: #1e293b; }
+
+        /* ===== Bouton télécharger PDF ===== */
+        .pdf-banner {
+            display: flex; align-items: center; gap: 1rem;
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 2px solid #22c55e; border-radius: 16px;
+            padding: 1.25rem 1.5rem; margin-bottom: 1.5rem;
+            box-shadow: 0 4px 16px rgba(34,197,94,0.15);
+        }
+        .pdf-banner-icon {
+            width: 52px; height: 52px; border-radius: 14px;
+            background: #22c55e; color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; flex-shrink: 0;
+        }
+        .btn-pdf {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            background: #22c55e; color: white; border: none; border-radius: 12px;
+            padding: 0.75rem 1.4rem; font-weight: 700; font-size: 0.92rem;
+            text-decoration: none; white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(34,197,94,0.3); transition: all 0.2s;
+        }
+        .btn-pdf:hover { background: #16a34a; color: white; transform: translateY(-2px); }
+
+        /* Modal confirmation récupération */
+        .rec-modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.45); z-index: 9999;
+            align-items: center; justify-content: center;
+        }
+        .rec-modal-overlay.show { display: flex; }
+        .rec-modal {
+            background: white; border-radius: 20px; padding: 2rem;
+            width: 90%; max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            animation: popIn 0.3s ease;
+        }
+        .rec-modal-header { text-align: center; margin-bottom: 1.25rem; }
+        .rec-modal-header h5 { font-weight: 700; color: #1e293b; margin-top: 0.5rem; }
+        .rec-modal-body { text-align: center; color: #475569; font-size: 0.92rem; }
+        .rec-modal-footer { display: flex; gap: 0.75rem; margin-top: 1.5rem; }
+
         /* Mobile Responsive */
         @media (max-width: 768px) {
+            .prix-validation-banner { flex-wrap: wrap; gap: 0.75rem; }
+            .prix-validation-actions { width: 100%; }
+            .btn-accepter { width: 100%; justify-content: center; }
+            .recuperation-banner { flex-wrap: wrap; }
+            .livreur-card-body { flex-direction: column; align-items: flex-start; }
+            .livreur-info-grid { grid-template-columns: 1fr; }
+            .pdf-banner { flex-wrap: wrap; }
+        }
             body {
                 background: white;
             }
-            
+
             .container {
                 padding: 0;
             }
-            
+
             .page-header {
                 border-radius: 0 0 24px 24px;
                 margin-bottom: 1rem;
                 padding: 1rem;
             }
-            
+
             .ref-badge {
                 font-size: 0.95rem;
                 padding: 0.4rem 0.85rem;
             }
-            
+
             .back-btn {
                 width: 36px;
                 height: 36px;
             }
-            
+
             .status-banner {
                 border-radius: 0;
                 margin-bottom: 0;
                 padding: 1rem;
             }
-            
+
             .status-icon {
                 width: 48px;
                 height: 48px;
                 font-size: 1.25rem;
             }
-            
+
             .status-text {
                 font-size: 1.05rem;
             }
-            
+
             .map-container {
                 border-radius: 0;
                 margin-bottom: 0;
             }
-            
+
             #map {
                 height: 250px;
             }
-            
+
             .addresses-section,
             .info-card,
             .cost-card {
@@ -569,51 +818,52 @@
                 box-shadow: none;
                 border-bottom: 8px solid #f1f5f9;
             }
-            
+
             .info-grid {
                 grid-template-columns: 1fr;
                 gap: 0.75rem;
             }
-            
+
             .cost-value {
                 font-size: 1.75rem;
             }
-            
+
             .photos-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             .photo-item {
                 aspect-ratio: 16/9;
             }
-            
+
             .custom-tabs {
                 padding: 0 1rem 0.5rem 1rem;
                 margin-bottom: 0;
             }
-            
+
             .tab-btn {
                 padding: 0.65rem 1.25rem;
                 font-size: 0.9rem;
             }
         }
-        
+
         @media (max-width: 375px) {
             .ref-badge {
                 font-size: 0.85rem;
             }
-            
+
             .status-text {
                 font-size: 0.95rem;
             }
-            
+
             .cost-value {
                 font-size: 1.5rem;
             }
         }
     </style>
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
     <div class="container">
          <div class="page-header">
             <div class="d-flex justify-content-between align-items-center">
@@ -637,7 +887,148 @@
                 <div class="status-text">{{ demande.get_statut_display }}</div>
             </div>
         </div>
-        
+
+        <!-- ===== Card info livreur (dès qu'un livreur est assigné) ===== -->
+        {% if demande.coursier %}
+        <div class="livreur-card">
+            <div class="livreur-card-header">
+                <i class="bi bi-person-badge-fill text-warning"></i>
+                <h6>Votre livreur</h6>
+                {% if demande.statut == 'LIVREUR_ROUTE' %}
+                <span style="margin-left:auto; background:rgba(255,255,255,0.2); border-radius:20px; padding:0.25rem 0.75rem; font-size:0.75rem; color:white; font-weight:600;">
+                    <i class="bi bi-dot" style="font-size:1rem;"></i>En route vers vous
+                </span>
+                {% endif %}
+            </div>
+            <div class="livreur-card-body">
+                {% if demande.coursier.photos %}
+                <img src="{{ demande.coursier.photos.url }}" alt="Photo livreur" class="livreur-avatar">
+                {% else %}
+                <div class="livreur-avatar-placeholder"><i class="bi bi-person-fill"></i></div>
+                {% endif %}
+                <div class="livreur-info-grid">
+                    <div class="livreur-info-item">
+                        <div class="livreur-info-label"><i class="bi bi-person me-1"></i>Prénom</div>
+                        <div class="livreur-info-value">{{ demande.coursier.first_name|default:demande.coursier.username }}</div>
+                    </div>
+                    <div class="livreur-info-item">
+                        <div class="livreur-info-label"><i class="bi bi-person me-1"></i>Nom</div>
+                        <div class="livreur-info-value">{{ demande.coursier.last_name|default:"–" }}</div>
+                    </div>
+                    <div class="livreur-info-item" style="grid-column:1/-1;">
+                        <div class="livreur-info-label"><i class="bi bi-telephone me-1"></i>Téléphone</div>
+                        <div class="livreur-info-value">
+                            <a href="tel:{{ demande.coursier.Contact }}" style="color:#000080; text-decoration:none; font-weight:700;">
+                                {{ demande.coursier.Contact|default:"Non renseigné" }}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- ===== Bannière confirmation récupération (LIVREUR_ROUTE) ===== -->
+        {% if demande.statut == 'LIVREUR_ROUTE' %}
+        <div class="recuperation-banner">
+            <div class="recuperation-banner-icon"><i class="bi bi-box-arrow-in-down"></i></div>
+            <div class="recuperation-banner-body">
+                <div class="recuperation-banner-title">Livreur arrivé — Remise du colis</div>
+                <div class="recuperation-banner-sub">Votre livreur est à l'adresse de récupération.</div>
+                <div class="recuperation-banner-hint">Confirmez la remise du colis pour démarrer la livraison.</div>
+            </div>
+            <div>
+                <button class="btn-confirmer-rec" id="btnConfirmerRec">
+                    <i class="bi bi-check-circle"></i>Confirmer la remise
+                </button>
+            </div>
+        </div>
+
+        <!-- Modal confirmation récupération -->
+        <div class="rec-modal-overlay" id="recModalOverlay">
+            <div class="rec-modal">
+                <div class="rec-modal-header">
+                    <i class="bi bi-box-seam" style="font-size:2rem; color:#fb923c;"></i>
+                    <h5>Confirmer la remise du colis</h5>
+                </div>
+                <div class="rec-modal-body">
+                    <p>Confirmez-vous avoir remis le colis au livreur <strong>{{ demande.coursier.first_name }} {{ demande.coursier.last_name }}</strong> ?</p>
+                    <p style="margin-top:0.75rem; font-size:0.82rem; color:#94a3b8;">Demande : <strong>{{ demande.ref }}</strong></p>
+                </div>
+                <div class="rec-modal-footer">
+                    <button class="btn-modal-cancel" id="btnAnnulerRec">Annuler</button>
+                    <form method="post" action="{% url 'Client:confirmer_recuperation' demande.pk %}" style="flex:2; display:flex;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-modal-confirm" style="width:100%; border-radius:12px; font-weight:700; background:linear-gradient(135deg,#fb923c,#ea580c); border:none;">
+                            <i class="bi bi-check-lg me-1"></i>Oui, colis remis
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- ===== Bannière PDF (TERMINEE) ===== -->
+        {% if demande.statut == 'TERMINEE' %}
+        <div class="pdf-banner">
+            <div class="pdf-banner-icon"><i class="bi bi-check-circle-fill"></i></div>
+            <div style="flex:1;">
+                <div style="font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; color:#166534; margin-bottom:0.2rem;">Livraison confirmée</div>
+                <div style="font-size:0.92rem; font-weight:700; color:#14532d;">Votre colis a été livré avec succès.</div>
+                {% if demande.date_livraison %}
+                <div style="font-size:0.78rem; color:#166534; margin-top:0.2rem;">Le {{ demande.date_livraison|date:"d/m/Y à H:i" }}</div>
+                {% endif %}
+            </div>
+            <a href="{% url 'Client:recu_pdf' demande.pk %}" class="btn-pdf" target="_blank">
+                <i class="bi bi-file-earmark-pdf"></i>Télécharger le reçu
+            </a>
+        </div>
+        {% endif %}
+
+        <!-- ===== Bannière acceptation du prix (VALIDATION_CLIENT) ===== -->
+        {% if demande.statut == 'VALIDATION_CLIENT' and demande.cout_livraison %}
+        <div class="prix-validation-banner" id="prixBanner">
+            <div class="prix-validation-icon">
+                <i class="bi bi-tag-fill"></i>
+            </div>
+            <div class="prix-validation-body">
+                <div class="prix-validation-title">Prix de livraison proposé</div>
+                <div class="prix-validation-amount">{{ demande.cout_livraison }} <span>FCFA</span></div>
+                <div class="prix-validation-hint">Veuillez confirmer votre accord pour que la livraison puisse démarrer.</div>
+            </div>
+            <div class="prix-validation-actions">
+                <button class="btn-accepter" id="btnAccepterPrix">
+                    <i class="bi bi-check-lg me-1"></i>Accepter
+                </button>
+            </div>
+        </div>
+
+        <!-- Modal de confirmation -->
+        <div class="prix-modal-overlay" id="prixModalOverlay">
+            <div class="prix-modal">
+                <div class="prix-modal-header">
+                    <i class="bi bi-patch-check-fill text-success" style="font-size:2rem;"></i>
+                    <h5>Confirmer le prix</h5>
+                </div>
+                <div class="prix-modal-body">
+                    <p>Vous êtes sur le point d'accepter un coût de livraison de :</p>
+                    <div class="prix-modal-amount">{{ demande.cout_livraison }} FCFA</div>
+                    <p class="prix-modal-note">Pour la demande <strong>{{ demande.ref }}</strong>.<br>
+                    Un livreur sera assigné après votre confirmation.</p>
+                </div>
+                <div class="prix-modal-footer">
+                    <button class="btn-modal-cancel" id="btnAnnulerModal">Annuler</button>
+                    <form method="post" action="{% url 'Client:accepter_prix' demande.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-modal-confirm">
+                            <i class="bi bi-check-lg me-1"></i>Confirmer l'acceptation
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
         <!-- Tabs Navigation -->
         <div class="custom-tabs">
             <button class="tab-btn active" data-tab="map">
@@ -650,7 +1041,7 @@
                 <i class="bi bi-geo-alt me-2"></i>Suivi
             </button>
         </div>
-        
+
         <!-- Tab Content: Map -->
         <div id="map-tab" class="tab-content active">
             <!-- Map Section -->
@@ -659,7 +1050,16 @@
                     <i class="bi bi-map text-primary"></i>
                     <h5>Itinéraire de livraison</h5>
                 </div>
+                {% if demande.latitude_depart and demande.longitude_depart and demande.latitude_destination and demande.longitude_destination %}
                 <div id="map"></div>
+                {% else %}
+                <div id="map" style="display:flex;align-items:center;justify-content:center;background:#f8fafc;">
+                    <div style="text-align:center;color:#64748b;padding:2rem;">
+                        <i class="bi bi-geo-slash" style="font-size:2.5rem;display:block;margin-bottom:0.75rem;color:#94a3b8;"></i>
+                        <span style="font-weight:600;">Coordonnées GPS non disponibles</span>
+                    </div>
+                </div>
+                {% endif %}
                 {% if demande.distance %}
                 <div class="map-footer">
                     <span style="color: #64748b; font-weight: 600;">Distance totale</span>
@@ -670,7 +1070,7 @@
                 </div>
                 {% endif %}
             </div>
-            
+
             <!-- Addresses -->
             <div class="addresses-section">
                 <div class="address-item">
@@ -682,7 +1082,7 @@
                         <p class="address-text">{{ demande.adresse_depart }}</p>
                     </div>
                 </div>
-                
+
                 <div class="address-item">
                     <div class="address-icon destination">
                         <i class="bi bi-geo-fill"></i>
@@ -694,7 +1094,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Tab Content: Details -->
         <div id="details-tab" class="tab-content">
             <!-- Cost Card -->
@@ -705,7 +1105,7 @@
                 <div class="cost-value">{{ demande.cout_livraison }} FCFA</div>
             </div>
             {% endif %}
-            
+
             <!-- General Info -->
             <div class="info-card">
                 <div class="info-card-header">
@@ -720,7 +1120,7 @@
                         </div>
                         <p class="info-value">{{ demande.date_demande|date:"d/m/Y H:i" }}</p>
                     </div>
-                    
+
                     <div class="info-item">
                         <div class="info-label">
                             <i class="bi bi-calendar-check"></i>
@@ -728,7 +1128,7 @@
                         </div>
                         <p class="info-value">{{ demande.date_recuperation|date:"d/m/Y H:i" }}</p>
                     </div>
-                    
+
                     <div class="info-item">
                         <div class="info-label">
                             <i class="bi bi-tag"></i>
@@ -754,7 +1154,7 @@
                     {% endif %}
                 </div>
             </div>
-            
+
             <!-- Package Info -->
             <div class="info-card">
                 <div class="info-card-header">
@@ -769,7 +1169,7 @@
                         </div>
                         <p class="info-value">{{ demande.description_colis }}</p>
                     </div>
-                    
+
                     <div class="info-item">
                         <div class="info-label">
                             <i class="bi bi-phone"></i>
@@ -777,7 +1177,7 @@
                         </div>
                         <p class="info-value">{{ demande.Contact_destinateur }}</p>
                     </div>
-                    
+
                     <div class="info-item">
                         <div class="info-label">
                             <i class="bi bi-speedometer"></i>
@@ -785,7 +1185,7 @@
                         </div>
                         <p class="info-value">{{ demande.poids_colis }} kg</p>
                     </div>
-                    
+
                     <div class="info-item full-width">
                         <div class="info-label">
                             <i class="bi bi-cash-stack"></i>
@@ -793,7 +1193,7 @@
                         </div>
                         <p class="info-value">{{ demande.valeur_colis }} FCFA</p>
                     </div>
-                    
+
                     {% if demande.instructions %}
                     <div class="info-item full-width">
                         <div class="info-label">
@@ -805,7 +1205,7 @@
                     {% endif %}
                 </div>
             </div>
-            
+
             <!-- Photos -->
             {% if demande.photo_colis1 or demande.photo_colis2 %}
             <div class="info-card">
@@ -828,7 +1228,7 @@
             </div>
             {% endif %}
         </div>
-        
+
         <!-- Tab Content: Tracking -->
         <div id="tracking-tab" class="tab-content">
             <div class="info-card">
@@ -841,29 +1241,28 @@
                 </div>
             </div>
         </div>
-        
+
         <div style="height: 2rem;"></div>
     </div>
-    
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+{% endblock %}
+
+{% block extra_js %}
     <!-- Mapbox JS -->
     <script src='https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js'></script>
-    
+
     <script>
         // Tabs functionality
         const tabBtns = document.querySelectorAll('.tab-btn');
         const tabContents = document.querySelectorAll('.tab-content');
-        
+
         tabBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 const targetTab = btn.dataset.tab;
-                
+
                 // Update buttons
                 tabBtns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                
+
                 // Update content
                 tabContents.forEach(content => {
                     content.classList.remove('active');
@@ -871,19 +1270,35 @@
                 document.getElementById(`${targetTab}-tab`).classList.add('active');
             });
         });
-        
-        // Mapbox
-        mapboxgl.accessToken = 'pk.eyJ1IjoiaWJyYWsiLCJhIjoiY21oYnV4M3M5MDZqMTJyc2E0enFpbTlwaCJ9.OH_RYh--XO3vn363pKRlRg';
-        
+
+        // Mapbox — initialiser seulement si les coordonnées existent
+        {% if demande.latitude_depart and demande.longitude_depart and demande.latitude_destination and demande.longitude_destination %}
+        mapboxgl.accessToken = '{{ mapbox_token }}';
+
+        // Coordonnées en variables JS (|stringformat:"f" force le point décimal, pas la virgule)
+        const lngDepart  = {{ demande.longitude_depart|stringformat:"f" }};
+        const latDepart  = {{ demande.latitude_depart|stringformat:"f" }};
+        const lngDest    = {{ demande.longitude_destination|stringformat:"f" }};
+        const latDest    = {{ demande.latitude_destination|stringformat:"f" }};
+
         const map = new mapboxgl.Map({
             container: 'map',
             style: 'mapbox://styles/mapbox/streets-v12',
-            center: [{{ demande.longitude_depart }}, {{ demande.latitude_depart }}],
+            center: [lngDepart, latDepart],
             zoom: 12
         });
-        
+
         map.addControl(new mapboxgl.NavigationControl());
-        
+
+        // Resize map quand on revient sur l'onglet carte
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (btn.dataset.tab === 'map') {
+                    setTimeout(() => map.resize(), 50);
+                }
+            });
+        });
+
         // Initialize map with async function
         map.on('load', async () => {
             try {
@@ -892,7 +1307,7 @@
                 elDepart.className = 'marker-depart';
                 elDepart.innerHTML = '<i class="bi bi-geo-alt-fill"></i>';
                 new mapboxgl.Marker(elDepart)
-                    .setLngLat([{{ demande.longitude_depart }}, {{ demande.latitude_depart }}])
+                    .setLngLat([lngDepart, latDepart])
                     .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(
                         '<div style="padding: 8px;"><strong style="color: #166534;">Point de départ</strong><br><span style="font-size: 0.9rem;">{{ demande.adresse_depart }}</span></div>'
                     ))
@@ -903,25 +1318,24 @@
                 elDest.className = 'marker-destination';
                 elDest.innerHTML = '<i class="bi bi-flag-fill"></i>';
                 new mapboxgl.Marker(elDest)
-                    .setLngLat([{{ demande.longitude_destination }}, {{ demande.latitude_destination }}])
+                    .setLngLat([lngDest, latDest])
                     .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(
                         '<div style="padding: 8px;"><strong style="color: #991b1b;">Destination</strong><br><span style="font-size: 0.9rem;">{{ demande.adresse_destination }}</span></div>'
                     ))
                     .addTo(map);
-                
+
                 // Fetch and display route
                 const response = await fetch(
                     `https://api.mapbox.com/directions/v5/mapbox/driving/` +
-                    `{{ demande.longitude_depart }},{{ demande.latitude_depart }};` +
-                    `{{ demande.longitude_destination }},{{ demande.latitude_destination }}?` +
+                    `${lngDepart},${latDepart};${lngDest},${latDest}?` +
                     `geometries=geojson&access_token=${mapboxgl.accessToken}`
                 );
-                
+
                 const data = await response.json();
-                
+
                 if (data.routes && data.routes[0]) {
                     const route = data.routes[0];
-                    
+
                     map.addSource('route', {
                         'type': 'geojson',
                         'data': {
@@ -945,30 +1359,46 @@
                             'line-opacity': 0.8
                         }
                     });
-                    
-                    // Fit bounds to show the entire route
-                    const coordinates = [
-                        [{{ demande.longitude_depart }}, {{ demande.latitude_depart }}],
-                        [{{ demande.longitude_destination }}, {{ demande.latitude_destination }}]
-                    ];
-                    
-                    const bounds = coordinates.reduce((bounds, coord) => {
-                        return bounds.extend(coord);
-                    }, new mapboxgl.LngLatBounds(coordinates[0], coordinates[0]));
-                    
+
+                    const bounds = new mapboxgl.LngLatBounds(
+                        [lngDepart, latDepart],
+                        [lngDepart, latDepart]
+                    );
+                    bounds.extend([lngDest, latDest]);
                     map.fitBounds(bounds, { padding: 100 });
                 }
             } catch (error) {
-                console.error('Error:', error);
-                // If there's an error, just show both points
+                console.error('Mapbox error:', error);
                 const bounds = new mapboxgl.LngLatBounds(
-                    [{{ demande.longitude_depart }}, {{ demande.latitude_depart }}],
-                    [{{ demande.longitude_destination }}, {{ demande.latitude_destination }}]
+                    [lngDepart, latDepart],
+                    [lngDest, latDest]
                 );
                 map.fitBounds(bounds, { padding: 100 });
             }
         });
+        {% endif %}
+
+        // Modal confirmation récupération
+        const btnConfirmerRec = document.getElementById('btnConfirmerRec');
+        const recOverlay = document.getElementById('recModalOverlay');
+        const btnAnnulerRec = document.getElementById('btnAnnulerRec');
+        if (btnConfirmerRec && recOverlay) {
+            btnConfirmerRec.addEventListener('click', () => recOverlay.classList.add('show'));
+            btnAnnulerRec.addEventListener('click', () => recOverlay.classList.remove('show'));
+            recOverlay.addEventListener('click', (e) => { if (e.target === recOverlay) recOverlay.classList.remove('show'); });
+        }
+
+        // Modal d'acceptation du prix
+        const btnAccepter = document.getElementById('btnAccepterPrix');
+        const overlay = document.getElementById('prixModalOverlay');
+        const btnAnnuler = document.getElementById('btnAnnulerModal');
+
+        if (btnAccepter && overlay) {
+            btnAccepter.addEventListener('click', () => overlay.classList.add('show'));
+            btnAnnuler.addEventListener('click', () => overlay.classList.remove('show'));
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) overlay.classList.remove('show');
+            });
+        }
     </script>
-</body>
-</html>
 {% endblock %}

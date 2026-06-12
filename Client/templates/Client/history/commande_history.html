@@ -1,107 +1,366 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block content %}
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+<style>
+:root {
+    --navy:        #000080;
+    --navy-dark:   #000060;
+    --navy-light:  #e8eaf6;
+    --orange:      #FF6B00;
+    --orange-light:#fff3e0;
+    --bg:          #F0F2F7;
+    --card-bg:     #ffffff;
+    --border:      #e8ecf0;
+    --t1:          #0f172a;
+    --t2:          #475569;
+    --t3:          #94a3b8;
+    --radius:      14px;
+    --shadow-sm:   0 1px 4px rgba(0,0,0,.07);
+    --shadow-md:   0 4px 16px rgba(0,0,0,.10);
+    --shadow-lg:   0 8px 32px rgba(0,0,0,.13);
+    --tr:          .22s cubic-bezier(.4,0,.2,1);
+}
 
-<div class="container mt-4">
-    <h2 class="mb-4">{{ page_title }}</h2>
-    
-    {% if commandes %}
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead class="table-light">
-                    <tr>
-                        <th>Référence</th>
-                        <th>Date</th>
-                        <th>Adresse de départ</th>
-                        <th>Adresse de destination</th>
-                        <th>Statut</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for commande in commandes %}
-                    <tr class="{% if commande.statut == 'TERMINEE' %}table-success{% elif commande.statut == 'ANNULEE' %}table-danger{% endif %}">
-                        <td>{{ commande.ref }}</td>
-                        <td>{{ commande.date_demande|date:"d/m/Y H:i" }}</td>
-                        <td>{{ commande.adresse_depart|truncatechars:30 }}</td>
-                        <td>{{ commande.adresse_destination|truncatechars:30 }}</td>
-                        <td>
-                            <span class="badge {% if commande.statut == 'TERMINEE' %}bg-success{% else %}bg-danger{% endif %}">
-                                {{ commande.get_statut_display }}
-                            </span>
-                        </td>
-                        <td>
-                            <a href="{% url 'Client:commande_detail' commande.ref %}" class="btn btn-sm btn-primary">
-                                <i class="fas fa-eye"></i> Voir
-                            </a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        
-        <!-- Pagination -->
-        {% if commandes.has_other_pages %}
-        <nav aria-label="Pagination">
-            <ul class="pagination justify-content-center">
-                {% if commandes.has_previous %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ commandes.previous_page_number }}" aria-label="Précédent">
-                            <span aria-hidden="true">&laquo;</span>
-                        </a>
-                    </li>
-                {% else %}
-                    <li class="page-item disabled">
-                        <span class="page-link">&laquo;</span>
-                    </li>
-                {% endif %}
-                
-                {% for i in commandes.paginator.page_range %}
-                    {% if commandes.number == i %}
-                        <li class="page-item active">
-                            <span class="page-link">{{ i }}</span>
-                        </li>
-                    {% else %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ i }}">{{ i }}</a>
-                        </li>
-                    {% endif %}
-                {% endfor %}
-                
-                {% if commandes.has_next %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ commandes.next_page_number }}" aria-label="Suivant">
-                            <span aria-hidden="true">&raquo;</span>
-                        </a>
-                    </li>
-                {% else %}
-                    <li class="page-item disabled">
-                        <span class="page-link">&raquo;</span>
-                    </li>
-                {% endif %}
-            </ul>
-        </nav>
-        {% endif %}
-        
-    {% else %}
-        <div class="alert alert-info">
-            <i class="fas fa-info-circle me-2"></i>
-            Aucune commande terminée ou annulée trouvée.
-        </div>
-    {% endif %}
-</div>
+body { background: var(--bg); }
+
+.hist-wrap {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 1rem 3rem;
+}
+
+/* ── Header ── */
+.hist-header {
+    background: linear-gradient(135deg, var(--navy) 0%, #1a237e 60%, #283593 100%);
+    border-radius: var(--radius);
+    padding: 1.75rem 2rem;
+    margin-bottom: 1.75rem;
+    position: relative; overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+.hist-header::before {
+    content:'';
+    position:absolute; inset:0;
+    background:url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='g' width='30' height='30' patternUnits='userSpaceOnUse'%3E%3Cpath d='M30 0L0 0 0 30' fill='none' stroke='rgba(255,255,255,.04)' stroke-width='1'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='60' height='60' fill='url(%23g)'/%3E%3C/svg%3E");
+    opacity:.6;
+}
+.hist-header .inner { position:relative; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
+.hist-header h2 { font-size:1.55rem; font-weight:800; color:#fff; margin:0 0 .25rem; letter-spacing:-.4px; }
+.hist-header p  { color:rgba(255,255,255,.7); font-size:.88rem; margin:0; }
+.hist-badge-count {
+    background:rgba(255,255,255,.15);
+    border:1px solid rgba(255,255,255,.25);
+    color:#fff; border-radius:20px;
+    padding:.4rem 1rem; font-size:.85rem; font-weight:700;
+    backdrop-filter:blur(8px); white-space:nowrap;
+}
+
+/* ── Cards grid ── */
+.orders-list { display:flex; flex-direction:column; gap:.9rem; }
+
+/* ── Single card ── */
+.order-card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    border: 1.5px solid var(--border);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: var(--tr);
+    cursor: pointer;
+}
+.order-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--c-accent, var(--navy));
+}
+
+/* accent top bar */
+.order-card .card-accent { height: 3px; background: var(--c-accent, var(--navy)); }
+
+.order-card.accent-EN_ATTENTE         { --c-accent: #FF6B00; }
+.order-card.accent-VALIDATION_CLIENT  { --c-accent: #3b82f6; }
+.order-card.accent-VALIDATION_LIVREUR { --c-accent: #8b5cf6; }
+.order-card.accent-LIVREUR_ROUTE      { --c-accent: #f97316; }
+.order-card.accent-RECEPTION_COLIS    { --c-accent: #06b6d4; }
+.order-card.accent-LIVRAISON_EN_ROUTE { --c-accent: #0ea5e9; }
+.order-card.accent-TERMINEE           { --c-accent: #10b981; }
+.order-card.accent-ANNULEE            { --c-accent: #ef4444; }
+
+/* card head */
+.card-top {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    padding: 1rem 1.2rem .75rem; gap: .75rem; flex-wrap: wrap;
+}
+.card-ref-wrap {}
+.card-ref { font-size: .95rem; font-weight: 800; color: var(--t1); letter-spacing: -.2px; font-family: monospace; }
+.card-date { font-size: .76rem; color: var(--t3); margin-top: .2rem; display:flex; align-items:center; gap:.3rem; }
+
+/* status badge */
+.s-badge {
+    display:inline-flex; align-items:center; gap:.3rem;
+    padding:.3rem .75rem; border-radius:20px;
+    font-size:.72rem; font-weight:700; letter-spacing:.3px; white-space:nowrap;
+}
+.s-EN_ATTENTE         { background:#fef3c7; color:#92400e; }
+.s-VALIDATION_CLIENT  { background:#dbeafe; color:#1e3a8a; }
+.s-VALIDATION_LIVREUR { background:#ede9fe; color:#4c1d95; }
+.s-LIVREUR_ROUTE      { background:#ffedd5; color:#9a3412; }
+.s-RECEPTION_COLIS    { background:#f3e8ff; color:#6b21a8; }
+.s-LIVRAISON_EN_ROUTE { background:#cffafe; color:#155e75; }
+.s-TERMINEE           { background:#d1fae5; color:#065f46; }
+.s-ANNULEE            { background:#fee2e2; color:#991b1b; }
+
+/* route block */
+.route-block {
+    margin: 0 1.2rem .85rem;
+    background: #f8fafc; border-radius: 10px;
+    padding: .8rem .9rem; position: relative;
+}
+.route-block::before {
+    content:''; position:absolute;
+    left: 1.3rem; top: 2rem; bottom: 2rem;
+    width: 2px; background: linear-gradient(to bottom, #22c55e, #ef4444);
+    border-radius: 2px;
+}
+.route-row { display:flex; align-items:flex-start; gap:.6rem; position:relative; z-index:1; }
+.route-row + .route-row { margin-top:.6rem; }
+.rdot {
+    width:18px; height:18px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:.55rem; flex-shrink:0; margin-top:1px;
+}
+.rdot.dep  { background:#dcfce7; color:#166534; }
+.rdot.dest { background:#fee2e2; color:#991b1b; }
+.rlabel { font-size:.66rem; font-weight:700; color:var(--t3); text-transform:uppercase; letter-spacing:.4px; margin-bottom:1px; }
+.raddr  { font-size:.82rem; font-weight:500; color:var(--t2); line-height:1.35; word-break:break-word; }
+
+/* chips row */
+.chips-row {
+    display:flex; gap:.4rem; flex-wrap:wrap;
+    padding: 0 1.2rem .85rem;
+}
+.chip-info {
+    display:inline-flex; align-items:center; gap:.28rem;
+    background:#f1f5f9; border-radius:6px;
+    padding:.25rem .6rem; font-size:.76rem;
+    color:var(--t2); font-weight:500;
+}
+.chip-info i { font-size:.8rem; color:var(--t3); }
+.chip-success { background:#d1fae5; color:#065f46; }
+.chip-danger  { background:#fee2e2; color:#991b1b; }
+.chip-blue    { background:#dbeafe; color:#1e3a8a; }
+
+/* card foot */
+.card-foot {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:.7rem 1.2rem; border-top:1px solid var(--border);
+    background:#fafbfc;
+}
+.btn-voir {
+    display:inline-flex; align-items:center; gap:.35rem;
+    background:var(--navy); color:#fff;
+    padding:.42rem 1.1rem; border-radius:8px;
+    font-size:.8rem; font-weight:600;
+    text-decoration:none; transition:var(--tr);
+    border:none; cursor:pointer;
+}
+.btn-voir:hover { background:var(--orange); color:#fff; transform:translateY(-1px); box-shadow:0 4px 12px rgba(255,107,0,.3); }
+.type-chip {
+    display:inline-flex; align-items:center; gap:.28rem;
+    padding:.22rem .6rem; border-radius:6px;
+    font-size:.7rem; font-weight:700;
+}
+.type-EXPRESSE  { background:#fce7f3; color:#9d174d; }
+.type-CLASSIQUE { background:#e0e7ff; color:#3730a3; }
+
+/* empty state */
+.empty-box {
+    background:var(--card-bg); border-radius:var(--radius);
+    padding:4rem 2rem; text-align:center;
+    box-shadow:var(--shadow-sm); border:1.5px dashed var(--border);
+}
+.empty-icon {
+    width:72px; height:72px; border-radius:50%;
+    background:var(--navy-light);
+    display:flex; align-items:center; justify-content:center;
+    margin:0 auto 1rem; font-size:2rem; color:var(--navy);
+}
+.empty-box h5 { font-size:1.1rem; font-weight:700; color:var(--t1); margin-bottom:.4rem; }
+.empty-box p  { color:var(--t2); font-size:.88rem; margin:0; }
+
+/* pagination */
+.pag-wrap { display:flex; justify-content:center; gap:.3rem; flex-wrap:wrap; margin-top:1.5rem; }
+.pg {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:36px; height:36px; border-radius:9px;
+    border:1.5px solid var(--border); background:var(--card-bg);
+    color:var(--t2); font-size:.85rem; font-weight:600;
+    text-decoration:none; transition:var(--tr);
+}
+.pg:hover { border-color:var(--navy); color:var(--navy); background:var(--navy-light); }
+.pg.active { background:var(--orange); border-color:var(--orange); color:#fff; box-shadow:0 3px 10px rgba(255,107,0,.25); }
+.pg.disabled { opacity:.4; pointer-events:none; }
+
+/* animation */
+@keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+.order-card { animation: fadeUp .3s ease both; }
+
+@media (max-width:640px) {
+    .hist-header { padding:1.25rem 1rem; }
+    .hist-header h2 { font-size:1.25rem; }
+    .card-top { padding:.85rem 1rem .65rem; }
+    .route-block { margin:0 1rem .75rem; }
+    .chips-row { padding:0 1rem .75rem; }
+    .card-foot { padding:.65rem 1rem; }
+}
+</style>
 {% endblock %}
 
-{% block extra_css %}
-<style>
-    .badge {
-        font-size: 0.9em;
-        padding: 0.4em 0.6em;
-    }
-    .table th {
-        white-space: nowrap;
-    }
-</style>
+{% block content %}
+<div class="hist-wrap">
+
+    <!-- Header -->
+    <div class="hist-header">
+        <div class="inner">
+            <div>
+                <h2><i class="bi bi-clock-history me-2"></i>{{ page_title }}</h2>
+                <p>Historique de vos commandes de livraison</p>
+            </div>
+            {% if commandes %}
+            <span class="hist-badge-count">
+                <i class="bi bi-box-seam me-1"></i>{{ commandes.paginator.count }} commande{{ commandes.paginator.count|pluralize }}
+            </span>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if commandes %}
+    <div class="orders-list">
+        {% for commande in commandes %}
+        <div class="order-card accent-{{ commande.statut }}"
+             style="animation-delay:{{ forloop.counter0 }}0ms"
+             onclick="window.location.href='{% url 'Client:commande_detail' commande.ref %}'">
+
+            <div class="card-accent"></div>
+
+            <!-- Top row -->
+            <div class="card-top">
+                <div class="card-ref-wrap">
+                    <div class="card-ref">{{ commande.ref }}</div>
+                    <div class="card-date">
+                        <i class="bi bi-calendar3"></i>
+                        {{ commande.date_demande|date:"d/m/Y" }}
+                        <span style="color:var(--t3)">·</span>
+                        {{ commande.date_demande|date:"H:i" }}
+                    </div>
+                </div>
+                <div style="display:flex; gap:.4rem; align-items:center; flex-wrap:wrap;">
+                    {% if commande.type_course %}
+                    <span class="type-chip type-{{ commande.type_course }}">
+                        {% if commande.type_course == 'EXPRESSE' %}<i class="bi bi-lightning-fill"></i> Express
+                        {% else %}<i class="bi bi-bicycle"></i> Classique{% endif %}
+                    </span>
+                    {% endif %}
+                    <span class="s-badge s-{{ commande.statut }}">
+                        {% if commande.statut == 'TERMINEE' %}<i class="bi bi-check2-circle"></i>
+                        {% elif commande.statut == 'ANNULEE' %}<i class="bi bi-x-circle"></i>
+                        {% elif commande.statut == 'LIVRAISON_EN_ROUTE' or commande.statut == 'LIVREUR_ROUTE' %}<i class="bi bi-bicycle"></i>
+                        {% elif commande.statut == 'EN_ATTENTE' %}<i class="bi bi-clock"></i>
+                        {% else %}<i class="bi bi-arrow-repeat"></i>{% endif %}
+                        {{ commande.get_statut_display }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Route -->
+            <div class="route-block">
+                <div class="route-row">
+                    <div class="rdot dep"><i class="bi bi-circle-fill"></i></div>
+                    <div>
+                        <div class="rlabel">Départ</div>
+                        <div class="raddr">{{ commande.adresse_depart|truncatechars:55 }}</div>
+                    </div>
+                </div>
+                <div class="route-row">
+                    <div class="rdot dest"><i class="bi bi-geo-alt-fill"></i></div>
+                    <div>
+                        <div class="rlabel">Destination</div>
+                        <div class="raddr">{{ commande.adresse_destination|truncatechars:55 }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Info chips -->
+            <div class="chips-row">
+                {% if commande.poids_colis %}
+                <span class="chip-info"><i class="bi bi-box-seam"></i>{{ commande.poids_colis }} kg</span>
+                {% endif %}
+                {% if commande.cout_livraison %}
+                <span class="chip-info chip-success"><i class="bi bi-tag-fill"></i>{{ commande.cout_livraison|floatformat:0 }} FCFA</span>
+                {% endif %}
+                {% if commande.distance %}
+                <span class="chip-info chip-blue"><i class="bi bi-geo"></i>{{ commande.distance }} km</span>
+                {% endif %}
+                {% if commande.coursier %}
+                <span class="chip-info chip-blue"><i class="bi bi-person-check-fill"></i>{{ commande.coursier.username|truncatechars:16 }}</span>
+                {% endif %}
+            </div>
+
+            <!-- Footer -->
+            <div class="card-foot">
+                <span style="font-size:.76rem; color:var(--t3); display:flex; align-items:center; gap:.3rem;">
+                    <i class="bi bi-calendar-event"></i>
+                    Commandé le {{ commande.date_demande|date:"d/m/Y" }}
+                </span>
+                <a href="{% url 'Client:commande_detail' commande.ref %}" class="btn-voir" onclick="event.stopPropagation()">
+                    Voir <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if commandes.has_other_pages %}
+    <div class="pag-wrap">
+        {% if commandes.has_previous %}
+        <a class="pg" href="?page=1"><i class="bi bi-chevron-double-left"></i></a>
+        <a class="pg" href="?page={{ commandes.previous_page_number }}"><i class="bi bi-chevron-left"></i></a>
+        {% else %}
+        <span class="pg disabled"><i class="bi bi-chevron-double-left"></i></span>
+        <span class="pg disabled"><i class="bi bi-chevron-left"></i></span>
+        {% endif %}
+
+        {% for i in commandes.paginator.page_range %}
+            {% if commandes.number == i %}
+                <span class="pg active">{{ i }}</span>
+            {% elif i > commandes.number|add:"-3" and i < commandes.number|add:"3" %}
+                <a class="pg" href="?page={{ i }}">{{ i }}</a>
+            {% elif i == commandes.number|add:"-3" or i == commandes.number|add:"3" %}
+                <span style="display:flex;align-items:center;padding:0 .3rem;color:var(--t3);">…</span>
+            {% endif %}
+        {% endfor %}
+
+        {% if commandes.has_next %}
+        <a class="pg" href="?page={{ commandes.next_page_number }}"><i class="bi bi-chevron-right"></i></a>
+        <a class="pg" href="?page={{ commandes.paginator.num_pages }}"><i class="bi bi-chevron-double-right"></i></a>
+        {% else %}
+        <span class="pg disabled"><i class="bi bi-chevron-right"></i></span>
+        <span class="pg disabled"><i class="bi bi-chevron-double-right"></i></span>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-box">
+        <div class="empty-icon"><i class="bi bi-inbox"></i></div>
+        <h5>Aucune commande trouvée</h5>
+        <p>Vous n'avez pas encore de commandes terminées ou annulées.</p>
+    </div>
+    {% endif %}
+
+</div>
 {% endblock %}

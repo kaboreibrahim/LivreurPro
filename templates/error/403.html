@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>403 — Accès Refusé | Mon Livreur Pro</title>
+<style>
+  :root {
+    --navy: #000080;
+    --orange: #FF6B00;
+    --red: #cc0000;
+    --dark: #060010;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--dark);
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ---- rayures d'alerte en fond ---- */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(
+      -45deg,
+      transparent 0px, transparent 20px,
+      rgba(204,0,0,.04) 20px, rgba(204,0,0,.04) 40px
+    );
+    animation: stripe-slide 4s linear infinite;
+  }
+  @keyframes stripe-slide {
+    from { background-position: 0 0; }
+    to   { background-position: 56px 0; }
+  }
+
+  /* ---- halo rouge pulsant ---- */
+  .halo {
+    position: fixed;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(200,0,0,.15) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    animation: halo-pulse 2s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes halo-pulse {
+    0%, 100% { transform: translate(-50%,-50%) scale(1);   opacity: .7; }
+    50%       { transform: translate(-50%,-50%) scale(1.2); opacity: 1;  }
+  }
+
+  /* ---- cadenas ---- */
+  .lock-wrap {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 1rem;
+  }
+  .lock {
+    font-size: 4.5rem;
+    display: block;
+    filter: drop-shadow(0 0 20px rgba(255,0,0,.6));
+    animation: lock-shake 4s ease-in-out infinite;
+    transform-origin: center bottom;
+  }
+  @keyframes lock-shake {
+    0%, 100% { transform: rotate(0deg); }
+    2%        { transform: rotate(-8deg); }
+    4%        { transform: rotate(8deg); }
+    6%        { transform: rotate(-6deg); }
+    8%        { transform: rotate(4deg); }
+    10%       { transform: rotate(0deg); }
+  }
+
+  /* cercles pulsants autour du cadenas */
+  .ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 2px solid rgba(204,0,0,.5);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    animation: ring-out 2.5s ease-out infinite;
+  }
+  .ring:nth-child(2) { animation-delay: .8s; }
+  .ring:nth-child(3) { animation-delay: 1.6s; }
+  @keyframes ring-out {
+    0%   { transform: translate(-50%,-50%) scale(0);   opacity: 1; }
+    100% { transform: translate(-50%,-50%) scale(4);   opacity: 0; }
+  }
+
+  /* ---- contenu ---- */
+  .content {
+    text-align: center;
+    z-index: 10;
+    padding: 2rem;
+    max-width: 560px;
+  }
+
+  .error-code {
+    font-size: clamp(5rem, 18vw, 12rem);
+    font-weight: 900;
+    line-height: 1;
+    color: var(--red);
+    text-shadow:
+      0 0 30px rgba(204,0,0,.6),
+      0 0 60px rgba(255,107,0,.3);
+    letter-spacing: -4px;
+    animation: code-pulse 1.8s ease-in-out infinite alternate;
+  }
+  @keyframes code-pulse {
+    from { text-shadow: 0 0 20px rgba(204,0,0,.4); }
+    to   { text-shadow: 0 0 50px rgba(204,0,0,.9), 0 0 80px rgba(255,50,0,.4); }
+  }
+
+  .tag {
+    font-size: 1rem;
+    color: #ff4444;
+    text-transform: uppercase;
+    letter-spacing: 6px;
+    margin: .4rem 0 1rem;
+  }
+
+  .title {
+    font-size: clamp(1.3rem, 4vw, 1.9rem);
+    font-weight: 700;
+    color: #ffe0e0;
+    margin-bottom: .7rem;
+  }
+  .subtitle {
+    color: #886666;
+    font-size: .95rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+  }
+
+  /* badge "accès refusé" */
+  .badge-refuse {
+    display: inline-block;
+    background: rgba(204,0,0,.15);
+    border: 1px solid rgba(204,0,0,.4);
+    border-radius: 6px;
+    padding: .5rem 1.4rem;
+    font-family: monospace;
+    font-size: .85rem;
+    color: #ff6666;
+    margin-bottom: 1.5rem;
+    letter-spacing: 2px;
+    animation: badge-blink 1.5s step-end infinite;
+  }
+  @keyframes badge-blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: .5; }
+  }
+
+  /* ---- boutons ---- */
+  .btn-group { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    padding: .75rem 2rem; border-radius: 50px;
+    font-weight: 600; font-size: .9rem;
+    text-decoration: none; transition: transform .2s, box-shadow .2s;
+    border: none; cursor: pointer;
+  }
+  .btn:hover { transform: translateY(-3px); }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--orange), #c44a00);
+    color: #fff;
+    box-shadow: 0 6px 24px rgba(255,107,0,.4);
+  }
+  .btn-primary:hover { box-shadow: 0 10px 32px rgba(255,107,0,.6); }
+  .btn-navy {
+    background: linear-gradient(135deg, #0000cc, var(--navy));
+    color: #fff;
+    box-shadow: 0 6px 24px rgba(0,0,128,.4);
+  }
+  .btn-navy:hover { box-shadow: 0 10px 32px rgba(0,0,128,.6); }
+</style>
+</head>
+<body>
+
+<div class="halo"></div>
+
+<div class="content">
+  <div class="lock-wrap">
+    <div class="ring" style="width:80px;height:80px"></div>
+    <div class="ring" style="width:80px;height:80px"></div>
+    <div class="ring" style="width:80px;height:80px"></div>
+    <span class="lock">🔒</span>
+  </div>
+
+  <div class="error-code">403</div>
+  <p class="tag">Zone Restreinte</p>
+  <h1 class="title">Accès Refusé</h1>
+  <p class="subtitle">
+    Vous n'avez pas les autorisations nécessaires pour accéder à cette zone.
+    Veuillez vous connecter avec le bon compte ou contacter l'administrateur.
+  </p>
+
+  <div class="badge-refuse">⛔ ACCÈS NON AUTORISÉ</div>
+
+  <div class="btn-group">
+    <a href="/" class="btn btn-primary">🏠 Retour à l'accueil</a>
+    <a href="/Auth/login/" class="btn btn-navy">🔑 Se connecter</a>
+  </div>
+</div>
+
+</body>
+</html>

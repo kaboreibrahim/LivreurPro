@@ -1,0 +1,135 @@
+{% extends base_template %}
+{% load static %}
+
+{% block page_title %}Mes Notifications — Mon Livreur Pro{% endblock %}
+
+{% block extra_css %}
+<style>
+    .notif-page-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+        overflow: hidden;
+    }
+    .notif-page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 24px;
+        border-bottom: 1px solid #eee;
+        background: #f8f9fa;
+    }
+    .notif-page-header h5 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+    .notif-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 16px 24px;
+        border-bottom: 1px solid #f0f0f0;
+        transition: background 0.2s;
+    }
+    .notif-row.unread {
+        background: #f0f4ff;
+        border-left: 4px solid var(--primary);
+    }
+    .notif-row:hover { background: #f5f7ff; }
+    .notif-row-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 1.2rem;
+    }
+    .notif-row-icon.info    { background: #e3f2fd; color: #1976d2; }
+    .notif-row-icon.success { background: #e8f5e9; color: #388e3c; }
+    .notif-row-icon.warning { background: #fff8e1; color: #f57c00; }
+    .notif-row-icon.danger  { background: #ffebee; color: #d32f2f; }
+    .notif-row-body { flex: 1; min-width: 0; }
+    .notif-row-title {
+        font-size: 0.92rem;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-bottom: 3px;
+    }
+    .notif-row-msg {
+        font-size: 0.84rem;
+        color: #555;
+        margin-bottom: 5px;
+    }
+    .notif-row-time {
+        font-size: 0.75rem;
+        color: #999;
+    }
+    .notif-row-actions { display: flex; gap: 8px; align-items: center; }
+    .notif-empty-state {
+        padding: 60px 24px;
+        text-align: center;
+        color: #aaa;
+    }
+    .notif-empty-state i { font-size: 3rem; display: block; margin-bottom: 12px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="notif-page-card">
+    <div class="notif-page-header">
+        <h5><i class='bx bxs-bell me-2'></i>Mes Notifications</h5>
+        {% if notifications %}
+        <form method="post" action="{% url 'notifications:marquer_tout_lu' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-outline-secondary">
+                <i class='bx bx-check-double me-1'></i>Tout marquer comme lu
+            </button>
+        </form>
+        {% endif %}
+    </div>
+
+    {% if notifications %}
+        {% for notif in notifications %}
+        <div class="notif-row {% if not notif.lu %}unread{% endif %}">
+            <div class="notif-row-icon {{ notif.type_notif }}">
+                <i class='bx {{ notif.icon }}'></i>
+            </div>
+            <div class="notif-row-body">
+                <div class="notif-row-title">{{ notif.titre }}</div>
+                <div class="notif-row-msg">{{ notif.message }}</div>
+                <div class="notif-row-time">
+                    <i class='bx bx-time-five me-1'></i>{{ notif.date_creation|timesince }} ago
+                    {% if notif.demande %}
+                    &nbsp;·&nbsp; Réf. <strong>{{ notif.demande.ref }}</strong>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="notif-row-actions">
+                {% if notif.lien and notif.lien != '#' %}
+                <a href="{{ notif.lien }}" class="btn btn-sm btn-outline-primary">
+                    <i class='bx bx-link-external'></i> Voir
+                </a>
+                {% endif %}
+                {% if not notif.lu %}
+                <form method="post" action="{% url 'notifications:marquer_lu' notif.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-secondary" title="Marquer comme lu">
+                        <i class='bx bx-check'></i>
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="notif-empty-state">
+            <i class='bx bx-bell-off'></i>
+            <p>Vous n'avez aucune notification pour le moment.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

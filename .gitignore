@@ -1,0 +1,39 @@
+# Environnement Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.tox/
+.venv/
+venv/
+env/
+
+# Variables d'environnement — NE JAMAIS COMMITTER
+.env
+.env.*
+!.env.example
+
+# VS Code Local History — NE JAMAIS COMMITTER
+.history/
+
+# Django
+*.log
+db.sqlite3
+media/
+staticfiles/
+static_collected/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

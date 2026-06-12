@@ -1,9 +1,39 @@
 /********** Template CSS **********/
 :root {
-    --primary: #000080;
-    --secondary:#000080;;;
-    --light: #F4F7FE;
-    --dark: #14183E;
+    /* ── Brand Palette ── */
+    --primary:   #000080;
+    --secondary: #FF6B00;   /* CORRIGÉ: était #000080 */
+    --light:     #F4F7FE;
+    --dark:      #14183E;
+
+    /* ── Primary (navy) tints ── */
+    --primary-50:  #e8eaf6;
+    --primary-100: #c5c9e9;
+    --primary-200: #9fa5d9;
+    --primary-400: #5a64bc;
+    --primary-600: #00006a;
+    --primary-700: #000055;
+    --primary-800: #000040;
+
+    /* ── Secondary (orange) tints ── */
+    --secondary-50:  #fff3e0;
+    --secondary-100: #ffe0b2;
+    --secondary-200: #ffcc80;
+    --secondary-600: #e05e00;
+    --secondary-700: #cc5200;
+
+    /* ── Shadow system ── */
+    --shadow-sm:     0 1px 4px rgba(0,0,0,.06);
+    --shadow-md:     0 4px 20px rgba(0,0,0,.10);
+    --shadow-lg:     0 8px 40px rgba(0,0,0,.14);
+    --shadow-xl:     0 16px 60px rgba(0,0,0,.18);
+    --shadow-orange: 0 6px 20px rgba(255,107,0,.35);
+    --shadow-navy:   0 6px 20px rgba(0,0,128,.25);
+
+    /* ── Transitions ── */
+    --transition-fast: .15s cubic-bezier(.4,0,.2,1);
+    --transition-base: .25s cubic-bezier(.4,0,.2,1);
+    --transition-slow: .45s cubic-bezier(.4,0,.2,1);
 }
 
 .transition-all {
@@ -195,7 +225,7 @@ h6,
     height: 4px;
     bottom: 0;
     left: 0;
-    background: var(--dark);
+    background: var(--secondary);
 }
 
 .section-title::after {
@@ -205,7 +235,7 @@ h6,
     height: 4px;
     bottom: 0;
     left: 50px;
-    background: var(--dark);
+    background: var(--secondary);
 }
 
 .section-title.text-center::before {
@@ -262,7 +292,7 @@ h6,
 }
 
 .service-item:hover {
-    background: var(--primary);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-600) 100%);
 }
 
 .service-item .service-icon {
@@ -410,6 +440,7 @@ h6,
 .accordion .accordion-button:not(.collapsed) {
     color: #FFFFFF;
     background: var(--primary);
+    border-left: 4px solid var(--secondary);
     box-shadow: none;
 }
 
@@ -570,4 +601,111 @@ h6,
     margin-right: 0;
     padding-right: 0;
     border-right: none;
+}
+
+
+/* ══════════════════════════════════════════
+   KEYFRAMES & ANIMATION UTILITIES
+══════════════════════════════════════════ */
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(28px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInLeft {
+    from { opacity: 0; transform: translateX(-28px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeInRight {
+    from { opacity: 0; transform: translateX(28px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Hover lift utility ── */
+.hover-lift {
+    transition: transform var(--transition-base, .25s), box-shadow var(--transition-base, .25s);
+}
+.hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg, 0 8px 40px rgba(0,0,0,.14));
+}
+
+.hover-lift-sm {
+    transition: transform var(--transition-fast, .15s), box-shadow var(--transition-fast, .15s);
+}
+.hover-lift-sm:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md, 0 4px 20px rgba(0,0,0,.10));
+}
+
+/* ── Shine button effect ── */
+.btn-shine {
+    position: relative;
+    overflow: hidden;
+}
+.btn-shine::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -75%;
+    width: 50%;
+    height: 200%;
+    background: linear-gradient(
+        to right,
+        rgba(255,255,255,0) 0%,
+        rgba(255,255,255,.22) 50%,
+        rgba(255,255,255,0) 100%
+    );
+    transform: skewX(-20deg);
+    transition: left .55s ease;
+}
+.btn-shine:hover::after {
+    left: 125%;
+}
+
+/* ── Orange CTA gradient button ── */
+.btn-orange-gradient {
+    background: linear-gradient(135deg, #FF6B00 0%, #e05e00 100%);
+    color: #fff;
+    border: none;
+    box-shadow: 0 4px 14px rgba(255,107,0,.35);
+    transition: transform .2s ease, box-shadow .2s ease;
+    position: relative;
+    overflow: hidden;
+}
+.btn-orange-gradient::after {
+    content: '';
+    position: absolute;
+    top: -50%; left: -75%;
+    width: 50%; height: 200%;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,.22), transparent);
+    transform: skewX(-20deg);
+    transition: left .5s ease;
+}
+.btn-orange-gradient:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(255,107,0,.50);
+    color: #fff;
+}
+.btn-orange-gradient:hover::after { left: 125%; }
+
+/* ── Navy gradient button ── */
+.btn-navy-gradient {
+    background: linear-gradient(135deg, #000080 0%, #00006a 100%);
+    color: #fff;
+    border: none;
+    box-shadow: 0 4px 14px rgba(0,0,128,.25);
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+.btn-navy-gradient:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,128,.40);
+    color: #fff;
 }

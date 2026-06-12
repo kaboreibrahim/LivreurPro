@@ -11,3 +11,6 @@ def custom_server_error(request):
 
 def custom_bad_request(request, exception):
     return render(request, 'error/400.html', status=400)
+
+def custom_505(request):
+    return render(request, 'error/505.html', status=505)

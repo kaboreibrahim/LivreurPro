@@ -2,517 +2,339 @@
 {% block page_title %}Liste des Clients{% endblock %}
 {% load static %}
 
-{% block content %}
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 <style>
-    :root {
-        --primary-color: #4f46e5;
-        --secondary-color: #6366f1;
-        --success-color: #10b981;
-        --warning-color: #f59e0b;
-        --danger-color: #ef4444;
-        --info-color: #3b82f6;
-    }
-    
-    body {
-        background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
-        min-height: 100vh;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    }
-    
-    /* En-tête de page */
-    .page-header {
-        background: white;
-        border-radius: 16px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    }
-    
-    .page-title {
-        font-size: 2rem;
-        font-weight: 700;
-        color: #1e293b;
-        margin: 0 0 0.5rem 0;
-    }
-    
-    .page-subtitle {
-        color: #64748b;
-        font-size: 0.95rem;
-        margin: 0;
-    }
-    
-    /* Section de filtres */
-    .filters-section {
-        background: white;
-        border-radius: 16px;
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    }
-    
-    .search-wrapper {
-        position: relative;
-        flex: 1;
-        max-width: 400px;
-    }
-    
-    .search-wrapper input {
-        padding: 0.75rem 1rem 0.75rem 2.75rem;
-        border-radius: 12px;
-        border: 2px solid #e2e8f0;
-        transition: all 0.2s ease;
-        width: 100%;
-        font-size: 0.95rem;
-    }
-    
-    .search-wrapper input:focus {
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-        outline: none;
-    }
-    
-    .search-wrapper i {
-        position: absolute;
-        left: 1rem;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #94a3b8;
-    }
-    
-    .filter-select {
-        padding: 0.75rem 1rem;
-        border-radius: 12px;
-        border: 2px solid #e2e8f0;
-        transition: all 0.2s ease;
-        font-size: 0.95rem;
-        background: white;
-        min-width: 180px;
-    }
-    
-    .filter-select:focus {
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-        outline: none;
-    }
-    
-    .btn-filter {
-        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-        border: none;
-        padding: 0.75rem 1.5rem;
-        border-radius: 12px;
-        font-weight: 600;
-        color: white;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-    }
-    
-    .btn-filter:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
-        color: white;
-    }
-    
-    /* Carte du tableau */
-    .table-card {
-        background: white;
-        border-radius: 16px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-        overflow: hidden;
-    }
-    
-    .table-card-header {
-        padding: 1.5rem 2rem;
-        border-bottom: 2px solid #f1f5f9;
-    }
-    
-    .table-card-title {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: #1e293b;
-        margin: 0;
-    }
-    
-    /* Tableau stylisé */
-    .modern-table {
-        width: 100%;
-        margin: 0;
-    }
-    
-    .modern-table thead {
-        background: #f8fafc;
-    }
-    
-    .modern-table thead th {
-        padding: 1rem 1.5rem;
-        font-weight: 700;
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        color: #64748b;
-        border: none;
-    }
-    
-    .modern-table tbody tr {
-        transition: all 0.2s ease;
-        border-bottom: 1px solid #f1f5f9;
-    }
-    
-    .modern-table tbody tr:hover {
-        background: #f8fafc;
-        transform: scale(1.001);
-    }
-    
-    .modern-table tbody td {
-        padding: 1.25rem 1.5rem;
-        color: #1e293b;
-        font-size: 0.95rem;
-        vertical-align: middle;
-        border: none;
-    }
-    
-    /* Badges de statut */
-    .status-badge {
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        font-weight: 600;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    
-    .status-badge.active {
-        background: #d1fae5;
-        color: #065f46;
-    }
-    
-    .status-badge.inactive {
-        background: #fee2e2;
-        color: #991b1b;
-    }
-    
-    .status-badge i {
-        font-size: 0.7rem;
-    }
-    
-    /* Boutons d'action */
-    .action-btn {
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border: 2px solid;
-        transition: all 0.2s ease;
-        margin: 0 0.25rem;
-        font-size: 0.9rem;
-    }
-    
-    .action-btn.btn-view {
-        background: rgba(59, 130, 246, 0.1);
-        border-color: rgba(59, 130, 246, 0.2);
-        color: #3b82f6;
-    }
-    
-    .action-btn.btn-view:hover {
-        background: #3b82f6;
-        border-color: #3b82f6;
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-    }
-    
-    .action-btn.btn-deactivate {
-        background: rgba(245, 158, 11, 0.1);
-        border-color: rgba(245, 158, 11, 0.2);
-        color: #f59e0b;
-    }
-    
-    .action-btn.btn-deactivate:hover {
-        background: #f59e0b;
-        border-color: #f59e0b;
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
-    }
-    
-    .action-btn.btn-activate {
-        background: rgba(16, 185, 129, 0.1);
-        border-color: rgba(16, 185, 129, 0.2);
-        color: #10b981;
-    }
-    
-    .action-btn.btn-activate:hover {
-        background: #10b981;
-        border-color: #10b981;
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-    }
-    
-    /* État vide */
-    .empty-state {
-        text-align: center;
-        padding: 4rem 2rem;
-    }
-    
-    .empty-state-icon {
-        font-size: 4rem;
-        color: #cbd5e1;
-        margin-bottom: 1rem;
-    }
-    
-    .empty-state h3 {
-        color: #1e293b;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-    }
-    
-    .empty-state p {
-        color: #64748b;
-        margin: 0;
-    }
-    
-    /* Pagination moderne */
-    .pagination-wrapper {
-        padding: 1.5rem 2rem;
-        border-top: 2px solid #f1f5f9;
-    }
-    
-    .pagination-custom {
-        margin: 0;
-        justify-content: center;
-    }
-    
-    .pagination-custom .page-item {
-        margin: 0 0.25rem;
-    }
-    
-    .pagination-custom .page-link {
-        border: 2px solid #e2e8f0;
-        border-radius: 10px;
-        color: #64748b;
-        font-weight: 600;
-        padding: 0.6rem 1rem;
-        transition: all 0.2s ease;
-        min-width: 44px;
-        text-align: center;
-    }
-    
-    .pagination-custom .page-item.active .page-link {
-        background: var(--primary-color);
-        border-color: var(--primary-color);
-        color: white;
-        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-    }
-    
-    .pagination-custom .page-link:hover {
-        background: rgba(79, 70, 229, 0.05);
-        border-color: var(--primary-color);
-        color: var(--primary-color);
-        transform: translateY(-2px);
-    }
-    
-    /* Responsive */
-    @media (max-width: 768px) {
-        .page-header {
-            padding: 1.5rem;
-        }
-        
-        .page-title {
-            font-size: 1.5rem;
-        }
-        
-        .filters-section {
-            padding: 1rem;
-        }
-        
-        .search-wrapper {
-            max-width: 100%;
-            margin-bottom: 0.75rem;
-        }
-        
-        .filter-select {
-            width: 100%;
-            margin-bottom: 0.75rem;
-        }
-        
-        .btn-filter {
-            width: 100%;
-        }
-        
-        .table-responsive {
-            border-radius: 0;
-        }
-        
-        .modern-table thead th,
-        .modern-table tbody td {
-            padding: 0.75rem;
-            font-size: 0.85rem;
-        }
-        
-        .action-btn {
-            width: 32px;
-            height: 32px;
-            font-size: 0.8rem;
-        }
-    }
-</style>
+:root {
+    --navy:        #000080;
+    --navy-dark:   #000060;
+    --navy-light:  #e8eaf6;
+    --orange:      #FF6B00;
+    --bg:          #F0F2F7;
+    --card-bg:     #ffffff;
+    --border:      #e8ecf0;
+    --t1:          #0f172a;
+    --t2:          #475569;
+    --t3:          #94a3b8;
+    --radius:      14px;
+    --shadow-sm:   0 1px 4px rgba(0,0,0,.07);
+    --shadow-md:   0 4px 16px rgba(0,0,0,.10);
+    --tr:          .22s cubic-bezier(.4,0,.2,1);
+}
+body { background: var(--bg); }
+.page-wrap { max-width: 1280px; margin: 0 auto; padding: 0 1.25rem 3rem; }
 
-<div class="container-fluid p-4">
-    <!-- En-tête de page -->
+/* ── Header ── */
+.page-header {
+    background: linear-gradient(135deg, var(--navy) 0%, #1a237e 60%, #283593 100%);
+    border-radius: var(--radius); padding: 1.75rem 2rem; margin-bottom: 1.75rem;
+    position: relative; overflow: hidden; box-shadow: var(--shadow-md);
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+}
+.page-header::before {
+    content:''; position:absolute; inset:0;
+    background:url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='g' width='30' height='30' patternUnits='userSpaceOnUse'%3E%3Cpath d='M30 0L0 0 0 30' fill='none' stroke='rgba(255,255,255,.04)' stroke-width='1'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='60' height='60' fill='url(%23g)'/%3E%3C/svg%3E");
+    opacity:.6; pointer-events:none;
+}
+.hd-inner { position:relative; z-index:1; }
+.page-header h1 { font-size:1.65rem; font-weight:800; color:#fff; margin:0 0 .25rem; letter-spacing:-.4px; }
+.page-header p  { color:rgba(255,255,255,.7); font-size:.88rem; margin:0; }
+.hd-badge {
+    position:relative; z-index:1;
+    background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25);
+    color:#fff; border-radius:20px; padding:.45rem 1.1rem;
+    font-size:.85rem; font-weight:700; backdrop-filter:blur(8px); white-space:nowrap;
+}
+
+/* ── Filter bar ── */
+.filter-bar {
+    background:var(--card-bg); border-radius:var(--radius);
+    padding:1.1rem 1.4rem; margin-bottom:1.5rem;
+    box-shadow:var(--shadow-sm); border:1px solid var(--border);
+}
+.filter-row { display:flex; gap:.75rem; flex-wrap:wrap; align-items:center; }
+.search-wrap { position:relative; flex:1; min-width:220px; }
+.search-wrap i { position:absolute; left:.9rem; top:50%; transform:translateY(-50%); color:var(--t3); pointer-events:none; }
+.search-input {
+    width:100%; padding:.6rem .9rem .6rem 2.4rem;
+    border:1.5px solid var(--border); border-radius:10px;
+    font-size:.9rem; background:#f8fafc; outline:none; transition:var(--tr);
+}
+.search-input:focus { border-color:var(--orange); background:#fff; box-shadow:0 0 0 3px rgba(255,107,0,.10); }
+.f-select {
+    padding:.6rem 2rem .6rem .9rem; border:1.5px solid var(--border);
+    border-radius:10px; font-size:.88rem; font-weight:500;
+    background:#f8fafc; color:var(--t2); outline:none; appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%2394a3b8' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right .7rem center;
+    transition:var(--tr); min-width:160px;
+}
+.f-select:focus { border-color:var(--orange); background-color:#fff; box-shadow:0 0 0 3px rgba(255,107,0,.10); }
+.btn-search {
+    display:inline-flex; align-items:center; gap:.4rem;
+    background:var(--navy); color:#fff; border:none;
+    padding:.6rem 1.2rem; border-radius:10px;
+    font-size:.88rem; font-weight:600; cursor:pointer; transition:var(--tr);
+}
+.btn-search:hover { background:var(--orange); transform:translateY(-1px); box-shadow:0 4px 12px rgba(255,107,0,.3); }
+.btn-reset-f {
+    display:inline-flex; align-items:center; gap:.4rem;
+    background:#f1f5f9; color:var(--t2); border:1.5px solid var(--border);
+    padding:.6rem 1rem; border-radius:10px;
+    font-size:.88rem; font-weight:600; text-decoration:none; transition:var(--tr);
+}
+.btn-reset-f:hover { background:#e2e8f0; color:var(--t1); }
+
+/* ── Table card ── */
+.table-card { background:var(--card-bg); border-radius:var(--radius); box-shadow:var(--shadow-sm); border:1px solid var(--border); overflow:hidden; }
+.tc-head {
+    padding:1.1rem 1.5rem; border-bottom:1px solid var(--border); background:#fafbfc;
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.5rem;
+}
+.tc-title { font-size:1rem; font-weight:700; color:var(--t1); display:flex; align-items:center; gap:.5rem; margin:0; }
+
+/* ── Table ── */
+.client-table { width:100%; border-collapse:collapse; }
+.client-table thead tr { background:#f8fafc; }
+.client-table thead th {
+    padding:.85rem 1.2rem; font-size:.74rem; font-weight:700;
+    text-transform:uppercase; letter-spacing:.5px; color:var(--t3);
+    border-bottom:1px solid var(--border); white-space:nowrap;
+}
+.client-table tbody tr { border-bottom:1px solid var(--border); transition:var(--tr); cursor:pointer; }
+.client-table tbody tr:last-child { border-bottom:none; }
+.client-table tbody tr:hover { background:#f8fafc; }
+.client-table td { padding:1rem 1.2rem; vertical-align:middle; color:var(--t1); font-size:.9rem; }
+
+/* user cell */
+.user-cell { display:flex; align-items:center; gap:.75rem; }
+.avatar {
+    width:38px; height:38px; border-radius:50%; flex-shrink:0;
+    background:linear-gradient(135deg, var(--navy), #3949ab);
+    color:#fff; font-size:.88rem; font-weight:700;
+    display:flex; align-items:center; justify-content:center;
+}
+.avatar.inactive-av { background:linear-gradient(135deg, #94a3b8, #64748b); }
+.user-name  { font-weight:700; color:var(--t1); font-size:.9rem; }
+.user-email { font-size:.76rem; color:var(--t3); margin-top:1px; }
+
+/* status badge */
+.s-badge {
+    display:inline-flex; align-items:center; gap:.3rem;
+    padding:.3rem .75rem; border-radius:20px;
+    font-size:.72rem; font-weight:700; white-space:nowrap;
+}
+.s-active   { background:#d1fae5; color:#065f46; }
+.s-inactive { background:#fee2e2; color:#991b1b; }
+
+/* date cell */
+.date-main { font-size:.85rem; color:var(--t1); }
+.date-sub  { font-size:.74rem; color:var(--t3); }
+
+/* action btns */
+.act-wrap { display:flex; gap:.35rem; }
+.act-btn {
+    width:34px; height:34px; border-radius:9px;
+    display:inline-flex; align-items:center; justify-content:center;
+    border:1.5px solid var(--border); background:#f8fafc;
+    color:var(--t2); font-size:.88rem; cursor:pointer;
+    text-decoration:none; transition:var(--tr); flex-shrink:0;
+}
+.act-btn:hover { transform:translateY(-1px); }
+.act-view:hover       { background:#dbeafe; border-color:#93c5fd; color:#1d4ed8; }
+.act-deactivate:hover { background:#fff3cd; border-color:#fcd34d; color:#92400e; }
+.act-activate:hover   { background:#d1fae5; border-color:#6ee7b7; color:#065f46; }
+
+/* empty */
+.empty-cell { padding:4rem 2rem; text-align:center; }
+.empty-icon-wrap { width:72px; height:72px; border-radius:50%; background:var(--navy-light); display:flex; align-items:center; justify-content:center; margin:0 auto .85rem; font-size:1.9rem; color:var(--navy); }
+.empty-cell h5 { font-weight:700; color:var(--t2); margin-bottom:.25rem; }
+.empty-cell p  { color:var(--t3); font-size:.88rem; margin:0; }
+
+/* pagination */
+.pag-wrap { padding:1rem 1.5rem; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.75rem; background:#fafbfc; }
+.pag-info { font-size:.82rem; color:var(--t3); }
+.pag-btns { display:flex; gap:.3rem; }
+.pg {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:34px; height:34px; border-radius:8px;
+    border:1.5px solid var(--border); background:var(--card-bg);
+    color:var(--t2); font-size:.82rem; font-weight:600;
+    text-decoration:none; transition:var(--tr);
+}
+.pg:hover  { border-color:var(--navy); color:var(--navy); background:var(--navy-light); }
+.pg.active { background:var(--orange); border-color:var(--orange); color:#fff; box-shadow:0 3px 10px rgba(255,107,0,.25); }
+.pg.disabled { opacity:.4; pointer-events:none; }
+
+@media (max-width:768px) {
+    .page-header { padding:1.25rem 1rem; }
+    .page-header h1 { font-size:1.3rem; }
+    .filter-bar { padding:.9rem 1rem; }
+    .search-wrap { min-width:100%; }
+    .f-select { width:100%; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-wrap">
+
+    <!-- Header -->
     <div class="page-header">
-        <h1 class="page-title">
-            <i class="fas fa-users me-2"></i>Liste des Clients
-        </h1>
-        <p class="page-subtitle">Gérez et consultez tous vos clients</p>
+        <div class="hd-inner">
+            <h1><i class="bi bi-people-fill me-2"></i>Liste des Clients</h1>
+            <p>Gérez et consultez tous vos clients enregistrés</p>
+        </div>
+        {% if clients %}
+        <span class="hd-badge"><i class="bi bi-person-check me-1"></i>{{ page_obj.paginator.count }} client{{ page_obj.paginator.count|pluralize }}</span>
+        {% endif %}
     </div>
-    
-    <!-- Section des filtres -->
-    <div class="filters-section">
-        <form method="get" class="d-flex flex-wrap gap-3 align-items-center">
-            <div class="search-wrapper">
-                <i class="fas fa-search"></i>
-                <input type="text" 
-                       class="form-control" 
-                       name="q" 
-                       value="{{ search_query }}" 
-                       placeholder="Rechercher un client...">
+
+    <!-- Filters -->
+    <div class="filter-bar">
+        <form method="get">
+            <div class="filter-row">
+                <div class="search-wrap">
+                    <i class="bi bi-search"></i>
+                    <input type="text" name="q" class="search-input"
+                           placeholder="Nom, email, téléphone…" value="{{ search_query }}" autocomplete="off">
+                </div>
+                <select name="status" class="f-select" onchange="this.form.submit()">
+                    <option value="">Tous les statuts</option>
+                    <option value="active"   {% if status_filter == 'active'   %}selected{% endif %}>Actifs</option>
+                    <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactifs</option>
+                </select>
+                <button type="submit" class="btn-search"><i class="bi bi-funnel-fill"></i> Filtrer</button>
+                {% if search_query or status_filter %}
+                <a href="{% url 'Gestionnaire:liste_clients' %}" class="btn-reset-f"><i class="bi bi-x-lg"></i> Réinitialiser</a>
+                {% endif %}
             </div>
-            
-            <select class="filter-select" name="status">
-                <option value="">Tous les statuts</option>
-                <option value="active" {% if status_filter == 'active' %}selected{% endif %}>
-                    Actifs
-                </option>
-                <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>
-                    Inactifs
-                </option>
-            </select>
-            
-            <button class="btn btn-filter" type="submit">
-                <i class="fas fa-filter me-2"></i>Filtrer
-            </button>
         </form>
     </div>
-    
-    <!-- Carte du tableau -->
+
+    <!-- Table card -->
     <div class="table-card">
-        <div class="table-card-header">
-            <h2 class="table-card-title">
-                <i class="fas fa-list me-2"></i>Clients enregistrés
+        <div class="tc-head">
+            <h2 class="tc-title">
+                <i class="bi bi-list-ul" style="color:var(--navy);"></i> Clients enregistrés
             </h2>
+            {% if search_query or status_filter %}
+            <span style="font-size:.8rem; color:var(--t3);">Résultats filtrés</span>
+            {% endif %}
         </div>
-        
         <div class="table-responsive">
-            <table class="modern-table">
+            <table class="client-table">
                 <thead>
                     <tr>
-                        <th><i class="fas fa-user me-2"></i>Nom d'utilisateur</th>
-                        <th><i class="fas fa-envelope me-2"></i>Email</th>
-                        <th><i class="fas fa-phone me-2"></i>Téléphone</th>
-                        <th><i class="fas fa-calendar me-2"></i>Date d'inscription</th>
-                        <th><i class="fas fa-toggle-on me-2"></i>Statut</th>
-                        <th><i class="fas fa-cog me-2"></i>Actions</th>
+                        <th><i class="bi bi-person me-1"></i>Client</th>
+                        <th><i class="bi bi-phone me-1"></i>Téléphone</th>
+                        <th><i class="bi bi-calendar3 me-1"></i>Inscription</th>
+                        <th><i class="bi bi-clock-history me-1"></i>Dernière connexion</th>
+                        <th><i class="bi bi-toggle-on me-1"></i>Statut</th>
+                        <th><i class="bi bi-gear me-1"></i>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for client in clients %}
-                    <tr>
+                    <tr onclick="window.location.href='{% url 'Gestionnaire:detail_client' client.pk %}'">
                         <td>
-                            <strong>{{ client.username }}</strong>
+                            <div class="user-cell">
+                                <div class="avatar {% if not client.is_active %}inactive-av{% endif %}">
+                                    {{ client.username|first|upper }}
+                                </div>
+                                <div>
+                                    <div class="user-name">{{ client.get_full_name|default:client.username }}</div>
+                                    <div class="user-email">{{ client.email }}</div>
+                                </div>
+                            </div>
                         </td>
-                        <td>{{ client.email }}</td>
-                        <td>{{ client.Contact|default:"N/A" }}</td>
                         <td>
-                            <i class="far fa-clock me-1"></i>
-                            {{ client.date_joined|date:"d/m/Y H:i" }}
+                            {% if client.Contact %}
+                            <span style="display:flex;align-items:center;gap:.35rem;">
+                                <i class="bi bi-phone" style="color:var(--t3);"></i>{{ client.Contact }}
+                            </span>
+                            {% else %}
+                            <span style="color:var(--t3);font-size:.82rem;">—</span>
+                            {% endif %}
                         </td>
                         <td>
-                            <span class="status-badge {% if client.is_active %}active{% else %}inactive{% endif %}">
-                                <i class="fas fa-circle"></i>
+                            <div class="date-main">{{ client.date_joined|date:"d/m/Y" }}</div>
+                            <div class="date-sub">{{ client.date_joined|date:"H:i" }}</div>
+                        </td>
+                        <td>
+                            {% if client.last_login %}
+                            <div class="date-main">{{ client.last_login|date:"d/m/Y" }}</div>
+                            <div class="date-sub">{{ client.last_login|date:"H:i" }}</div>
+                            {% else %}
+                            <span style="color:var(--t3);font-size:.82rem;font-style:italic;">Jamais</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="s-badge {% if client.is_active %}s-active{% else %}s-inactive{% endif %}">
+                                <i class="bi bi-circle-fill" style="font-size:.45rem;"></i>
                                 {% if client.is_active %}Actif{% else %}Inactif{% endif %}
                             </span>
                         </td>
-                        <td>
-                            <a href="{% url 'Gestionnaire:detail_client' client.pk %}" 
-                               class="action-btn btn-view" 
-                               title="Voir les détails">
-                                <i class="bx bx-show"></i>
-                            </a>
-                            <a href="{% url 'Gestionnaire:activer_desactiver_client' client.pk %}" 
-                               class="action-btn {% if client.is_active %}btn-deactivate{% else %}btn-activate{% endif %}"
-                               title="{% if client.is_active %}Désactiver{% else %}Activer{% endif %}"
-                               onclick="return confirm('Êtes-vous sûr de vouloir {% if client.is_active %}désactiver{% else %}activer{% endif %} ce client ?')">
-                                {% if client.is_active %}
-                                    <i class="bx bx-x"></i>
-                                {% else %}
-                                    <i class="bx bx-check"></i>
-                                {% endif %}
-                            </a>
+                        <td onclick="event.stopPropagation()">
+                            <div class="act-wrap">
+                                <a href="{% url 'Gestionnaire:detail_client' client.pk %}"
+                                   class="act-btn act-view" title="Voir le profil">
+                                    <i class="bi bi-eye-fill"></i>
+                                </a>
+                                <a href="{% url 'Gestionnaire:activer_desactiver_client' client.pk %}"
+                                   class="act-btn {% if client.is_active %}act-deactivate{% else %}act-activate{% endif %}"
+                                   title="{% if client.is_active %}Désactiver{% else %}Activer{% endif %}"
+                                   onclick="return confirm('Êtes-vous sûr de vouloir {% if client.is_active %}désactiver{% else %}activer{% endif %} ce client ?')">
+                                    <i class="bi {% if client.is_active %}bi-slash-circle{% else %}bi-check-circle{% endif %}"></i>
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="6">
-                            <div class="empty-state">
-                                <div class="empty-state-icon">
-                                    <i class="fas fa-users-slash"></i>
-                                </div>
-                                <h3>Aucun client trouvé</h3>
-                                <p>Essayez de modifier vos critères de recherche</p>
-                            </div>
+                        <td colspan="6" class="empty-cell">
+                            <div class="empty-icon-wrap"><i class="bi bi-people"></i></div>
+                            <h5>Aucun client trouvé</h5>
+                            <p>{% if search_query or status_filter %}Modifiez vos critères de recherche.{% else %}Aucun client enregistré.{% endif %}</p>
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-        
+
         <!-- Pagination -->
         {% if is_paginated %}
-        <div class="pagination-wrapper">
-            <nav aria-label="Navigation des pages">
-                <ul class="pagination pagination-custom">
-                    {% if page_obj.has_previous %}
-                        <li class="page-item">
-                            <a class="page-link" 
-                               href="?page={{ page_obj.previous_page_number }}&q={{ search_query }}&status={{ status_filter }}">
-                                <i class="fas fa-chevron-left"></i>
-                            </a>
-                        </li>
+        <div class="pag-wrap">
+            <span class="pag-info">Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+            <div class="pag-btns">
+                {% if page_obj.has_previous %}
+                <a class="pg" href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"><i class="bi bi-chevron-double-left"></i></a>
+                <a class="pg" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"><i class="bi bi-chevron-left"></i></a>
+                {% else %}
+                <span class="pg disabled"><i class="bi bi-chevron-double-left"></i></span>
+                <span class="pg disabled"><i class="bi bi-chevron-left"></i></span>
+                {% endif %}
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <span class="pg active">{{ num }}</span>
+                    {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+                        <a class="pg" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ num }}</a>
+                    {% elif num == page_obj.number|add:"-3" or num == page_obj.number|add:"3" %}
+                        <span style="display:flex;align-items:center;padding:0 .3rem;color:var(--t3);">…</span>
                     {% endif %}
-                    
-                    {% for num in page_obj.paginator.page_range %}
-                        {% if page_obj.number == num %}
-                            <li class="page-item active">
-                                <span class="page-link">{{ num }}</span>
-                            </li>
-                        {% else %}
-                            <li class="page-item">
-                                <a class="page-link" 
-                                   href="?page={{ num }}&q={{ search_query }}&status={{ status_filter }}">
-                                    {{ num }}
-                                </a>
-                            </li>
-                        {% endif %}
-                    {% endfor %}
-                    
-                    {% if page_obj.has_next %}
-                        <li class="page-item">
-                            <a class="page-link" 
-                               href="?page={{ page_obj.next_page_number }}&q={{ search_query }}&status={{ status_filter }}">
-                                <i class="fas fa-chevron-right"></i>
-                            </a>
-                        </li>
-                    {% endif %}
-                </ul>
-            </nav>
+                {% endfor %}
+                {% if page_obj.has_next %}
+                <a class="pg" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"><i class="bi bi-chevron-right"></i></a>
+                <a class="pg" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"><i class="bi bi-chevron-double-right"></i></a>
+                {% else %}
+                <span class="pg disabled"><i class="bi bi-chevron-right"></i></span>
+                <span class="pg disabled"><i class="bi bi-chevron-double-right"></i></span>
+                {% endif %}
+            </div>
         </div>
         {% endif %}
     </div>
+
 </div>
 {% endblock %}

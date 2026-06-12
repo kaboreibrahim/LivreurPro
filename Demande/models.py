@@ -12,18 +12,51 @@ from django_lifecycle import LifecycleModel
 # Utilisation de MEDIA_ROOT défini dans settings.py
 imageFs = FileSystemStorage(location=os.path.join(str(settings.BASE_DIR), '/medias/'))
 
+
+class ClientInvite(models.Model):
+    """Représente un client non inscrit ayant soumis une demande publique."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    nom = models.CharField(max_length=100, verbose_name="Nom")
+    prenom = models.CharField(max_length=100, verbose_name="Prénom")
+    telephone = models.CharField(max_length=20, verbose_name="Téléphone")
+    email = models.EmailField(blank=True, null=True, verbose_name="Email")
+    created_at = models.DateTimeField(default=timezone.now, editable=False)
+
+    class Meta:
+        verbose_name = "Client invité"
+        verbose_name_plural = "Clients invités"
+
+    def __str__(self):
+        return f"{self.prenom} {self.nom} ({self.telephone})"
+
+    def get_full_name(self):
+        return f"{self.prenom} {self.nom}"
+
+
 #### DCL Demande de course en ligne  #####
 class DCL(SafeDeleteModel, LifecycleModel):
 
     id=models.UUIDField("ID",primary_key=True,default=uuid.uuid4,editable=False)
-    
-    # Client qui fait la demande
+
+    # Client connecté (null pour les demandes publiques d'invités)
     client = models.ForeignKey(
-        settings.AUTH_USER_MODEL, 
-        on_delete=models.CASCADE, 
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
         related_name='demandes',
         verbose_name="client",
-        limit_choices_to={'role': 'client'}
+        limit_choices_to={'role': 'client'},
+        null=True,
+        blank=True,
+    )
+
+    # Client invité (non inscrit, demande publique)
+    client_invite = models.ForeignKey(
+        ClientInvite,
+        on_delete=models.SET_NULL,
+        related_name='demandes',
+        verbose_name="Client invité",
+        null=True,
+        blank=True,
     )
      
     # Informations sur les lieux
@@ -170,7 +203,18 @@ class DCL(SafeDeleteModel, LifecycleModel):
         verbose_name="Coût de livraison"
     )
 
-    distance = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # Nouveau champ pour la distance
+    distance = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    # Champs pour la livraison finale
+    signature_destinataire = models.TextField(
+        blank=True, null=True,
+        verbose_name="Signature du destinataire",
+        help_text="Signature en base64 (PNG)"
+    )
+    date_livraison = models.DateTimeField(
+        null=True, blank=True,
+        verbose_name="Date de livraison effective"
+    )
 
     class Meta:
         verbose_name = "Demande de coursier"
@@ -180,11 +224,19 @@ class DCL(SafeDeleteModel, LifecycleModel):
         
     
     
+    def get_client_display(self):
+        """Retourne le nom du client (connecté ou invité)."""
+        if self.client:
+            return str(self.client)
+        if self.client_invite:
+            return str(self.client_invite)
+        return "Inconnu"
+
     def get_details(self):
         """Retourne les détails de la demande sous forme de dictionnaire."""
         details = {
             'Référence': self.ref,
-            'Client': str(self.client),
+            'Client': self.get_client_display(),
             'Adresse départ': self.adresse_depart,
             'Adresse destination': self.adresse_destination,
             'Latitude départ': self.latitude_depart,
@@ -338,7 +390,7 @@ class DCL(SafeDeleteModel, LifecycleModel):
 
 
     def __str__(self):
-        return f"Demande #{self.ref} | Client: {self.client} | Statut: {self.get_statut_display()}"
+        return f"Demande #{self.ref} | Client: {self.get_client_display()} | Statut: {self.get_statut_display()}"
 
     
  
@@ -395,5 +447,56 @@ class DCL(SafeDeleteModel, LifecycleModel):
         except (requests.RequestException, KeyError, IndexError) as e:
             # En cas d'erreur, on ne fait rien et on retourne None
             pass
-            
+
         return None
+
+
+class Notification(models.Model):
+    TYPE_CHOICES = [
+        ('info', 'Information'),
+        ('success', 'Succès'),
+        ('warning', 'Avertissement'),
+        ('danger', 'Alerte'),
+    ]
+
+    ICON_MAP = {
+        'info': 'bx-info-circle',
+        'success': 'bx-check-circle',
+        'warning': 'bx-error',
+        'danger': 'bx-x-circle',
+    }
+
+    destinataire = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='notifications',
+        verbose_name="Destinataire",
+    )
+    demande = models.ForeignKey(
+        'DCL',
+        on_delete=models.CASCADE,
+        related_name='notifications',
+        null=True, blank=True,
+        verbose_name="Demande",
+    )
+    titre = models.CharField(max_length=200, verbose_name="Titre")
+    message = models.TextField(verbose_name="Message")
+    type_notif = models.CharField(
+        max_length=20, choices=TYPE_CHOICES, default='info',
+        verbose_name="Type",
+    )
+    lien = models.CharField(max_length=500, blank=True, null=True, verbose_name="Lien")
+    lu = models.BooleanField(default=False, verbose_name="Lu")
+    date_creation = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
+
+    class Meta:
+        ordering = ['-date_creation']
+        verbose_name = "Notification"
+        verbose_name_plural = "Notifications"
+
+    def __str__(self):
+        return f"[{self.type_notif}] {self.titre} → {self.destinataire.username}"
+
+    @property
+    def icon(self):
+        return self.ICON_MAP.get(self.type_notif, 'bx-bell')

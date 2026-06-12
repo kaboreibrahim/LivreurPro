@@ -1,1269 +1,958 @@
 {% extends 'base_gestionnaire.html' %}
 {% load static %}
 
-{% block title %}Liste des Demandes de Coursier{% endblock %}
+{% block page_title %}Gestion des Demandes — Mon Livreur Pro{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 <style>
-    :root {
-        --primary-color: #4f46e5;
-        --secondary-color: #6366f1;
-        --success-color: #10b981;
-        --warning-color: #f59e0b;
-        --danger-color: #ef4444;
-        --info-color: #3b82f6;
-    }
-    
-    body {
-        background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
-        min-height: 100vh;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    }
-    
-    .page-header {
-        background: white;
-        border-radius: 16px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    }
-    
-    .page-title {
-        font-size: 2rem;
-        font-weight: 700;
-        color: #1e293b;
-        margin: 0;
-    }
-    
-    .page-subtitle {
-        color: #64748b;
-        margin-top: 0.5rem;
-        font-size: 0.95rem;
-    }
-    
-    .btn-primary-custom {
-        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-        border: none;
-        padding: 0.75rem 1.5rem;
-        border-radius: 12px;
-        font-weight: 600;
-        color: white;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-    }
-    
-    .btn-primary-custom:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
-        color: white;
-    }
-    
-    /* Stats cards */
-    .stats-cards {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-    }
-    
-    .stat-card {
-        background: white;
-        padding: 1.5rem;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .stat-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-    }
-    
-    .stat-card.primary::before {
-        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-    }
-    
-    .stat-card.warning::before {
-        background: var(--warning-color);
-    }
-    
-    .stat-card.info::before {
-        background: var(--info-color);
-    }
-    
-    .stat-card.success::before {
-        background: var(--success-color);
-    }
-    
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-    }
-    
-    .stat-icon {
-        font-size: 1.5rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    .stat-value {
-        font-size: 2rem;
-        font-weight: 800;
-        color: #1e293b;
-        margin: 0.5rem 0;
-    }
-    
-    .stat-label {
-        color: #64748b;
-        font-size: 0.9rem;
-        font-weight: 500;
-    }
-    
-    /* Filtres - Version Desktop */
-    .filters-section {
-        background: white;
-        border-radius: 16px;
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    }
-    
-    .filter-group {
-        margin-bottom: 0;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-    }
-    
-    .filter-btn {
-        padding: 0.6rem 1.2rem;
-        border-radius: 10px;
-        border: 2px solid #e2e8f0;
-        background: white;
-        color: #64748b;
-        font-weight: 500;
-        transition: all 0.2s ease;
-        cursor: pointer;
-        font-size: 0.9rem;
-    }
-    
-    .filter-btn:hover {
-        border-color: var(--primary-color);
-        color: var(--primary-color);
-        background: rgba(79, 70, 229, 0.05);
-    }
-    
-    .filter-btn.active {
-        background: var(--primary-color);
-        border-color: var(--primary-color);
-        color: white;
-    }
-
-    /* Select dropdown pour mobile */
-    .filter-select-wrapper {
-        display: none;
-        position: relative;
-        width: 100%;
-    }
-
-    .filter-select {
-        width: 100%;
-        padding: 0.75rem 3rem 0.75rem 1rem;
-        border-radius: 12px;
-        border: 2px solid #e2e8f0;
-        background: white;
-        color: #1e293b;
-        font-weight: 500;
-        font-size: 0.95rem;
-        appearance: none;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .filter-select:focus {
-        outline: none;
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-    }
-
-    .filter-select-wrapper::after {
-        content: '\F282';
-        font-family: 'bootstrap-icons';
-        position: absolute;
-        right: 1rem;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #64748b;
-        pointer-events: none;
-        font-size: 1.2rem;
-    }
-    
-    .search-box {
-        position: relative;
-    }
-    
-    .search-box input {
-        padding: 0.75rem 1rem 0.75rem 2.75rem;
-        border-radius: 12px;
-        border: 2px solid #e2e8f0;
-        transition: all 0.2s ease;
-        width: 100%;
-    }
-    
-    .search-box input:focus {
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-        outline: none;
-    }
-    
-    .search-box i {
-        position: absolute;
-        left: 1rem;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #94a3b8;
-    }
-    
-    /* Cartes de demandes */
-    .demande-card {
-        background: white;
-        border-radius: 16px;
-        padding: 1.5rem;
-        transition: all 0.3s ease;
-        border: 2px solid transparent;
-        cursor: pointer;
-        height: 100%;
-        position: relative;
-        overflow: hidden;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    }
-    
-    .demande-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-        transform: scaleX(0);
-        transition: transform 0.3s ease;
-    }
-    
-    .demande-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 12px 28px rgba(0,0,0,0.12);
-        border-color: var(--primary-color);
-    }
-    
-    .demande-card:hover::before {
-        transform: scaleX(1);
-    }
-    
-    .card-header-section {
-        display: flex;
-        justify-content: space-between;
-        align-items: start;
-        margin-bottom: 1.5rem;
-        gap: 0.75rem;
-    }
-    
-    .demande-ref {
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: #1e293b;
-        margin: 0;
-    }
-    
-    .status-badge {
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        font-weight: 600;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        white-space: nowrap;
-    }
-    
-    .status-EN_ATTENTE {
-        background: #fef3c7;
-        color: #92400e;
-    }
-    
-    .status-VALIDATION_CLIENT {
-        background: #dbeafe;
-        color: #1e40af;
-    }
-    
-    .status-VALIDATION_LIVREUR {
-        background: #e0e7ff;
-        color: #4338ca;
-    }
-    
-    .status-LIVREUR_ROUTE {
-        background: #fed7aa;
-        color: #9a3412;
-    }
-    
-    .status-RECEPTION_COLIS {
-        background: #e9d5ff;
-        color: #6b21a8;
-    }
-    
-    .status-LIVRAISON_EN_ROUTE {
-        background: #fce7f3;
-        color: #9f1239;
-    }
-    
-    .status-TERMINEE {
-        background: #d1fae5;
-        color: #065f46;
-    }
-    
-    .status-ANNULEE {
-        background: #fee2e2;
-        color: #991b1b;
-    }
-    
-    .location-section {
-        background: #f8fafc;
-        border-radius: 12px;
-        padding: 1rem;
-        margin-bottom: 1rem;
-    }
-    
-    .location-item {
-        display: flex;
-        align-items: start;
-        gap: 0.75rem;
-        margin-bottom: 0.75rem;
-    }
-    
-    .location-item:last-child {
-        margin-bottom: 0;
-    }
-    
-    .location-icon {
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        font-size: 1rem;
-    }
-    
-    .location-icon.departure {
-        background: #dcfce7;
-        color: #166534;
-    }
-    
-    .location-icon.destination {
-        background: #fee2e2;
-        color: #991b1b;
-    }
-    
-    .location-text {
-        flex: 1;
-        min-width: 0;
-    }
-    
-    .location-label {
-        font-size: 0.75rem;
-        color: #64748b;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    
-    .location-address {
-        color: #1e293b;
-        font-weight: 500;
-        margin: 0.25rem 0 0 0;
-        font-size: 0.9rem;
-        word-wrap: break-word;
-    }
-    
-    .info-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
-        margin: 1rem 0;
-    }
-    
-    .info-item {
-        background: #f8fafc;
-        padding: 0.75rem;
-        border-radius: 8px;
-    }
-    
-    .info-label {
-        font-size: 0.75rem;
-        color: #64748b;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 0.25rem;
-    }
-    
-    .info-value {
-        color: #1e293b;
-        font-weight: 700;
-        font-size: 0.95rem;
-        margin: 0;
-        word-wrap: break-word;
-    }
-    
-    .card-footer-section {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding-top: 1rem;
-        border-top: 2px solid #f1f5f9;
-        gap: 0.5rem;
-    }
-    
-    .date-info {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        color: #64748b;
-        font-size: 0.85rem;
-    }
-    
-    .view-details {
-        color: var(--primary-color);
-        font-weight: 600;
-        font-size: 0.85rem;
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
-    }
-    
-    /* Empty state */
-    .empty-state {
-        background: white;
-        border-radius: 16px;
-        padding: 4rem 2rem;
-        text-align: center;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    }
-    
-    .empty-state-icon {
-        font-size: 4rem;
-        margin-bottom: 1rem;
-    }
-    
-    .empty-state h3 {
-        color: #1e293b;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-    }
-    
-    .empty-state p {
-        color: #64748b;
-        margin-bottom: 2rem;
-    }
-    
-    /* Pagination */
-    .pagination-custom {
-        margin-top: 2rem;
-    }
-    
-    .pagination-custom .page-link {
-        border: 2px solid #e2e8f0;
-        border-radius: 10px;
-        margin: 0 0.25rem;
-        color: #64748b;
-        font-weight: 600;
-        padding: 0.6rem 1rem;
-        transition: all 0.2s ease;
-    }
-    
-    .pagination-custom .page-item.active .page-link {
-        background: var(--primary-color);
-        border-color: var(--primary-color);
-        color: white;
-    }
-    
-    .pagination-custom .page-link:hover {
-        background: rgba(79, 70, 229, 0.05);
-        border-color: var(--primary-color);
-        color: var(--primary-color);
-    }
-    
-    /* Responsive Mobile */
-    @media (max-width: 768px) {
-        .page-header {
-            padding: 1.25rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        .page-title {
-            font-size: 1.5rem;
-        }
-
-        .page-subtitle {
-            font-size: 0.85rem;
-        }
-        
-        /* Stats cards en scroll horizontal */
-        .stats-cards {
-            display: flex;
-            overflow-x: auto;
-            gap: 1rem;
-            scroll-snap-type: x mandatory;
-            -webkit-overflow-scrolling: touch;
-            padding-bottom: 0.5rem;
-            grid-template-columns: none;
-        }
-        
-        .stats-cards::-webkit-scrollbar {
-            height: 4px;
-        }
-
-        .stats-cards::-webkit-scrollbar-track {
-            background: #f1f5f9;
-            border-radius: 10px;
-        }
-
-        .stats-cards::-webkit-scrollbar-thumb {
-            background: var(--primary-color);
-            border-radius: 10px;
-        }
-        
-        .stat-card {
-            min-width: 150px;
-            scroll-snap-align: start;
-            padding: 1.25rem;
-        }
-
-        .stat-value {
-            font-size: 1.75rem;
-        }
-
-        .stat-label {
-            font-size: 0.85rem;
-        }
-        
-        /* Afficher le select, masquer les boutons */
-        .filter-group {
-            display: none !important;
-        }
-
-        .filter-select-wrapper {
-            display: block;
-            margin-bottom: 1rem;
-        }
-
-        /* Ajuster l'espacement des filtres */
-        .filters-section {
-            padding: 1.25rem;
-        }
-
-        .filters-section .row {
-            gap: 1rem;
-        }
-
-        /* Cards en format liste sur mobile */
-        #demandesContainer {
-            gap: 1rem;
-        }
-
-        #demandesContainer .col-md-6,
-        #demandesContainer .col-lg-4 {
-            padding-left: 0;
-            padding-right: 0;
-        }
-
-        .demande-card {
-            padding: 1rem;
-            border-radius: 12px;
-        }
-
-        .demande-card:hover {
-            transform: translateY(-3px);
-        }
-
-        .card-header-section {
-            flex-direction: row;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 1rem;
-        }
-
-        .demande-ref {
-            font-size: 0.95rem;
-            flex: 1;
-            min-width: 0;
-        }
-
-        .status-badge {
-            font-size: 0.65rem;
-            padding: 0.35rem 0.75rem;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-
-        /* Location en format compact */
-        .location-section {
-            padding: 0.75rem;
-            margin-bottom: 0.85rem;
-        }
-
-        .location-item {
-            gap: 0.5rem;
-            margin-bottom: 0.65rem;
-        }
-
-        .location-icon {
-            width: 26px;
-            height: 26px;
-            font-size: 0.85rem;
-        }
-
-        .location-label {
-            font-size: 0.7rem;
-            margin-bottom: 0.15rem;
-        }
-
-        .location-address {
-            font-size: 0.8rem;
-            line-height: 1.3;
-        }
-
-        /* Info grid en 2 colonnes compactes */
-        .info-grid {
-            gap: 0.65rem;
-            margin: 0.85rem 0;
-        }
-
-        .info-item {
-            padding: 0.6rem;
-        }
-
-        .info-label {
-            font-size: 0.7rem;
-            margin-bottom: 0.2rem;
-        }
-
-        .info-value {
-            font-size: 0.85rem;
-            line-height: 1.2;
-        }
-
-        /* Footer compact */
-        .card-footer-section {
-            padding-top: 0.85rem;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        .date-info {
-            font-size: 0.75rem;
-            gap: 0.4rem;
-        }
-
-        .date-info i {
-            font-size: 0.85rem;
-        }
-
-        .view-details {
-            font-size: 0.75rem;
-            gap: 0.3rem;
-        }
-
-        .view-details i {
-            font-size: 0.85rem;
-        }
-
-        /* Empty state */
-        .empty-state {
-            padding: 3rem 1.5rem;
-        }
-
-        .empty-state-icon {
-            font-size: 3rem;
-        }
-
-        .empty-state h3 {
-            font-size: 1.25rem;
-        }
-
-        .empty-state p {
-            font-size: 0.9rem;
-        }
-
-        /* Pagination mobile */
-        .pagination-custom .page-link {
-            padding: 0.5rem 0.75rem;
-            font-size: 0.85rem;
-            margin: 0 0.15rem;
-        }
-
-        .pagination-custom {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            margin-top: 1.5rem;
-        }
-
-        .pagination-custom .pagination {
-            flex-wrap: nowrap;
-            min-width: min-content;
-            justify-content: flex-start;
-        }
-
-        .pagination-custom::-webkit-scrollbar {
-            height: 4px;
-        }
-
-        .pagination-custom::-webkit-scrollbar-track {
-            background: #f1f5f9;
-            border-radius: 10px;
-        }
-
-        .pagination-custom::-webkit-scrollbar-thumb {
-            background: var(--primary-color);
-            border-radius: 10px;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .container-fluid {
-            padding-left: 0.75rem !important;
-            padding-right: 0.75rem !important;
-        }
-
-        .stat-card {
-            min-width: 130px;
-            padding: 1rem;
-        }
-
-        .stat-value {
-            font-size: 1.5rem;
-        }
-
-        .stat-label {
-            font-size: 0.8rem;
-        }
-
-        .page-title {
-            font-size: 1.3rem;
-        }
-
-        .demande-ref {
-            font-size: 0.9rem;
-        }
-
-        .status-badge {
-            font-size: 0.6rem;
-            padding: 0.3rem 0.65rem;
-        }
-
-        /* Info grid en 1 colonne sur très petit écran */
-        .info-grid {
-            grid-template-columns: 1fr;
-            gap: 0.5rem;
-        }
-
-        .location-address {
-            font-size: 0.75rem;
-        }
-
-        .card-footer-section {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 0.5rem;
-        }
-
-        .view-details {
-            align-self: flex-end;
-        }
-    }
- 
-    /* Style pour les cartes sur mobile */
-    @media (max-width: 768px) {
-        #demandesContainer {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            padding: 0 0.5rem;
-        }
-
-        .demande-item {
-            width: 100%;
-            padding: 0;
-            margin: 0;
-        }
-
-        .demande-card {
-            border-radius: 12px;
-            padding: 1rem;
-            margin-bottom: 0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .demande-card:active {
-            transform: scale(0.98);
-            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-        }
-
-        .card-header-section {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 0.75rem;
-            margin-bottom: 1rem;
-        }
-
-        .demande-ref {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin: 0;
-            color: #1e293b;
-        }
-
-        .status-badge {
-            padding: 0.35rem 0.75rem;
-            font-size: 0.75rem;
-            border-radius: 12px;
-            white-space: nowrap;
-        }
-
-        .location-section {
-            background: #f8fafc;
-            border-radius: 10px;
-            padding: 0.75rem;
-            margin: 0.75rem 0;
-        }
-
-        .location-item {
-            display: flex;
-            gap: 0.75rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .location-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .location-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            font-size: 0.9rem;
-        }
-
-        .location-text {
-            flex: 1;
-        }
-
-        .location-label {
-            font-size: 0.7rem;
-            color: #64748b;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 0.15rem;
-        }
-
-        .location-address {
-            font-size: 0.85rem;
-            color: #1e293b;
-            margin: 0.15rem 0 0;
-            line-height: 1.4;
-        }
-
-        .info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.75rem;
-            margin: 1rem 0;
-        }
-
-        .info-item {
-            background: #f8fafc;
-            padding: 0.75rem;
-            border-radius: 8px;
-        }
-
-        .info-label {
-            font-size: 0.7rem;
-            color: #64748b;
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-
-        .info-value {
-            font-size: 0.85rem;
-            color: #1e293b;
-            font-weight: 500;
-            margin: 0;
-            line-height: 1.3;
-        }
-
-        .card-footer-section {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: 0.75rem;
-            border-top: 1px solid #f1f5f9;
-            margin-top: 0.5rem;
-        }
-
-        .date-info {
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            color: #64748b;
-            font-size: 0.8rem;
-        }
-
-        .date-info i {
-            font-size: 0.9rem;
-        }
-
-        .view-details {
-            color: var(--primary-color);
-            font-weight: 600;
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-
-        /* Animation de feedback au toucher */
-        @media (hover: none) {
-            .demande-card {
-                -webkit-tap-highlight-color: transparent;
-            }
-            
-            .demande-card:active {
-                background-color: #f8fafc;
-            }
-        }
-
-        /* Optimisation pour les très petits écrans */
-        @media (max-width: 360px) {
-            .info-grid {
-                grid-template-columns: 1fr;
-                gap: 0.5rem;
-            }
-            
-            .location-address {
-                font-size: 0.8rem;
-            }
-            
-            .card-footer-section {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.75rem;
-            }
-            
-            .view-details {
-                align-self: flex-end;
-            }
-        }
-    }
+/* ═══════════════════════════════════════════════
+   VARIABLES & RESET
+═══════════════════════════════════════════════ */
+:root {
+    --navy:       #000080;
+    --navy-dark:  #000060;
+    --navy-light: #e8eaf6;
+    --orange:     #FF6B00;
+    --orange-light: #fff3e0;
+    --bg:         #F0F2F7;
+    --card-bg:    #ffffff;
+    --border:     #e8ecf0;
+    --text-1:     #0f172a;
+    --text-2:     #475569;
+    --text-3:     #94a3b8;
+    --radius-sm:  8px;
+    --radius-md:  14px;
+    --radius-lg:  20px;
+    --shadow-sm:  0 1px 4px rgba(0,0,0,.07);
+    --shadow-md:  0 4px 16px rgba(0,0,0,.10);
+    --shadow-lg:  0 8px 32px rgba(0,0,0,.13);
+    --transition: .22s cubic-bezier(.4,0,.2,1);
+}
+
+body { background: var(--bg); }
+
+/* ═══════════════════════════════════════════════
+   PAGE WRAPPER
+═══════════════════════════════════════════════ */
+.page-wrapper {
+    max-width: 1480px;
+    margin: 0 auto;
+    padding: 0 1.25rem 3rem;
+}
+
+/* ═══════════════════════════════════════════════
+   PAGE HEADER
+═══════════════════════════════════════════════ */
+.page-header {
+    background: linear-gradient(135deg, var(--navy) 0%, #1a237e 60%, #283593 100%);
+    border-radius: var(--radius-lg);
+    padding: 2rem 2.5rem;
+    margin-bottom: 1.75rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+.page-header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='g' width='30' height='30' patternUnits='userSpaceOnUse'%3E%3Cpath d='M30 0L0 0 0 30' fill='none' stroke='rgba(255,255,255,.04)' stroke-width='1'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='60' height='60' fill='url(%23g)'/%3E%3C/svg%3E");
+    opacity: .6;
+}
+.page-header .content { position: relative; z-index: 1; }
+.page-header h1 {
+    font-size: 1.75rem; font-weight: 800;
+    color: #fff; margin: 0 0 .3rem;
+    letter-spacing: -.5px;
+}
+.page-header p { color: rgba(255,255,255,.7); font-size: .92rem; margin: 0; }
+.btn-refresh {
+    display: inline-flex; align-items: center; gap: .45rem;
+    background: rgba(255,255,255,.15);
+    border: 1px solid rgba(255,255,255,.25);
+    color: #fff; border-radius: 10px;
+    padding: .6rem 1.1rem; font-size: .88rem; font-weight: 600;
+    text-decoration: none; transition: var(--transition); cursor: pointer;
+    backdrop-filter: blur(8px);
+}
+.btn-refresh:hover { background: rgba(255,255,255,.25); color: #fff; transform: translateY(-1px); }
+
+/* ═══════════════════════════════════════════════
+   STATS GRID
+═══════════════════════════════════════════════ */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+}
+@media (max-width: 1200px) { .stats-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 700px)  { .stats-grid { grid-template-columns: repeat(2, 1fr); gap: .75rem; } }
+@media (max-width: 420px)  { .stats-grid { grid-template-columns: 1fr 1fr; } }
+
+.stat-card {
+    background: var(--card-bg);
+    border-radius: var(--radius-md);
+    padding: 1.25rem 1.1rem;
+    box-shadow: var(--shadow-sm);
+    border-top: 3px solid var(--accent, #e2e8f0);
+    transition: var(--transition);
+    cursor: default;
+    position: relative; overflow: hidden;
+}
+.stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.stat-card::after {
+    content: '';
+    position: absolute; right: -12px; bottom: -12px;
+    width: 60px; height: 60px; border-radius: 50%;
+    background: var(--accent, #e2e8f0); opacity: .08;
+}
+.stat-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: color-mix(in srgb, var(--accent, #94a3b8) 12%, transparent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; color: var(--accent, #64748b);
+    margin-bottom: .75rem;
+}
+.stat-val {
+    font-size: 1.9rem; font-weight: 800;
+    color: var(--text-1); line-height: 1;
+    margin-bottom: .25rem;
+}
+.stat-label { font-size: .78rem; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .4px; }
+
+/* ═══════════════════════════════════════════════
+   FILTER BAR
+═══════════════════════════════════════════════ */
+.filter-bar {
+    background: var(--card-bg);
+    border-radius: var(--radius-md);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.25rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+}
+.filter-row {
+    display: flex; gap: .75rem; align-items: center;
+    flex-wrap: wrap;
+}
+.search-wrap {
+    position: relative; flex: 1; min-width: 220px;
+}
+.search-wrap i {
+    position: absolute; left: .9rem; top: 50%;
+    transform: translateY(-50%); color: var(--text-3); font-size: 1rem;
+    pointer-events: none;
+}
+.search-input {
+    width: 100%; padding: .65rem .9rem .65rem 2.5rem;
+    border: 1.5px solid var(--border); border-radius: 10px;
+    font-size: .9rem; background: #f8fafc;
+    transition: var(--transition); outline: none;
+}
+.search-input:focus {
+    border-color: var(--orange);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.10);
+}
+
+.select-filter {
+    padding: .65rem 2.2rem .65rem .9rem;
+    border: 1.5px solid var(--border); border-radius: 10px;
+    font-size: .88rem; font-weight: 500; background: #f8fafc;
+    color: var(--text-2); cursor: pointer; outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%2394a3b8' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right .7rem center;
+    transition: var(--transition);
+}
+.select-filter:focus {
+    border-color: var(--orange);
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.10);
+}
+
+.filter-divider {
+    width: 1px; height: 32px; background: var(--border); flex-shrink: 0;
+}
+
+/* Chips Origine */
+.chips { display: flex; gap: .4rem; align-items: center; }
+.chip {
+    display: inline-flex; align-items: center; gap: .35rem;
+    padding: .45rem .85rem; border-radius: 20px; font-size: .8rem;
+    font-weight: 600; border: 1.5px solid var(--border);
+    background: #f8fafc; color: var(--text-2);
+    cursor: pointer; transition: var(--transition); white-space: nowrap;
+    user-select: none;
+}
+.chip:hover { border-color: var(--navy); color: var(--navy); background: var(--navy-light); }
+.chip.active-all   {
+    background: var(--orange);
+    border-color: var(--orange);
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(255, 107, 0, 0.25);
+}
+.chip.active-prive { background: #1e40af; border-color: #1e40af; color: #fff; }
+.chip.active-public{ background: #7c3aed; border-color: #7c3aed; color: #fff; }
+
+/* Results bar */
+.results-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.25rem; flex-wrap: wrap; gap: .5rem;
+}
+.results-count {
+    font-size: .88rem; color: var(--text-2); font-weight: 500;
+}
+.results-count strong { color: var(--text-1); font-weight: 700; }
+
+/* ═══════════════════════════════════════════════
+   DEMANDES GRID
+═══════════════════════════════════════════════ */
+.demandes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.1rem;
+}
+@media (max-width: 1100px) { .demandes-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 650px)  { .demandes-grid { grid-template-columns: 1fr; } }
+
+/* ═══════════════════════════════════════════════
+   DEMANDE CARD
+═══════════════════════════════════════════════ */
+.dcl-card {
+    background: var(--card-bg);
+    border-radius: var(--radius-md);
+    border: 1.5px solid var(--border);
+    overflow: hidden;
+    transition: var(--transition);
+    cursor: pointer;
+    display: flex; flex-direction: column;
+    box-shadow: var(--shadow-sm);
+}
+.dcl-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--c-accent, var(--navy));
+}
+.dcl-card:hover .card-arrow { transform: translateX(4px); opacity: 1; }
+
+/* Color accent top bar */
+.dcl-card .card-accent {
+    height: 3px;
+    background: var(--c-accent, var(--navy));
+}
+/* Per-status accent colors */
+.dcl-card.accent-EN_ATTENTE         { --c-accent: #FF6B00; }
+.dcl-card.accent-TERMINEE           { --c-accent: #10b981; }
+.dcl-card.accent-ANNULEE            { --c-accent: #ef4444; }
+.dcl-card.accent-LIVREUR_ROUTE      { --c-accent: #f97316; }
+.dcl-card.accent-LIVRAISON_EN_ROUTE { --c-accent: #f97316; }
+.dcl-card.accent-VALIDATION_CLIENT  { --c-accent: #3b82f6; }
+.dcl-card.accent-VALIDATION_LIVREUR { --c-accent: #3b82f6; }
+.dcl-card.accent-RECEPTION_COLIS    { --c-accent: #3b82f6; }
+
+/* Card header */
+.card-head {
+    padding: 1.1rem 1.2rem .8rem;
+    display: flex; align-items: flex-start;
+    justify-content: space-between; gap: .5rem;
+}
+.card-ref {
+    font-size: .95rem; font-weight: 700;
+    color: var(--text-1); letter-spacing: -.2px;
+}
+.card-meta {
+    display: flex; gap: .4rem; align-items: center;
+    flex-wrap: wrap; margin-top: .35rem;
+}
+
+/* Statut badge */
+.badge-statut {
+    display: inline-flex; align-items: center; gap: .3rem;
+    padding: .3rem .75rem; border-radius: 20px;
+    font-size: .72rem; font-weight: 700;
+    letter-spacing: .3px; white-space: nowrap;
+}
+.badge-EN_ATTENTE         { background:#fef3c7; color:#92400e; }
+.badge-VALIDATION_CLIENT  { background:#dbeafe; color:#1e3a8a; }
+.badge-VALIDATION_LIVREUR { background:#ede9fe; color:#4c1d95; }
+.badge-LIVREUR_ROUTE      { background:#ffedd5; color:#9a3412; }
+.badge-RECEPTION_COLIS    { background:#f3e8ff; color:#6b21a8; }
+.badge-LIVRAISON_EN_ROUTE { background:#cffafe; color:#155e75; }
+.badge-TERMINEE           { background:#d1fae5; color:#065f46; }
+.badge-ANNULEE            { background:#fee2e2; color:#991b1b; }
+
+/* Origine badge */
+.badge-origine {
+    display: inline-flex; align-items: center; gap: .28rem;
+    padding: .22rem .6rem; border-radius: 6px;
+    font-size: .7rem; font-weight: 700;
+}
+.badge-prive  { background:#e0e7ff; color:#1e40af; }
+.badge-public { background:#f5f3ff; color:#6d28d9; }
+
+/* Card body */
+.card-body-section {
+    padding: 0 1.2rem;
+    flex: 1;
+}
+
+.route-block {
+    background: #f8fafc;
+    border-radius: 10px;
+    padding: .85rem .9rem;
+    margin-bottom: .85rem;
+    position: relative;
+}
+.route-block::before {
+    content: '';
+    position: absolute; left: 1.35rem; top: 2.05rem; bottom: 2.05rem;
+    width: 2px; background: linear-gradient(to bottom, #22c55e, #ef4444);
+    border-radius: 2px;
+}
+.route-item {
+    display: flex; align-items: flex-start; gap: .6rem;
+    position: relative; z-index: 1;
+}
+.route-item + .route-item { margin-top: .65rem; }
+.route-dot {
+    width: 20px; height: 20px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .6rem; flex-shrink: 0; margin-top: 1px;
+}
+.route-dot.dep  { background: #dcfce7; color: #166534; }
+.route-dot.dest { background: #fee2e2; color: #991b1b; }
+.route-addr {
+    font-size: .82rem; font-weight: 500;
+    color: var(--text-2); line-height: 1.35;
+    word-break: break-word;
+}
+.route-label {
+    font-size: .68rem; font-weight: 700;
+    color: var(--text-3); text-transform: uppercase;
+    letter-spacing: .4px; margin-bottom: 1px;
+}
+
+/* Info chips row */
+.info-chips {
+    display: flex; gap: .45rem; flex-wrap: wrap;
+    margin-bottom: .8rem;
+}
+.info-chip {
+    display: inline-flex; align-items: center; gap: .3rem;
+    background: #f1f5f9; border-radius: 6px;
+    padding: .28rem .6rem; font-size: .78rem;
+    color: var(--text-2); font-weight: 500;
+}
+.info-chip i { font-size: .85rem; color: var(--text-3); }
+
+/* Client row */
+.client-row {
+    display: flex; align-items: center; gap: .55rem;
+    margin-bottom: .85rem;
+}
+.client-avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--navy), #3949ab);
+    color: #fff; font-size: .72rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.client-name { font-size: .84rem; font-weight: 600; color: var(--text-1); }
+.client-type { font-size: .72rem; color: var(--text-3); }
+
+/* Card footer */
+.card-foot {
+    padding: .8rem 1.2rem;
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center;
+    justify-content: space-between;
+    background: #fafbfc;
+}
+.date-txt { font-size: .78rem; color: var(--text-3); display: flex; align-items: center; gap: .35rem; }
+.btn-details {
+    display: inline-flex; align-items: center; gap: .35rem;
+    background: var(--navy); color: #fff;
+    padding: .42rem 1rem; border-radius: 8px;
+    font-size: .8rem; font-weight: 600;
+    text-decoration: none; transition: var(--transition);
+    border: none; cursor: pointer;
+}
+.btn-details:hover {
+    background: var(--orange);
+    border-color: var(--orange);
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 107, 0, 0.30);
+}
+.card-arrow { transition: var(--transition); opacity: .7; }
+
+/* ═══════════════════════════════════════════════
+   EMPTY STATE
+═══════════════════════════════════════════════ */
+.empty-state {
+    background: var(--card-bg); border-radius: var(--radius-lg);
+    padding: 5rem 2rem; text-align: center;
+    box-shadow: var(--shadow-sm); border: 1.5px dashed var(--border);
+    grid-column: 1 / -1;
+}
+.empty-icon {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: var(--navy-light);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.25rem; font-size: 2.2rem;
+}
+.empty-state h3 { font-size: 1.25rem; font-weight: 700; color: var(--text-1); margin-bottom: .5rem; }
+.empty-state p { color: var(--text-2); font-size: .92rem; margin-bottom: 1.5rem; }
+.btn-reset {
+    display: inline-flex; align-items: center; gap: .4rem;
+    background: var(--navy); color: #fff;
+    padding: .7rem 1.5rem; border-radius: 10px;
+    font-size: .9rem; font-weight: 600;
+    text-decoration: none; transition: var(--transition);
+}
+.btn-reset:hover { background: var(--navy-dark); color: #fff; }
+
+/* ═══════════════════════════════════════════════
+   PAGINATION
+═══════════════════════════════════════════════ */
+.pagination-wrap {
+    margin-top: 2rem;
+    display: flex; justify-content: center; gap: .35rem; flex-wrap: wrap;
+}
+.pg-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 38px; height: 38px; border-radius: 9px;
+    border: 1.5px solid var(--border); background: var(--card-bg);
+    color: var(--text-2); font-size: .9rem; font-weight: 600;
+    text-decoration: none; transition: var(--transition);
+}
+.pg-btn:hover { border-color: var(--navy); color: var(--navy); background: var(--navy-light); }
+.pg-btn.active {
+    background: var(--orange);
+    border-color: var(--orange);
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(255, 107, 0, 0.25);
+}
+.pg-btn.disabled { opacity: .4; pointer-events: none; }
+.pg-ellipsis { display: flex; align-items: center; padding: 0 .4rem; color: var(--text-3); }
+
+/* ═══════════════════════════════════════════════
+   SKELETON LOADER (animation d'entrée)
+═══════════════════════════════════════════════ */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.dcl-card { animation: fadeUp .35s ease both; }
+
+/* ═══════════════════════════════════════════════
+   QUICK-ACTION BUTTONS (footer card)
+═══════════════════════════════════════════════ */
+.btn-qa {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    border: 1.5px solid var(--border);
+    background: #f8fafc; color: var(--text-2);
+    font-size: .9rem; cursor: pointer;
+    transition: var(--transition);
+    flex-shrink: 0;
+}
+.btn-qa:hover { transform: translateY(-1px); }
+.btn-qa-prix:hover  { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+.btn-qa-assign:hover { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+
+/* ═══════════════════════════════════════════════
+   MODAL OVERRIDES
+═══════════════════════════════════════════════ */
+.modal-header-navy {
+    background: linear-gradient(135deg, var(--navy) 0%, #1a237e 100%);
+    color: #fff;
+}
+.modal-header-navy .btn-close { filter: invert(1); }
+.modal-header-navy .modal-title { color: #fff; font-size: .95rem; }
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE TWEAKS
+═══════════════════════════════════════════════ */
+@media (max-width: 768px) {
+    .page-header { padding: 1.4rem 1.2rem; }
+    .page-header h1 { font-size: 1.35rem; }
+    .filter-bar { padding: 1rem; }
+    .filter-row { gap: .5rem; }
+    .filter-divider { display: none; }
+    .search-wrap { min-width: 100%; }
+    .select-filter { width: 100%; }
+    .chips { width: 100%; }
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid px-4">
-    <!-- En-tête -->
-    <div class="page-header">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+
+<div class="page-wrapper">
+
+    <!-- ── Header ── -->
+    <div class="page-header mb-4">
+        <div class="content d-flex align-items-start justify-content-between flex-wrap gap-3">
             <div>
-                <h1 class="page-title">📦 Gestion des Demandes</h1>
-                <p class="page-subtitle">Vue d'ensemble de toutes les demandes de livraison</p>
+                <h1><i class="bi bi-box-seam me-2"></i>Gestion des Demandes</h1>
+                <p>Vue d'ensemble et suivi de toutes les demandes de livraison</p>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn-refresh" onclick="location.reload()">
+                    <i class="bi bi-arrow-clockwise"></i> Actualiser
+                </button>
             </div>
         </div>
     </div>
-    
-    <!-- Statistiques -->
-    <div class="stats-cards">
-        <div class="stat-card primary">
-            <i class="bi bi-box-seam text-primary stat-icon"></i>
-            <div class="stat-value">{{ total_demandes }}</div>
-            <div class="stat-label">Total demandes</div>
+
+    <!-- ── Stats ── -->
+    <div class="stats-grid">
+        <div class="stat-card" style="--accent:#000080;">
+            <div class="stat-icon" style="--accent:#000080;"><i class="bi bi-inbox-fill"></i></div>
+            <div class="stat-val">{{ total_demandes }}</div>
+            <div class="stat-label">Total</div>
         </div>
-        <div class="stat-card warning">
-            <i class="bi bi-clock-history text-warning stat-icon"></i>
-            <div class="stat-value">{{ demandes_en_attente }}</div>
+        <div class="stat-card" style="--accent:#FF6B00;">
+            <div class="stat-icon" style="--accent:#FF6B00;"><i class="bi bi-clock-history"></i></div>
+            <div class="stat-val">{{ demandes_en_attente }}</div>
             <div class="stat-label">En attente</div>
         </div>
-        <div class="stat-card info">
-            <i class="bi bi-arrow-repeat text-info stat-icon"></i>
-            <div class="stat-value">{{ demandes_en_cours }}</div>
+        <div class="stat-card" style="--accent:#3b82f6;">
+            <div class="stat-icon" style="--accent:#3b82f6;"><i class="bi bi-arrow-repeat"></i></div>
+            <div class="stat-val">{{ demandes_en_cours }}</div>
             <div class="stat-label">En cours</div>
         </div>
-        <div class="stat-card success">
-            <i class="bi bi-check-circle text-success stat-icon"></i>
-            <div class="stat-value">{{ demandes_terminees }}</div>
-            <div class="stat-label">Terminées</div>
+        <div class="stat-card" style="--accent:#10b981;">
+            <div class="stat-icon" style="--accent:#10b981;"><i class="bi bi-check2-circle"></i></div>
+            <div class="stat-val">{{ demandes_terminees }}</div>
+            <div class="stat-label">Livrées</div>
+        </div>
+        <div class="stat-card" style="--accent:#ef4444;">
+            <div class="stat-icon" style="--accent:#ef4444;"><i class="bi bi-x-circle"></i></div>
+            <div class="stat-val">{{ demandes_annulees }}</div>
+            <div class="stat-label">Annulées</div>
+        </div>
+        <div class="stat-card" style="--accent:#8b5cf6;">
+            <div class="stat-icon" style="--accent:#8b5cf6;"><i class="bi bi-globe2"></i></div>
+            <div class="stat-val">{{ demandes_publiques }}</div>
+            <div class="stat-label">Publiques</div>
         </div>
     </div>
-    
-    <!-- Filtres et recherche -->
-    <div class="filters-section">
+
+    <!-- ── Filter bar ── -->
+    <div class="filter-bar">
         <form method="get" id="filterForm">
-            <div class="row g-3 align-items-center">
-                <!-- Version Desktop: Boutons -->
-                <div class="col-md-8">
-                    <div class="filter-group">
-                        <button type="button" class="filter-btn {% if not selected_statut %}active{% endif %}" data-filter="">
-                            <i class="bi bi-list-ul me-1"></i> Toutes
-                        </button>
-                        {% for statut in statut_choices %}
-                        <button type="button" class="filter-btn {% if selected_statut == statut.0 %}active{% endif %}" data-filter="{{ statut.0 }}">
-                            <i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> {{ statut.1 }}
-                        </button>
-                        {% endfor %}
-                    </div>
+            <div class="filter-row">
 
-                    <!-- Version Mobile: Select dropdown -->
-                    <div class="filter-select-wrapper">
-                        <select class="filter-select" id="mobileStatutSelect">
-                            <option value="">🔍 Toutes les demandes</option>
-                            {% for statut in statut_choices %}
-                            <option value="{{ statut.0 }}" {% if selected_statut == statut.0 %}selected{% endif %}>
-                                {{ statut.1 }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                
-                <br>
-
-                <div class="col-md-4">
-                    <div class="search-box">
-                        <i class="bi bi-search"></i>
-                        <input type="text" name="q" class="form-control" id="searchInput" 
-                               placeholder="Rechercher..." 
-                               value="{{ search_query }}">
-                    </div>
+                <!-- Search -->
+                <div class="search-wrap">
+                    <i class="bi bi-search"></i>
+                    <input type="text" name="q" id="searchInput" class="search-input"
+                           placeholder="Référence, client, adresse, téléphone…"
+                           value="{{ search_query }}" autocomplete="off">
                 </div>
 
-                
+                <div class="filter-divider"></div>
+
+                <!-- Statut -->
+                <select name="statut" id="statutSelect" class="select-filter" onchange="submitFilter()">
+                    <option value="">Tous les statuts</option>
+                    {% for s in statut_choices %}
+                    <option value="{{ s.0 }}" {% if selected_statut == s.0 %}selected{% endif %}>{{ s.1 }}</option>
+                    {% endfor %}
+                </select>
+
+                <!-- Type course -->
+                <select name="type_course" id="typeSelect" class="select-filter" onchange="submitFilter()">
+                    <option value="">Tous les types</option>
+                    {% for t in type_course_choices %}
+                    <option value="{{ t.0 }}" {% if selected_type == t.0 %}selected{% endif %}>{{ t.1 }}</option>
+                    {% endfor %}
+                </select>
+
+                <div class="filter-divider"></div>
+
+                <!-- Origine chips -->
+                <div class="chips">
+                    <button type="button" class="chip {% if not selected_origine %}active-all{% endif %}"
+                            onclick="setOrigine('')">
+                        <i class="bi bi-list-ul"></i> Toutes
+                    </button>
+                    <button type="button" class="chip {% if selected_origine == 'prive' %}active-prive{% endif %}"
+                            onclick="setOrigine('prive')">
+                        <i class="bi bi-lock-fill"></i> Privées
+                    </button>
+                    <button type="button" class="chip {% if selected_origine == 'public' %}active-public{% endif %}"
+                            onclick="setOrigine('public')">
+                        <i class="bi bi-globe2"></i> Publiques
+                    </button>
+                </div>
 
             </div>
-            <input type="hidden" name="statut" id="statutInput" value="{{ selected_statut }}">
-            <input type="hidden" name="type_course" value="{{ selected_type }}">
+
+            <!-- Hidden inputs -->
+            <input type="hidden" name="origine" id="origineInput" value="{{ selected_origine }}">
         </form>
     </div>
-    
-    <!-- Liste des demandes -->
-    {% if demandes %}
-    <div class="row" id="demandesContainer">
-        {% for demande in demandes %}
-        <div class="col-md-6 col-lg-4 mb-4 demande-item">
-            <div class="demande-card" onclick="window.location.href='{% url 'Gestionnaire:detail_demande' demande.pk %}'">
-                <div class="card-header-section">
-                    <h3 class="demande-ref">{{ demande.ref }}</h3>
-                    <span class="status-badge status-{{ demande.statut }}">
-                        <i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i>
-                        {{ demande.get_statut_display }}
+
+    <!-- ── Results bar ── -->
+    <div class="results-bar">
+        <p class="results-count mb-0">
+            <strong>{{ demandes|length }}</strong> demande{{ demandes|length|pluralize }} affichée{{ demandes|length|pluralize }}
+            {% if search_query %} · recherche : « {{ search_query }} »{% endif %}
+            {% if selected_statut %} · statut : {{ selected_statut }}{% endif %}
+            {% if selected_origine == 'public' %} · publiques uniquement{% elif selected_origine == 'prive' %} · privées uniquement{% endif %}
+        </p>
+        {% if search_query or selected_statut or selected_type or selected_origine %}
+        <a href="{% url 'Gestionnaire:liste_demandes_gestionnaire' %}" class="btn-reset" style="padding:.4rem .9rem; font-size:.8rem;">
+            <i class="bi bi-x-lg"></i> Réinitialiser
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- ── Cards ── -->
+    <div class="demandes-grid">
+
+        {% if demandes %}
+            {% for demande in demandes %}
+
+            <div class="dcl-card accent-{{ demande.statut }}" style="animation-delay:{{ forloop.counter0 }}0ms;"
+                 onclick="window.location.href='{% url 'Gestionnaire:detail_demande' demande.pk %}'">
+
+                <div class="card-accent"></div>
+
+                <!-- Head -->
+                <div class="card-head">
+                    <div>
+                        <div class="card-ref">{{ demande.ref }}</div>
+                        <div class="card-meta">
+                            <span class="badge-statut badge-{{ demande.statut }}">
+                                {% if demande.statut == 'EN_ATTENTE' %}<i class="bi bi-clock"></i>
+                                {% elif demande.statut == 'TERMINEE' %}<i class="bi bi-check2-circle"></i>
+                                {% elif demande.statut == 'ANNULEE' %}<i class="bi bi-x-circle"></i>
+                                {% elif demande.statut == 'LIVREUR_ROUTE' or demande.statut == 'LIVRAISON_EN_ROUTE' %}<i class="bi bi-bicycle"></i>
+                                {% else %}<i class="bi bi-arrow-repeat"></i>{% endif %}
+                                {{ demande.get_statut_display }}
+                            </span>
+                            {% if demande.client %}
+                                <span class="badge-origine badge-prive"><i class="bi bi-lock-fill"></i> Privée</span>
+                            {% else %}
+                                <span class="badge-origine badge-public"><i class="bi bi-globe2"></i> Publique</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <span class="badge-origine {% if demande.type_course == 'EXPRESSE' %}badge-public{% else %}badge-prive{% endif %}" style="align-self:flex-start;">
+                        {% if demande.type_course == 'EXPRESSE' %}<i class="bi bi-lightning-fill"></i> Express{% else %}<i class="bi bi-bicycle"></i> Classique{% endif %}
                     </span>
                 </div>
-                
-                <div class="location-section">
-                    <div class="location-item">
-                        <div class="location-icon departure">
-                            <i class="bi bi-geo-alt-fill"></i>
+
+                <!-- Body -->
+                <div class="card-body-section">
+
+                    <!-- Route -->
+                    <div class="route-block">
+                        <div class="route-item">
+                            <div class="route-dot dep"><i class="bi bi-circle-fill"></i></div>
+                            <div>
+                                <div class="route-label">Départ</div>
+                                <div class="route-addr">{{ demande.adresse_depart|truncatechars:45 }}</div>
+                            </div>
                         </div>
-                        <div class="location-text">
-                            <div class="location-label">Départ</div>
-                            <p class="location-address">{{ demande.adresse_depart|truncatewords:5 }}</p>
+                        <div class="route-item">
+                            <div class="route-dot dest"><i class="bi bi-geo-alt-fill"></i></div>
+                            <div>
+                                <div class="route-label">Destination</div>
+                                <div class="route-addr">{{ demande.adresse_destination|truncatechars:45 }}</div>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="location-item">
-                        <div class="location-icon destination">
-                            <i class="bi bi-geo-fill"></i>
+
+                    <!-- Client -->
+                    <div class="client-row">
+                        <div class="client-avatar">
+                            {% with name=demande.get_client_display %}{{ name|slice:":1"|upper }}{% endwith %}
                         </div>
-                        <div class="location-text">
-                            <div class="location-label">Destination</div>
-                            <p class="location-address">{{ demande.adresse_destination|truncatewords:5 }}</p>
+                        <div>
+                            <div class="client-name">{{ demande.get_client_display|truncatechars:28 }}</div>
+                            <div class="client-type">
+                                {% if demande.client %}Client inscrit{% else %}Client invité{% endif %}
+                            </div>
                         </div>
+                    </div>
+
+                    <!-- Info chips -->
+                    <div class="info-chips">
+                        <span class="info-chip">
+                            <i class="bi bi-box-seam"></i>
+                            {{ demande.poids_colis }} kg
+                        </span>
+                        <span class="info-chip">
+                            <i class="bi bi-currency-dollar"></i>
+                            {{ demande.valeur_colis|floatformat:0 }} FCFA
+                        </span>
+                        {% if demande.distance %}
+                        <span class="info-chip">
+                            <i class="bi bi-geo"></i>
+                            {{ demande.distance }} km
+                        </span>
+                        {% endif %}
+                        {% if demande.cout_livraison %}
+                        <span class="info-chip" style="background:#d1fae5; color:#065f46;">
+                            <i class="bi bi-tag-fill"></i>
+                            {{ demande.cout_livraison|floatformat:0 }} FCFA
+                        </span>
+                        {% endif %}
+                        {% if demande.coursier %}
+                        <span class="info-chip" style="background:#dbeafe; color:#1e3a8a;">
+                            <i class="bi bi-person-check-fill"></i>
+                            {{ demande.coursier.username|truncatechars:14 }}
+                        </span>
+                        {% endif %}
+                    </div>
+
+                </div>
+
+                <!-- Footer -->
+                <div class="card-foot">
+                    <span class="date-txt">
+                        <i class="bi bi-calendar3"></i>
+                        {{ demande.date_demande|date:"d/m/Y" }}
+                        <span style="color:var(--text-3)">·</span>
+                        {{ demande.date_demande|date:"H:i" }}
+                    </span>
+                    <div style="display:flex;gap:.4rem;align-items:center;">
+                        <button class="btn-qa btn-qa-prix" title="Définir le prix"
+                                onclick="event.stopPropagation(); openPrixModal('{{ demande.pk }}', '{{ demande.ref }}', '{{ demande.cout_livraison|default:'' }}')">
+                            <i class="bi bi-currency-dollar"></i>
+                        </button>
+                        {% if not demande.coursier %}
+                        <button class="btn-qa btn-qa-assign" title="Assigner un livreur"
+                                onclick="event.stopPropagation(); openAssignModal('{{ demande.pk }}', '{{ demande.ref }}')">
+                            <i class="bi bi-person-plus-fill"></i>
+                        </button>
+                        {% endif %}
+                        <a href="{% url 'Gestionnaire:detail_demande' demande.pk %}" class="btn-details"
+                           onclick="event.stopPropagation()">
+                            Détails <i class="bi bi-arrow-right card-arrow"></i>
+                        </a>
                     </div>
                 </div>
-                
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-label">Type</div>
-                        <p class="info-value">{{ demande.get_type_course_display }}</p>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Client</div>
-                        <p class="info-value">{{ demande.client.get_full_name|default:demande.client.username|truncatewords:2 }}</p>
-                    </div>
-                </div>
-                
-                <div class="card-footer-section">
-                    <div class="date-info">
-                        <i class="bi bi-calendar-check"></i>
-                        {{ demande.date_demande|date:"d/m/Y à H:i" }}
-                    </div>
-                    <div class="view-details">
-                        Détails
-                        <i class="bi bi-arrow-right"></i>
-                    </div>
-                </div>
+
             </div>
-        </div>
-        {% endfor %}
-    </div>
-    
-    <!-- Pagination -->
-    {% if is_paginated %}
-    <nav aria-label="Page navigation" class="pagination-custom">
-        <ul class="pagination justify-content-center">
-            {% if page_obj.has_previous %}
-                <li class="page-item">
-                    <a class="page-link" href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_statut %}&statut={{ selected_statut }}{% endif %}{% if selected_type %}&type_course={{ selected_type }}{% endif %}">
-                        <i class="bi bi-chevron-double-left"></i>
-                    </a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_statut %}&statut={{ selected_statut }}{% endif %}{% if selected_type %}&type_course={{ selected_type }}{% endif %}">
-                        <i class="bi bi-chevron-left"></i>
-                    </a>
-                </li>
-            {% endif %}
-            
-            {% for num in page_obj.paginator.page_range %}
-                {% if page_obj.number == num %}
-                    <li class="page-item active">
-                        <span class="page-link">{{ num }}</span>
-                    </li>
-                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_statut %}&statut={{ selected_statut }}{% endif %}{% if selected_type %}&type_course={{ selected_type }}{% endif %}">{{ num }}</a>
-                    </li>
-                {% endif %}
             {% endfor %}
-            
-            {% if page_obj.has_next %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_statut %}&statut={{ selected_statut }}{% endif %}{% if selected_type %}&type_course={{ selected_type }}{% endif %}">
-                        <i class="bi bi-chevron-right"></i>
-                    </a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_statut %}&statut={{ selected_statut }}{% endif %}{% if selected_type %}&type_course={{ selected_type }}{% endif %}">
-                        <i class="bi bi-chevron-double-right"></i>
-                    </a>
-                </li>
-            {% endif %}
-        </ul>
-    </nav>
-    {% endif %}
-    
-    {% else %}
-    <!-- État vide -->
-    <div class="empty-state">
-        <div class="empty-state-icon">📦</div>
-        <h3>Aucune demande trouvée</h3>
-        <p>Aucune demande ne correspond à vos critères de recherche</p>
-        <a href="{% url 'Gestionnaire:liste_demandes_gestionnaire' %}" class="btn btn-primary-custom">
-            <i class="bi bi-arrow-clockwise me-2"></i>
-            Réinitialiser les filtres
+
+        {% else %}
+            <!-- Empty state -->
+            <div class="empty-state">
+                <div class="empty-icon"><i class="bi bi-inbox" style="color:var(--navy);"></i></div>
+                <h3>Aucune demande trouvée</h3>
+                <p>Aucune demande ne correspond à vos critères de recherche ou de filtrage.</p>
+                <a href="{% url 'Gestionnaire:liste_demandes_gestionnaire' %}" class="btn-reset">
+                    <i class="bi bi-arrow-clockwise"></i> Réinitialiser les filtres
+                </a>
+            </div>
+        {% endif %}
+
+    </div>
+
+    <!-- ── Pagination ── -->
+    {% if is_paginated %}
+    <div class="pagination-wrap">
+        {% if page_obj.has_previous %}
+        <a class="pg-btn" href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_statut %}&statut={{ selected_statut }}{% endif %}{% if selected_type %}&type_course={{ selected_type }}{% endif %}{% if selected_origine %}&origine={{ selected_origine }}{% endif %}">
+            <i class="bi bi-chevron-double-left"></i>
         </a>
+        <a class="pg-btn" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_statut %}&statut={{ selected_statut }}{% endif %}{% if selected_type %}&type_course={{ selected_type }}{% endif %}{% if selected_origine %}&origine={{ selected_origine }}{% endif %}">
+            <i class="bi bi-chevron-left"></i>
+        </a>
+        {% else %}
+        <span class="pg-btn disabled"><i class="bi bi-chevron-double-left"></i></span>
+        <span class="pg-btn disabled"><i class="bi bi-chevron-left"></i></span>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <span class="pg-btn active">{{ num }}</span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a class="pg-btn" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_statut %}&statut={{ selected_statut }}{% endif %}{% if selected_type %}&type_course={{ selected_type }}{% endif %}{% if selected_origine %}&origine={{ selected_origine }}{% endif %}">{{ num }}</a>
+            {% elif num == page_obj.number|add:'-3' or num == page_obj.number|add:'3' %}
+                <span class="pg-ellipsis">…</span>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <a class="pg-btn" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_statut %}&statut={{ selected_statut }}{% endif %}{% if selected_type %}&type_course={{ selected_type }}{% endif %}{% if selected_origine %}&origine={{ selected_origine }}{% endif %}">
+            <i class="bi bi-chevron-right"></i>
+        </a>
+        <a class="pg-btn" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_statut %}&statut={{ selected_statut }}{% endif %}{% if selected_type %}&type_course={{ selected_type }}{% endif %}{% if selected_origine %}&origine={{ selected_origine }}{% endif %}">
+            <i class="bi bi-chevron-double-right"></i>
+        </a>
+        {% else %}
+        <span class="pg-btn disabled"><i class="bi bi-chevron-right"></i></span>
+        <span class="pg-btn disabled"><i class="bi bi-chevron-double-right"></i></span>
+        {% endif %}
     </div>
     {% endif %}
+
+</div><!-- /page-wrapper -->
+
+
+<div class="modal fade" id="quickPrixModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius:16px;overflow:hidden;border:none;box-shadow:0 20px 60px rgba(0,0,0,.18);">
+      <div class="modal-header modal-header-navy">
+        <h5 class="modal-title">
+          <i class="bi bi-currency-dollar me-2"></i>
+          Définir le prix — <span id="qpRef" style="font-family:monospace;font-size:.85rem;opacity:.9;"></span>
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="quickPrixForm" method="post">
+        {% csrf_token %}
+        <div class="modal-body" style="padding:1.5rem;">
+          <label class="form-label fw-bold" style="font-size:.88rem;color:#475569;text-transform:uppercase;letter-spacing:.4px;">
+            Montant de la livraison (FCFA)
+          </label>
+          <div class="input-group" style="margin-top:.5rem;">
+            <span class="input-group-text" style="background:var(--navy-light,#e8eaf6);border:1.5px solid #d1d5db;color:#000080;font-weight:700;">
+              <i class="bi bi-cash-coin"></i>
+            </span>
+            <input type="number" id="qpInput" class="form-control" name="prix"
+                   min="0" step="1" required
+                   placeholder="Ex : 2500"
+                   style="border:1.5px solid #d1d5db;font-size:1.05rem;font-weight:600;">
+          </div>
+          <div class="form-text mt-2" style="color:#64748b;">
+            <i class="bi bi-info-circle me-1"></i>
+            Le statut passera automatiquement à <strong>«&nbsp;Prix validé par le client&nbsp;»</strong>.
+          </div>
+          <input type="hidden" name="nouveau_statut" value="VALIDATION_CLIENT">
+        </div>
+        <div class="modal-footer" style="border-top:1px solid #f1f5f9;padding:.9rem 1.5rem;">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border-radius:9px;">
+            Annuler
+          </button>
+          <button type="submit" class="btn btn-primary" style="background:var(--navy,#000080);border:none;border-radius:9px;font-weight:600;padding:.55rem 1.4rem;">
+            <i class="bi bi-check-circle me-1"></i>Enregistrer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
+
+ 
+<div class="modal fade" id="quickAssignModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius:16px;overflow:hidden;border:none;box-shadow:0 20px 60px rgba(0,0,0,.18);">
+      <div class="modal-header modal-header-navy">
+        <h5 class="modal-title">
+          <i class="bi bi-person-plus-fill me-2"></i>
+          Assigner un livreur — <span id="qaRef" style="font-family:monospace;font-size:.85rem;opacity:.9;"></span>
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="quickAssignForm" method="post">
+        {% csrf_token %}
+        <div class="modal-body" style="padding:1.5rem;">
+          <label class="form-label fw-bold" style="font-size:.88rem;color:#475569;text-transform:uppercase;letter-spacing:.4px;">
+            Choisir un livreur disponible
+          </label>
+          <select class="form-select" id="qaSelect" name="livreur_id" required
+                  style="margin-top:.5rem;border:1.5px solid #d1d5db;border-radius:9px;font-size:.9rem;padding:.65rem .9rem;">
+            <option value="" disabled selected>-- Sélectionner un livreur --</option>
+            {% for livreur in livreurs_disponibles %}
+            <option value="{{ livreur.id }}">
+              {{ livreur.user.get_full_name|default:livreur.user.username }}
+              {% if livreur.user.Contact %}({{ livreur.user.Contact }}){% endif %}
+            </option>
+            {% empty %}
+            <option value="" disabled>Aucun livreur disponible actuellement</option>
+            {% endfor %}
+          </select>
+          {% if not livreurs_disponibles %}
+          <div class="mt-2" style="color:#f59e0b;font-size:.8rem;">
+            <i class="bi bi-exclamation-triangle me-1"></i>
+            Aucun livreur n'est disponible pour le moment.
+          </div>
+          {% endif %}
+        </div>
+        <div class="modal-footer" style="border-top:1px solid #f1f5f9;padding:.9rem 1.5rem;">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border-radius:9px;">
+            Annuler
+          </button>
+          <button type="submit" class="btn btn-primary"
+                  {% if not livreurs_disponibles %}disabled{% endif %}
+                  style="background:var(--navy,#000080);border:none;border-radius:9px;font-weight:600;padding:.55rem 1.4rem;">
+            <i class="bi bi-check-circle me-1"></i>Assigner
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const filterForm = document.getElementById('filterForm');
-        const statutInput = document.getElementById('statutInput');
-        const mobileSelect = document.getElementById('mobileStatutSelect');
-        let searchTimeout;
+document.addEventListener('DOMContentLoaded', () => {
+    const form   = document.getElementById('filterForm');
+    const search = document.getElementById('searchInput');
 
-        // Gestion du select mobile
-        if (mobileSelect) {
-            mobileSelect.addEventListener('change', function() {
-                statutInput.value = this.value;
-                filterForm.submit();
-            });
-        }
-
-        // Gestion des boutons de filtre (desktop)
-        document.querySelectorAll('[data-filter]').forEach(button => {
-            button.addEventListener('click', function() {
-                document.querySelectorAll('[data-filter]').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                this.classList.add('active');
-                
-                statutInput.value = this.dataset.filter;
-                filterForm.submit();
-            });
-        });
-
-        // Gestion de la recherche avec délai
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-            searchInput.addEventListener('input', function() {
-                clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(() => {
-                    filterForm.submit();
-                }, 500);
-            });
-        }
-
-        // Animation des cartes au chargement
-        const cards = document.querySelectorAll('.demande-card, .stat-card');
-        cards.forEach((card, index) => {
-            setTimeout(() => {
-                card.style.opacity = '0';
-                card.style.transform = 'translateY(20px)';
-                card.style.transition = 'all 0.4s ease';
-                
-                setTimeout(() => {
-                    card.style.opacity = '1';
-                    card.style.transform = 'translateY(0)';
-                }, 50);
-            }, index * 50);
-        });
-
-        // Indicateur de scroll pour les stats cards sur mobile
-        const statsCards = document.querySelector('.stats-cards');
-        if (statsCards && window.innerWidth <= 768) {
-            // Ajouter un indicateur visuel qu'on peut scroller
-            statsCards.addEventListener('scroll', function() {
-                if (this.scrollLeft > 10) {
-                    this.style.paddingLeft = '0.5rem';
-                } else {
-                    this.style.paddingLeft = '0';
-                }
-            });
-        }
-
-        // Auto-refresh toutes les 30 secondes
-        console.log('Démarrage du rafraîchissement automatique (30 secondes)');
-        setTimeout(function() {
-            console.log('Actualisation de la page...');
-            location.reload();
-        }, 30000);
+    // Recherche avec délai
+    let searchTimer;
+    search.addEventListener('input', () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => form.submit(), 480);
     });
+
+    // Animation décalée des cartes
+    document.querySelectorAll('.dcl-card').forEach((card, i) => {
+        card.style.animationDelay = `${i * 45}ms`;
+    });
+
+    // Stat cards : clic → filtre rapide
+    const statFilters = {
+        1: '',              // Total → tout montrer
+        2: 'EN_ATTENTE',
+        3: '',              // En cours → pas de statut unique, pas de raccourci
+        4: 'TERMINEE',
+        5: 'ANNULEE',
+    };
+});
+
+function submitFilter() {
+    document.getElementById('filterForm').submit();
+}
+
+function setOrigine(val) {
+    document.getElementById('origineInput').value = val;
+    document.getElementById('filterForm').submit();
+}
+
+/* ── Modal : Définir le prix ── */
+function openPrixModal(pk, ref, currentPrix) {
+    document.getElementById('qpRef').textContent   = ref;
+    document.getElementById('qpInput').value       = currentPrix || '';
+    document.getElementById('quickPrixForm').action =
+        '/gestionnaire/demandes/' + pk + '/modifier-prix/';
+    new bootstrap.Modal(document.getElementById('quickPrixModal')).show();
+}
+
+/* ── Modal : Assigner un livreur ── */
+function openAssignModal(pk, ref) {
+    document.getElementById('qaRef').textContent    = ref;
+    document.getElementById('qaSelect').selectedIndex = 0;
+    document.getElementById('quickAssignForm').action =
+        '/gestionnaire/demandes/' + pk + '/assigner-livreur/';
+    new bootstrap.Modal(document.getElementById('quickAssignModal')).show();
+}
+
+// Auto-refresh toutes les 60s (discret)
+setTimeout(() => location.reload(), 60000);
 </script>
 {% endblock %}

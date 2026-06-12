@@ -1,0 +1,686 @@
+{% extends 'layouts/base_site.html' %}
+{% load static %}
+
+{% block title %}Demande de coursier — Mon Livreur Pro{% endblock %}
+
+{% block content %}
+{% load static %}
+
+<!-- Hero -->
+<div class="container-fluid pt-5 hero-header" style="background: linear-gradient(135deg, #000080 0%, #1a237e 50%, #283593 100%);">
+
+    <div class="container pt-5">
+        <div class="row g-5 pt-5">
+            <div class="col-lg-6 align-self-center text-center text-lg-start mb-lg-5">
+                <h1 class="display-4 text-white mb-3 fw-bold">📦 Demande de Coursier</h1>
+                <p class="text-white-50 mb-4">Soumettez votre demande en quelques minutes, sans créer de compte.</p>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb justify-content-center justify-content-lg-start mb-0">
+                        <li class="breadcrumb-item"><a class="text-white" href="{% url 'Accueil' %}">Accueil</a></li>
+                        <li class="breadcrumb-item text-white active" aria-current="page">Demande de coursier</li>
+                    </ol>
+                </nav>
+                {% if not request.user.is_authenticated %}
+                <div class="mt-4">
+                    <a href="{% url 'login' %}" class="btn btn-light fw-semibold px-4 py-2" style="border-radius:10px; color:#000080;">
+                        <i class="bi bi-person-circle me-2"></i>Vous avez un compte ? Se connecter
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            <div class="col-lg-6 align-self-end text-center text-lg-end">
+                <img class="img-fluid" src="{% static 'site/img/delivery-hero-img.png' %}" alt="" style="max-height: 280px;">
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Hero End -->
+
+<style>
+    :root {
+        --primary-color: #000080;
+        --secondary-color: #FF6B00;
+        --success-color: #10b981;
+        --danger-color: #ef4444;
+    }
+
+    .form-page-wrapper {
+        max-width: 1300px;
+        margin: 2.5rem auto;
+        padding: 0 1rem;
+    }
+
+    .section-card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+        margin-bottom: 1.5rem;
+    }
+
+    .section-title {
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #1e293b;
+        padding-bottom: .9rem;
+        border-bottom: 2px solid #f1f5f9;
+        margin-bottom: 1.4rem;
+    }
+
+    .section-title i {
+        color: var(--secondary-color);
+        font-size: 1.3rem;
+        background: rgba(255, 107, 0, 0.10);
+        padding: 6px;
+        border-radius: 8px;
+    }
+
+    .guest-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        background: #eff6ff;
+        color: var(--primary-color);
+        border: 1px solid #bfdbfe;
+        border-radius: 8px;
+        padding: .4rem .9rem;
+        font-size: .85rem;
+        font-weight: 600;
+        margin-bottom: 1.2rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #374151;
+        font-size: .92rem;
+        margin-bottom: .35rem;
+    }
+
+    .required { color: var(--danger-color); margin-left: 2px; }
+
+    .form-control {
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        padding: .75rem 1rem;
+        font-size: .95rem;
+        background: #f9fafb;
+        transition: border-color .2s, box-shadow .2s;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary-color);
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(0, 0, 128, 0.10);
+        border-left: 3px solid var(--secondary-color);
+        outline: none;
+    }
+
+    .input-with-btn { display: flex; gap: .5rem; }
+    .input-with-btn .form-control { flex: 1; }
+
+    .icon-btn {
+        width: 46px; height: 46px;
+        border: none;
+        border-radius: 10px;
+        background: var(--primary-color);
+        color: #fff;
+        font-size: 1.15rem;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+        transition: background .2s, transform .15s;
+    }
+    .icon-btn:hover { background: #0000b3; transform: scale(1.05); }
+
+    .search-results {
+        position: absolute; top: 100%; left: 0; right: 0;
+        background: #fff; border: 2px solid var(--primary-color);
+        border-top: none; border-radius: 0 0 10px 10px;
+        max-height: 230px; overflow-y: auto; z-index: 1000;
+        box-shadow: 0 6px 16px rgba(0,0,0,.1); display: none;
+    }
+    .search-result-item {
+        padding: .8rem 1rem; cursor: pointer;
+        border-bottom: 1px solid #f1f5f9; font-size: .88rem;
+        transition: background .15s;
+    }
+    .search-result-item:hover { background: #eff6ff; color: var(--primary-color); }
+
+    .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .type-option input[type="radio"] { position: absolute; opacity: 0; }
+    .type-option { position: relative; }
+    .type-card {
+        display: block; padding: 1.1rem; border: 2px solid #e5e7eb;
+        border-radius: 12px; cursor: pointer; text-align: center;
+        transition: all .25s; background: #f9fafb;
+    }
+    .type-option input:checked + .type-card {
+        border-color: var(--secondary-color);
+        background: rgba(255, 107, 0, 0.06);
+        box-shadow: 0 3px 12px rgba(255, 107, 0, 0.20);
+    }
+    .type-icon { font-size: 1.9rem; margin-bottom: .4rem; }
+    .type-title { font-weight: 700; color: #1e293b; font-size: .95rem; }
+    .type-desc { font-size: .82rem; color: #6b7280; }
+
+    .form-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start; }
+    @media (max-width: 992px) { .form-layout { grid-template-columns: 1fr; } }
+
+    .map-sticky { position: sticky; top: 1.5rem; }
+    #map {
+        height: 380px;
+        border-radius: 14px;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 128, 0.14);
+        border: 2px solid #e5e7eb;
+        transition: box-shadow .2s ease;
+    }
+    #map:hover { box-shadow: 0 8px 32px rgba(0, 0, 128, 0.20); }
+
+    .map-info {
+        background: #f8fafc;
+        padding: 1rem 1.1rem;
+        border-radius: 10px;
+        border-left: 4px solid var(--secondary-color);
+    }
+    .map-info-item { display: flex; gap: .6rem; margin-bottom: .6rem; font-size: .88rem; }
+    .map-info-item:last-child { margin-bottom: 0; }
+    .map-info-item i { color: var(--secondary-color); flex-shrink: 0; margin-top: 2px; }
+    .map-info-label { font-weight: 700; }
+    .map-info-value { color: #6b7280; }
+
+    .btn-submit {
+        width: 100%; padding: .95rem;
+        background: linear-gradient(135deg, var(--secondary-color) 0%, #e05e00 100%);
+        color: #fff; border: none; border-radius: 12px;
+        font-size: 1.05rem; font-weight: 700; cursor: pointer;
+        transition: transform .2s ease, box-shadow .2s ease;
+        box-shadow: 0 4px 14px rgba(255, 107, 0, 0.35);
+        display: flex; align-items: center; justify-content: center; gap: .5rem;
+        position: relative; overflow: hidden;
+    }
+    .btn-submit::after {
+        content: '';
+        position: absolute;
+        top: -50%; left: -75%;
+        width: 50%; height: 200%;
+        background: linear-gradient(to right, transparent, rgba(255,255,255,.22), transparent);
+        transform: skewX(-20deg);
+        transition: left .5s ease;
+    }
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(255, 107, 0, 0.50);
+    }
+    .btn-submit:hover::after { left: 125%; }
+
+    .login-hint {
+        text-align: center; margin-top: 1rem;
+        font-size: .88rem; color: #6b7280;
+    }
+    .login-hint a { color: var(--primary-color); font-weight: 600; text-decoration: none; }
+    .login-hint a:hover { text-decoration: underline; }
+
+    .invalid-feedback { display: block; color: var(--danger-color); font-size: .82rem; margin-top: .3rem; }
+    .is-invalid { border-color: var(--danger-color) !important; }
+
+    .alert-msg {
+        padding: .9rem 1.1rem; border-radius: 10px; margin-bottom: 1rem; font-size: .9rem;
+        display: none; animation: fadeIn .3s ease;
+    }
+    .alert-info-msg { background: #dbeafe; color: #1e40af; border-left: 4px solid #3b82f6; display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+
+    /* ── Section card entry animations ── */
+    .section-card {
+        animation: fadeInUp .38s ease both;
+    }
+    .section-card:nth-child(1) { animation-delay: .05s; }
+    .section-card:nth-child(2) { animation-delay: .12s; }
+    .section-card:nth-child(3) { animation-delay: .19s; }
+    .section-card:nth-child(4) { animation-delay: .26s; }
+    .section-card:nth-child(5) { animation-delay: .33s; }
+    .section-card:nth-child(6) { animation-delay: .40s; }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Hover lift for section-card ── */
+    .section-card {
+        transition: box-shadow .25s ease;
+    }
+    .section-card:hover {
+        box-shadow: 0 6px 28px rgba(0,0,0,.10);
+    }
+</style>
+
+<div class="form-page-wrapper">
+
+    <!-- Django messages -->
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="form-layout">
+        <!-- ── Colonne formulaire ── -->
+        <div>
+            <form method="post" enctype="multipart/form-data" id="publicForm" novalidate>
+                {% csrf_token %}
+
+                <!-- Identification invité -->
+                <div class="section-card">
+                    <div class="section-title">
+                        <i class="bi bi-person-fill"></i>
+                        Vos informations
+                    </div>
+                    <div class="guest-badge">
+                        <i class="bi bi-person-badge"></i> Demande en tant qu'invité
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label class="form-label">Prénom <span class="required">*</span></label>
+                            <input type="text" name="prenom" class="form-control {% if form.prenom.errors %}is-invalid{% endif %}"
+                                   value="{{ form.prenom.value|default:'' }}" placeholder="Votre prénom" required>
+                            {% for e in form.prenom.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">Nom <span class="required">*</span></label>
+                            <input type="text" name="nom" class="form-control {% if form.nom.errors %}is-invalid{% endif %}"
+                                   value="{{ form.nom.value|default:'' }}" placeholder="Votre nom" required>
+                            {% for e in form.nom.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">Téléphone <span class="required">*</span></label>
+                            <input type="tel" name="telephone" class="form-control {% if form.telephone.errors %}is-invalid{% endif %}"
+                                   value="{{ form.telephone.value|default:'' }}" placeholder="+225 07 XX XX XX XX" required>
+                            {% for e in form.telephone.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">Email <small class="text-muted">(optionnel)</small></label>
+                            <input type="email" name="email" class="form-control {% if form.email.errors %}is-invalid{% endif %}"
+                                   value="{{ form.email.value|default:'' }}" placeholder="votre@email.com">
+                            {% for e in form.email.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Adresses -->
+                <div class="section-card">
+                    <div class="section-title">
+                        <i class="bi bi-geo-alt-fill"></i>
+                        Adresses
+                    </div>
+
+                    <div id="locationAlert" class="alert-msg"></div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Adresse de départ <span class="required">*</span></label>
+                        <div style="position:relative;">
+                            <div class="input-with-btn">
+                                <input type="text" id="adresse_depart" name="adresse_depart"
+                                       class="form-control {% if form.adresse_depart.errors %}is-invalid{% endif %}"
+                                       value="{{ form.adresse_depart.value|default:'' }}"
+                                       placeholder="Entrez l'adresse de départ" autocomplete="off" required>
+                                <button type="button" class="icon-btn" onclick="getMyLocation('depart')" title="Ma position">
+                                    <i class="bi bi-crosshair"></i>
+                                </button>
+                            </div>
+                            <div id="search-results-depart" class="search-results"></div>
+                        </div>
+                        <input type="hidden" id="latitude_depart" name="latitude_depart" value="{{ form.latitude_depart.value|default:'' }}">
+                        <input type="hidden" id="longitude_depart" name="longitude_depart" value="{{ form.longitude_depart.value|default:'' }}">
+                        {% for e in form.adresse_depart.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Adresse de destination <span class="required">*</span></label>
+                        <div style="position:relative;">
+                            <div class="input-with-btn">
+                                <input type="text" id="adresse_destination" name="adresse_destination"
+                                       class="form-control {% if form.adresse_destination.errors %}is-invalid{% endif %}"
+                                       value="{{ form.adresse_destination.value|default:'' }}"
+                                       placeholder="Entrez l'adresse de destination" autocomplete="off" required>
+                                <button type="button" class="icon-btn" onclick="searchLocation('destination')" title="Rechercher">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </div>
+                            <div id="search-results-destination" class="search-results"></div>
+                        </div>
+                        <input type="hidden" id="latitude_destination" name="latitude_destination" value="{{ form.latitude_destination.value|default:'' }}">
+                        <input type="hidden" id="longitude_destination" name="longitude_destination" value="{{ form.longitude_destination.value|default:'' }}">
+                        {% for e in form.adresse_destination.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Contact du destinataire</label>
+                        <input type="tel" name="Contact_destinateur" class="form-control"
+                               value="{{ form.Contact_destinateur.value|default:'' }}"
+                               placeholder="+225 XX XX XX XX XX">
+                    </div>
+                </div>
+
+                <!-- Colis -->
+                <div class="section-card">
+                    <div class="section-title">
+                        <i class="bi bi-box-seam"></i>
+                        Informations du colis
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Description <span class="required">*</span></label>
+                        <textarea name="description_colis" rows="3"
+                                  class="form-control {% if form.description_colis.errors %}is-invalid{% endif %}"
+                                  placeholder="Décrivez le contenu du colis..." required>{{ form.description_colis.value|default:'' }}</textarea>
+                        {% for e in form.description_colis.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label class="form-label">Poids (kg) <span class="required">*</span></label>
+                            <input type="number" name="poids_colis" step="0.01" min="0.01"
+                                   class="form-control {% if form.poids_colis.errors %}is-invalid{% endif %}"
+                                   value="{{ form.poids_colis.value|default:'' }}" placeholder="Ex: 2.5" required>
+                            {% for e in form.poids_colis.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">Valeur (FCFA) <span class="required">*</span></label>
+                            <input type="number" name="valeur_colis" step="0.01" min="0"
+                                   class="form-control {% if form.valeur_colis.errors %}is-invalid{% endif %}"
+                                   value="{{ form.valeur_colis.value|default:'' }}" placeholder="Ex: 50000" required>
+                            {% for e in form.valeur_colis.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <label class="form-label">Date de récupération <span class="required">*</span></label>
+                        <input type="datetime-local" name="date_recuperation" id="date_recuperation"
+                               class="form-control {% if form.date_recuperation.errors %}is-invalid{% endif %}"
+                               value="{{ form.date_recuperation.value|default:'' }}" required>
+                        {% for e in form.date_recuperation.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                    </div>
+
+                    <div class="mt-3">
+                        <label class="form-label">Type de course <span class="required">*</span></label>
+                        <div class="type-grid">
+                            <div class="type-option">
+                                <input type="radio" id="classique" name="type_course" value="CLASSIQUE"
+                                       {% if form.type_course.value != 'EXPRESSE' %}checked{% endif %}>
+                                <label for="classique" class="type-card">
+                                    <div class="type-icon">🚴</div>
+                                    <div class="type-title">Classique</div>
+                                    <div class="type-desc">Livraison standard</div>
+                                </label>
+                            </div>
+                            <div class="type-option">
+                                <input type="radio" id="expresse" name="type_course" value="EXPRESSE"
+                                       {% if form.type_course.value == 'EXPRESSE' %}checked{% endif %}>
+                                <label for="expresse" class="type-card">
+                                    <div class="type-icon">⚡</div>
+                                    <div class="type-title">Express</div>
+                                    <div class="type-desc">Livraison rapide</div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Photos -->
+                <div class="section-card">
+                    <div class="section-title">
+                        <i class="bi bi-camera"></i>
+                        Photos du colis
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label class="form-label">Photo 1</label>
+                            <input type="file" name="photo_colis1" class="form-control" accept="image/*">
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">Photo 2 <small class="text-muted">(optionnel)</small></label>
+                            <input type="file" name="photo_colis2" class="form-control" accept="image/*">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Instructions -->
+                <div class="section-card">
+                    <div class="section-title">
+                        <i class="bi bi-chat-left-text"></i>
+                        Instructions supplémentaires
+                    </div>
+                    <textarea name="instructions" rows="3" class="form-control"
+                              placeholder="Instructions spécifiques pour le livreur...">{{ form.instructions.value|default:'' }}</textarea>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    <i class="bi bi-rocket-takeoff-fill"></i>
+                    Envoyer ma demande
+                </button>
+
+                <div class="login-hint">
+                    Vous avez déjà un compte ?
+                    <a href="{% url 'login' %}">Connectez-vous</a> pour accéder à votre espace client.
+                </div>
+            </form>
+        </div>
+
+        <!-- ── Colonne carte ── -->
+        <div class="map-sticky">
+            <div class="section-card">
+                <div class="section-title">
+                    <i class="bi bi-map"></i>
+                    Carte de livraison
+                </div>
+                <div id="map"></div>
+                <div class="map-info">
+                    <div class="map-info-item">
+                        <i class="bi bi-geo-alt-fill"></i>
+                        <div>
+                            <div class="map-info-label">Départ</div>
+                            <div class="map-info-value" id="info-depart">Non défini</div>
+                        </div>
+                    </div>
+                    <div class="map-info-item">
+                        <i class="bi bi-geo-fill"></i>
+                        <div>
+                            <div class="map-info-label">Destination</div>
+                            <div class="map-info-value" id="info-destination">Non défini</div>
+                        </div>
+                    </div>
+                    <div class="map-info-item">
+                        <i class="bi bi-rulers"></i>
+                        <div>
+                            <div class="map-info-label">Distance estimée</div>
+                            <div class="map-info-value" id="info-distance">--</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap Icons + Mapbox -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+
+<script>
+    const LOCATIONIQ_KEY = 'pk.73485bb1846f5a96d8a0dd24fc100f13';
+    mapboxgl.accessToken = '{{ mapbox_token }}';
+
+    let map, departMarker, destinationMarker, searchTimeout;
+
+    map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v12',
+        center: [-4.0083, 5.3600],
+        zoom: 12
+    });
+    map.addControl(new mapboxgl.NavigationControl());
+
+    function createMarkerEl(type) {
+        const el = document.createElement('div');
+        Object.assign(el.style, {
+            width: '40px', height: '40px', borderRadius: '50%',
+            cursor: 'pointer', display: 'flex', alignItems: 'center',
+            justifyContent: 'center', fontSize: '22px',
+            boxShadow: '0 4px 10px rgba(0,0,0,.3)',
+            background: type === 'depart' ? '#000080' : '#FF6B00'
+        });
+        el.innerHTML = type === 'depart' ? '📍' : '🎯';
+        return el;
+    }
+
+    function getMyLocation(type) {
+        const alertEl = document.getElementById('locationAlert');
+        alertEl.className = 'alert-msg alert-info-msg';
+        alertEl.textContent = '📍 Recherche de votre position...';
+        if (!navigator.geolocation) return;
+        navigator.geolocation.getCurrentPosition(
+            pos => {
+                const { latitude: lat, longitude: lng } = pos.coords;
+                fetch(`https://us1.locationiq.com/v1/reverse.php?key=${LOCATIONIQ_KEY}&lat=${lat}&lon=${lng}&format=json`)
+                    .then(r => r.json())
+                    .then(data => {
+                        setAddress(type, lat, lng, data.display_name);
+                        alertEl.textContent = '✅ Position obtenue !';
+                        setTimeout(() => alertEl.style.display = 'none', 2500);
+                    });
+            },
+            () => {
+                alertEl.textContent = '❌ Impossible d\'obtenir la position';
+                setTimeout(() => alertEl.style.display = 'none', 2500);
+            }
+        );
+    }
+
+    function setAddress(type, lat, lng, label) {
+        document.getElementById(`adresse_${type}`).value = label;
+        document.getElementById(`latitude_${type}`).value = lat;
+        document.getElementById(`longitude_${type}`).value = lng;
+        document.getElementById(`info-${type}`).textContent = label;
+        updateMarker(type, lat, lng);
+    }
+
+    function setupSearch(type) {
+        const input = document.getElementById(`adresse_${type}`);
+        const results = document.getElementById(`search-results-${type}`);
+        input.addEventListener('input', function () {
+            clearTimeout(searchTimeout);
+            if (this.value.trim().length < 3) { results.style.display = 'none'; return; }
+            searchTimeout = setTimeout(() => {
+                fetch(`https://us1.locationiq.com/v1/autocomplete.php?key=${LOCATIONIQ_KEY}&q=${encodeURIComponent(this.value)}&limit=5&countrycodes=ci`)
+                    .then(r => r.json())
+                    .then(data => {
+                        results.innerHTML = '';
+                        if (!data.length) { results.style.display = 'none'; return; }
+                        data.forEach(item => {
+                            const div = document.createElement('div');
+                            div.className = 'search-result-item';
+                            div.textContent = item.display_name;
+                            div.onclick = () => {
+                                setAddress(type, item.lat, item.lon, item.display_name);
+                                results.style.display = 'none';
+                            };
+                            results.appendChild(div);
+                        });
+                        results.style.display = 'block';
+                    });
+            }, 450);
+        });
+        document.addEventListener('click', e => {
+            if (!input.contains(e.target) && !results.contains(e.target)) results.style.display = 'none';
+        });
+    }
+
+    setupSearch('depart');
+    setupSearch('destination');
+
+    function updateMarker(type, lat, lng) {
+        const lngLat = [lng, lat];
+        if (type === 'depart') {
+            if (departMarker) departMarker.remove();
+            departMarker = new mapboxgl.Marker({ element: createMarkerEl('depart'), draggable: true })
+                .setLngLat(lngLat).addTo(map);
+            departMarker.on('dragend', () => {
+                const p = departMarker.getLngLat();
+                reverseGeocode(p.lat, p.lng, 'depart');
+            });
+        } else {
+            if (destinationMarker) destinationMarker.remove();
+            destinationMarker = new mapboxgl.Marker({ element: createMarkerEl('destination'), draggable: true })
+                .setLngLat(lngLat).addTo(map);
+            destinationMarker.on('dragend', () => {
+                const p = destinationMarker.getLngLat();
+                reverseGeocode(p.lat, p.lng, 'destination');
+            });
+        }
+        if (departMarker && destinationMarker) {
+            const bounds = new mapboxgl.LngLatBounds();
+            bounds.extend(departMarker.getLngLat());
+            bounds.extend(destinationMarker.getLngLat());
+            map.fitBounds(bounds, { padding: 70 });
+            getRoute();
+        } else {
+            map.flyTo({ center: lngLat, zoom: 13 });
+        }
+    }
+
+    function reverseGeocode(lat, lng, type) {
+        fetch(`https://us1.locationiq.com/v1/reverse.php?key=${LOCATIONIQ_KEY}&lat=${lat}&lon=${lng}&format=json`)
+            .then(r => r.json())
+            .then(data => setAddress(type, lat, lng, data.display_name));
+    }
+
+    function haversine(from, to) {
+        const R = 6371, toRad = x => x * Math.PI / 180;
+        const dLat = toRad(to.lat - from.lat), dLon = toRad(to.lng - from.lng);
+        const a = Math.sin(dLat/2)**2 + Math.cos(toRad(from.lat)) * Math.cos(toRad(to.lat)) * Math.sin(dLon/2)**2;
+        return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))).toFixed(2);
+    }
+
+    function getRoute() {
+        if (!departMarker || !destinationMarker) return;
+        const s = departMarker.getLngLat(), e = destinationMarker.getLngLat();
+        const directKm = haversine(s, e);
+        fetch(`https://api.mapbox.com/directions/v5/mapbox/driving/${s.lng},${s.lat};${e.lng},${e.lat}?geometries=geojson&access_token=${mapboxgl.accessToken}`)
+            .then(r => r.json())
+            .then(data => {
+                const routeKm = data.routes?.[0] ? (data.routes[0].distance / 1000).toFixed(2) : null;
+                document.getElementById('info-distance').innerHTML = routeKm
+                    ? `<strong>${routeKm} km</strong> <small style="color:#9ca3af">(vol d'oiseau: ${directKm} km)</small>`
+                    : `${directKm} km (vol d'oiseau)`;
+                if (data.routes?.[0]) drawRoute(data.routes[0].geometry);
+            })
+            .catch(() => {
+                document.getElementById('info-distance').textContent = `${directKm} km (vol d'oiseau)`;
+            });
+    }
+
+    function drawRoute(geometry) {
+        if (map.getSource('route')) { map.removeLayer('route'); map.removeSource('route'); }
+        map.addSource('route', { type: 'geojson', data: { type: 'Feature', properties: {}, geometry } });
+        map.addLayer({ id: 'route', type: 'line', source: 'route',
+            layout: { 'line-join': 'round', 'line-cap': 'round' },
+            paint: { 'line-color': '#000080', 'line-width': 4, 'line-opacity': .8 }
+        });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        document.getElementById('date_recuperation').min = now.toISOString().slice(0, 16);
+    });
+</script>
+{% endblock %}
