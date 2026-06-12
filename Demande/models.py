@@ -407,11 +407,7 @@ class DCL(SafeDeleteModel, LifecycleModel):
             self.save()
 
     def calculate_distance(self):
-        """
-        Calcule la distance en kilomètres entre le port et la localité en utilisant l'API Mapbox
-        et met à jour le champ distance.
-        Retourne la distance calculée ou None en cas d'erreur.
-        """
+       
         import requests
         from django.conf import settings
         

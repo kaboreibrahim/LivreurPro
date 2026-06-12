@@ -51,6 +51,7 @@ def creer_demande_livraison(request):
     context = {
         'form': form,
         'mapbox_token': settings.MAPBOX_ACCESS_TOKEN,
+        'locationiq_key': settings.LOCATIONIQ_KEY,
     }
     
     return render(request, 'livraison/create.html', context)

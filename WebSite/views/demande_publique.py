@@ -39,6 +39,7 @@ def demande_publique(request):
     return render(request, 'pages/demande_publique.html', {
         'form': form,
         'mapbox_token': settings.MAPBOX_ACCESS_TOKEN,
+        'locationiq_key': settings.LOCATIONIQ_KEY,
     })
 
 

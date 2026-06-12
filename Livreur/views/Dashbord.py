@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.conf import settings
-from django.db.models import Sum
+from django.db.models import Sum, Count, Q
 from datetime import timedelta
 import json
 
@@ -15,45 +15,49 @@ def DashbordLivreur(request, *args, **kwargs):
     user = request.user
     livreur = getattr(user, 'livreur', None)
 
-    # ── Stats de base ──────────────────────────────────────────────────────────
     if livreur:
         base_qs = DCL.objects.filter(coursier=user)
-
-        a_accepter = base_qs.filter(statut='VALIDATION_LIVREUR').count()
-        en_cours = base_qs.filter(
-            statut__in=['LIVREUR_ROUTE', 'RECEPTION_COLIS', 'LIVRAISON_EN_ROUTE']
-        ).count()
-        terminees_total = base_qs.filter(statut='TERMINEE').count()
-
-        # Revenus du mois en cours
         debut_mois = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        revenus_mois = (
-            base_qs
-            .filter(statut='TERMINEE', date_livraison__gte=debut_mois)
-            .aggregate(total=Sum('cout_livraison'))['total'] or 0
-        )
-        terminees_mois = base_qs.filter(
-            statut='TERMINEE', date_livraison__gte=debut_mois
-        ).count()
 
-        # ── 5 dernières courses ────────────────────────────────────────────────
+        # ── Stats de base — 1 seule requête ────────────────────────────────
+        stats = base_qs.aggregate(
+            a_accepter=Count('id', filter=Q(statut='VALIDATION_LIVREUR')),
+            en_cours=Count('id', filter=Q(statut__in=['LIVREUR_ROUTE', 'RECEPTION_COLIS', 'LIVRAISON_EN_ROUTE'])),
+            terminees_total=Count('id', filter=Q(statut='TERMINEE')),
+            terminees_mois=Count('id', filter=Q(statut='TERMINEE', date_livraison__gte=debut_mois)),
+            revenus_mois=Sum('cout_livraison', filter=Q(statut='TERMINEE', date_livraison__gte=debut_mois)),
+        )
+        a_accepter      = stats['a_accepter']
+        en_cours        = stats['en_cours']
+        terminees_total = stats['terminees_total']
+        terminees_mois  = stats['terminees_mois']
+        revenus_mois    = stats['revenus_mois'] or 0
+
+        # ── 5 dernières courses ────────────────────────────────────────────
         dernieres_courses = base_qs.order_by('-date_demande')[:5]
 
-        # ── Graphique : évolution sur 7 jours ─────────────────────────────────
+        # ── Graphique 7 jours — 1 seule requête ───────────────────────────
         today = timezone.localdate()
-        chart_labels = []
-        chart_data = []
+        seven_days_ago = today - timedelta(days=6)
+        counts_par_jour = {
+            row['jour']: row['nb']
+            for row in base_qs
+            .filter(date_demande__date__gte=seven_days_ago)
+            .extra(select={'jour': "DATE(date_demande)"})
+            .values('jour')
+            .annotate(nb=Count('id'))
+        }
+        chart_labels, chart_data = [], []
         for i in range(6, -1, -1):
             day = today - timedelta(days=i)
             chart_labels.append(day.strftime('%d/%m'))
-            chart_data.append(
-                base_qs.filter(date_demande__date=day).count()
-            )
+            chart_data.append(counts_par_jour.get(day, 0))
     else:
         a_accepter = en_cours = terminees_total = terminees_mois = 0
         revenus_mois = 0
         dernieres_courses = DCL.objects.none()
-        chart_labels = [(timezone.localdate() - timedelta(days=i)).strftime('%d/%m') for i in range(6, -1, -1)]
+        today = timezone.localdate()
+        chart_labels = [(today - timedelta(days=i)).strftime('%d/%m') for i in range(6, -1, -1)]
         chart_data = [0] * 7
 
     context = {

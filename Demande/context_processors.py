@@ -4,13 +4,13 @@ def notifications_context(request):
         return {'unread_notifications_count': 0, 'recent_notifications': []}
 
     from Demande.models import Notification
+    # Une seule requête au lieu de deux
     recent = list(
         Notification.objects.filter(destinataire=request.user, lu=False)
         .select_related('demande')
         .order_by('-date_creation')[:8]
     )
-    count = Notification.objects.filter(destinataire=request.user, lu=False).count()
     return {
-        'unread_notifications_count': count,
+        'unread_notifications_count': len(recent),
         'recent_notifications': recent,
     }

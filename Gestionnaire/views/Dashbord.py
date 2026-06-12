@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
-from django.db.models import Sum
+from django.db.models import Sum, Count, Q
 from django.utils import timezone
 from datetime import timedelta
 import json
@@ -11,6 +11,8 @@ from Livreur.models import Livreur
 
 User = get_user_model()
 
+EN_COURS_STATUTS = ['VALIDATION_CLIENT', 'VALIDATION_LIVREUR', 'LIVREUR_ROUTE', 'RECEPTION_COLIS', 'LIVRAISON_EN_ROUTE']
+
 
 @login_required
 def DashbordGestionnaire(request):
@@ -18,34 +20,38 @@ def DashbordGestionnaire(request):
     today = now.date()
     first_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
-    # ── KPI globaux ──────────────────────────────────────────────────────────
-    total_demandes    = DCL.objects.count()
-    en_attente        = DCL.objects.filter(statut='EN_ATTENTE').count()
-    en_cours          = DCL.objects.filter(statut__in=[
-        'VALIDATION_CLIENT', 'VALIDATION_LIVREUR',
-        'LIVREUR_ROUTE', 'RECEPTION_COLIS', 'LIVRAISON_EN_ROUTE'
-    ]).count()
-    terminees         = DCL.objects.filter(statut='TERMINEE').count()
-    annulees          = DCL.objects.filter(statut='ANNULEE').count()
-    publiques         = DCL.objects.filter(client__isnull=True).count()
+    # ── KPI globaux — 1 seule requête avec agrégation ────────────────────────
+    kpi = DCL.objects.aggregate(
+        total_demandes=Count('id'),
+        en_attente=Count('id', filter=Q(statut='EN_ATTENTE')),
+        en_cours=Count('id', filter=Q(statut__in=EN_COURS_STATUTS)),
+        terminees=Count('id', filter=Q(statut='TERMINEE')),
+        annulees=Count('id', filter=Q(statut='ANNULEE')),
+        publiques=Count('id', filter=Q(client__isnull=True)),
+        revenus_total=Sum('cout_livraison', filter=Q(statut='TERMINEE')),
+        revenus_mois=Sum('cout_livraison', filter=Q(statut='TERMINEE', date_demande__gte=first_of_month)),
+    )
+    total_demandes = kpi['total_demandes']
+    en_attente     = kpi['en_attente']
+    en_cours       = kpi['en_cours']
+    terminees      = kpi['terminees']
+    annulees       = kpi['annulees']
+    publiques      = kpi['publiques']
+    revenus_total  = kpi['revenus_total'] or 0
+    revenus_mois   = kpi['revenus_mois'] or 0
 
-    # ── Livreurs ─────────────────────────────────────────────────────────────
-    total_livreurs    = Livreur.objects.count()
-    livreurs_libres   = Livreur.objects.filter(is_available='LIBRE').count()
-    livreurs_occupes  = Livreur.objects.filter(is_available='OCCUPER').count()
+    # ── Livreurs — 1 seule requête ───────────────────────────────────────────
+    livreur_kpi = Livreur.objects.aggregate(
+        total_livreurs=Count('id'),
+        livreurs_libres=Count('id', filter=Q(is_available='LIBRE')),
+        livreurs_occupes=Count('id', filter=Q(is_available='OCCUPER')),
+    )
+    total_livreurs   = livreur_kpi['total_livreurs']
+    livreurs_libres  = livreur_kpi['livreurs_libres']
+    livreurs_occupes = livreur_kpi['livreurs_occupes']
 
     # ── Clients ──────────────────────────────────────────────────────────────
-    total_clients     = User.objects.filter(role='client').count()
-
-    # ── Revenus ──────────────────────────────────────────────────────────────
-    revenus_mois = (
-        DCL.objects.filter(statut='TERMINEE', date_demande__gte=first_of_month)
-        .aggregate(total=Sum('cout_livraison'))['total'] or 0
-    )
-    revenus_total = (
-        DCL.objects.filter(statut='TERMINEE')
-        .aggregate(total=Sum('cout_livraison'))['total'] or 0
-    )
+    total_clients = User.objects.filter(role='client').count()
 
     # ── Dernières demandes (10) ───────────────────────────────────────────────
     dernieres_demandes = (
@@ -54,12 +60,21 @@ def DashbordGestionnaire(request):
         .order_by('-date_demande')[:10]
     )
 
-    # ── Graphique : demandes par jour (7 derniers jours) ─────────────────────
+    # ── Graphique 7 jours — 1 seule requête avec annotation ─────────────────
+    seven_days_ago = today - timedelta(days=6)
+    counts_par_jour = {
+        row['jour']: row['nb']
+        for row in DCL.objects
+        .filter(date_demande__date__gte=seven_days_ago)
+        .extra(select={'jour': "DATE(date_demande)"})
+        .values('jour')
+        .annotate(nb=Count('id'))
+    }
     chart_labels, chart_data = [], []
     for i in range(6, -1, -1):
         day = today - timedelta(days=i)
         chart_labels.append(day.strftime('%d/%m'))
-        chart_data.append(DCL.objects.filter(date_demande__date=day).count())
+        chart_data.append(counts_par_jour.get(day, 0))
 
     # ── Donut : répartition par statut ───────────────────────────────────────
     statut_labels = ['En attente', 'En cours', 'Terminées', 'Annulées']
@@ -68,24 +83,19 @@ def DashbordGestionnaire(request):
 
     context = {
         'now': now,
-        # KPI
         'total_demandes':   total_demandes,
         'en_attente':       en_attente,
         'en_cours':         en_cours,
         'terminees':        terminees,
         'annulees':         annulees,
         'publiques':        publiques,
-        # Livreurs
         'total_livreurs':   total_livreurs,
         'livreurs_libres':  livreurs_libres,
         'livreurs_occupes': livreurs_occupes,
-        # Clients / revenus
         'total_clients':    total_clients,
         'revenus_mois':     revenus_mois,
         'revenus_total':    revenus_total,
-        # Table
         'dernieres_demandes': dernieres_demandes,
-        # Charts (JSON-safe)
         'chart_labels':   json.dumps(chart_labels),
         'chart_data':     json.dumps(chart_data),
         'statut_labels':  json.dumps(statut_labels),

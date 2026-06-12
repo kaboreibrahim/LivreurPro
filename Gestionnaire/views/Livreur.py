@@ -1,7 +1,7 @@
 from django.views.generic import ListView
 from Livreur.models import Livreur
 from django.http import JsonResponse
- 
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.db.models import Case, When, IntegerField, Q
@@ -40,3 +40,8 @@ class LivreurDisponible(ListView):
                 output_field=IntegerField(),
             )
         ).order_by('type_order')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['mapbox_token'] = getattr(settings, 'MAPBOX_ACCESS_TOKEN', '')
+        return context

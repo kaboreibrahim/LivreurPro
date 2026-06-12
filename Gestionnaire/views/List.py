@@ -1,11 +1,13 @@
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import ListView
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.contrib import messages
 from django.utils import timezone
 from Demande.models import DCL
 from Livreur.models import Livreur
 from django.http import JsonResponse
+
+EN_COURS_STATUTS = ['VALIDATION_CLIENT', 'VALIDATION_LIVREUR', 'LIVREUR_ROUTE', 'RECEPTION_COLIS', 'LIVRAISON_EN_ROUTE']
 
  
 
@@ -65,14 +67,16 @@ class ListeDemandesView(ListView):
         context['statut_choices'] = DCL.STATUT_CHOICES
         context['type_course_choices'] = DCL.TYPE_COURSE_CHOICES
 
-        context['total_demandes'] = DCL.objects.count()
-        context['demandes_en_attente'] = DCL.objects.filter(statut='EN_ATTENTE').count()
-        context['demandes_en_cours'] = DCL.objects.filter(
-            statut__in=['VALIDATION_CLIENT', 'VALIDATION_LIVREUR', 'LIVREUR_ROUTE', 'RECEPTION_COLIS', 'LIVRAISON_EN_ROUTE']
-        ).count()
-        context['demandes_terminees'] = DCL.objects.filter(statut='TERMINEE').count()
-        context['demandes_annulees'] = DCL.objects.filter(statut='ANNULEE').count()
-        context['demandes_publiques'] = DCL.objects.filter(client__isnull=True).count()
+        # 1 seule requête pour tous les compteurs
+        kpi = DCL.objects.aggregate(
+            total_demandes=Count('id'),
+            demandes_en_attente=Count('id', filter=Q(statut='EN_ATTENTE')),
+            demandes_en_cours=Count('id', filter=Q(statut__in=EN_COURS_STATUTS)),
+            demandes_terminees=Count('id', filter=Q(statut='TERMINEE')),
+            demandes_annulees=Count('id', filter=Q(statut='ANNULEE')),
+            demandes_publiques=Count('id', filter=Q(client__isnull=True)),
+        )
+        context.update(kpi)
 
         # Livreurs disponibles pour le modal d'assignation rapide
         context['livreurs_disponibles'] = (

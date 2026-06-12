@@ -904,11 +904,11 @@
         </div>
     </div>
 
-    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script>
-        const API_KEY = 'pk.73485bb1846f5a96d8a0dd24fc100f13';
-        mapboxgl.accessToken = 'pk.eyJ1IjoiaWJyYWsiLCJhIjoiY21oYnV4M3M5MDZqMTJyc2E0enFpbTlwaCJ9.OH_RYh--XO3vn363pKRlRg';
+        const API_KEY = '{{ locationiq_key }}';
+        mapboxgl.accessToken = '{{ mapbox_token }}';
 
         let map, departMarker, destinationMarker;
         let searchTimeout;

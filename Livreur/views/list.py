@@ -1,6 +1,6 @@
 from django.views.generic import ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Q
+from django.db.models import Q, Count
 from Demande.models import DCL
 from Livreur.models import Livreur
 from django.utils import timezone
@@ -60,20 +60,14 @@ class DemandeLivreurListView(LoginRequiredMixin, ListView):
         context['type_course'] = DCL.TYPE_COURSE_CHOICES
         context['statuts_demande'] = DCL.STATUT_CHOICES
         
-        # Statistiques pour le tableau de bord
+        # Statistiques — 1 seule requête
         if hasattr(self.request.user, 'livreur'):
             livreur_user = self.request.user.livreur.user
-            context['total_demandes'] = DCL.objects.filter(
-                coursier=livreur_user,
-                statut='VALIDATION_LIVREUR'
-            ).count()
-            context['demandes_en_cours'] = DCL.objects.filter(
-                coursier=livreur_user,
-                statut__in=['LIVRAISON_EN_ROUTE', 'RECEPTION_COLIS','LIVREUR_ROUTE',]
-            ).count()
-            context['demandes_terminees'] = DCL.objects.filter(
-                coursier=livreur_user,
-                statut='TERMINEE'
-            ).count()
+            stats = DCL.objects.filter(coursier=livreur_user).aggregate(
+                total_demandes=Count('id', filter=Q(statut='VALIDATION_LIVREUR')),
+                demandes_en_cours=Count('id', filter=Q(statut__in=['LIVRAISON_EN_ROUTE', 'RECEPTION_COLIS', 'LIVREUR_ROUTE'])),
+                demandes_terminees=Count('id', filter=Q(statut='TERMINEE')),
+            )
+            context.update(stats)
         
         return context

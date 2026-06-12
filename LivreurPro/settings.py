@@ -17,21 +17,16 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 from django.contrib.messages import constants as messages
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+from dotenv import load_dotenv
 from django.utils.translation import gettext_lazy as _
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
+# Charge le .env depuis la racine du projet
+BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / '.env')
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-fy9_bg)8bjt-r=*v^v(q-#_26avm@hf@u%cmx5i398$w&x4_m)"
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG =False
-
-ALLOWED_HOSTS = ['*']
+SECRET_KEY = os.environ.get('SECRET_KEY', 'changez-moi-en-production')
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost').split(',')
 
 
 # Application definition
@@ -107,33 +102,15 @@ WSGI_APPLICATION = "LivreurPro.wsgi.application"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'LivreurPro',
-#         'USER': 'postgres',
-#         'PASSWORD': '1234',
-#         'HOST': 'localhost',  # Essayez 'localhost' au lieu de '127.0.0.1'
-#         'PORT': '5432',
-#         'OPTIONS': {
-#             'client_encoding': 'UTF8',
-#         },
-#     }
-# }
-
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'c2712705c_LivreurPro',  # Nom de votre base de données
-        'HOST': '127.0.0.1',            # Adresse du serveur MySQL, ici localhost
-        'USER': 'c2712705c_admin',                 # Nom d'utilisateur MySQL
-        'PASSWORD': 'SD]g6NA;as^qe.f',                 # Mot de passe MySQL (à remplir si nécessaire)
-        'PORT': 3306,                   # Port MySQL, par défaut 3306
-        'OPTIONS': {
-            'sql_mode': 'STRICT_ALL_TABLES',  # Mode SQL strict pour respecter les bonnes pratiques
-        },
-    },
+        'ENGINE':   os.environ.get('DB_ENGINE'),
+        'NAME':     os.environ.get('DB_NAME'),
+        'USER':     os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
+        'HOST':     os.environ.get('DB_HOST'),
+        'PORT':     os.environ.get('DB_PORT'),
+    }
 }
 
 # Password validation
@@ -199,6 +176,9 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'medias')
 # Configuration Mapbox
 MAPBOX_ACCESS_TOKEN = os.environ.get('MAPBOX_ACCESS_TOKEN', '')
 
+# Configuration LocationIQ (autocomplétion adresses)
+LOCATIONIQ_KEY = os.environ.get('LOCATIONIQ_KEY', '')
+
 
 
 # Default primary key field type
@@ -213,12 +193,10 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'empotageoilsofafrica@gmail.com'  # Votre adresse Gmail
-EMAIL_HOST_PASSWORD = 'vlym rhmk nmht rhge'  # Mot de passe d'application Gmail
-
-# Paramètres supplémentaires
-DEFAULT_FROM_EMAIL = 'empotageoilsofafrica@gmail.com'  # Email de l'expéditeur par défaut
-SERVER_EMAIL = 'empotageoilsofafrica@gmail.com'  # Email utilisé pour les erreurs
+EMAIL_HOST_USER     = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL  = os.environ.get('EMAIL_HOST_USER', '')
+SERVER_EMAIL        = os.environ.get('EMAIL_HOST_USER', '')
 
 MESSAGE_TAGS = {
     messages.DEBUG: 'alert-secondary',

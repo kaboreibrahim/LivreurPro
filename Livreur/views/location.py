@@ -1,14 +1,12 @@
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
-from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from ..models import Livreur
 
 
 @login_required
 @require_http_methods(["GET"])
-@csrf_exempt
 def update_livreur_location(request):
     user = request.user
     latitude = request.GET.get('latitude')

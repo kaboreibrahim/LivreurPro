@@ -513,10 +513,10 @@
 <!-- Bootstrap Icons + Mapbox -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css" rel="stylesheet">
-<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>
 
 <script>
-    const LOCATIONIQ_KEY = 'pk.73485bb1846f5a96d8a0dd24fc100f13';
+    const LOCATIONIQ_KEY = '{{ locationiq_key }}';
     mapboxgl.accessToken = '{{ mapbox_token }}';
 
     let map, departMarker, destinationMarker, searchTimeout;
