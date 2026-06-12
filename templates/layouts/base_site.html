@@ -7,8 +7,8 @@
     <meta charset="utf-8">
     <title>{% block title %}Mon Livreur Pro - Service de Livraison Professionnel à Grand-Bassam & Abidjan{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="{% block meta_description %}Service de livraison professionnel pour entreprises et e-commerce à Grand-Bassam et Abidjan, Côte d’Ivoire. Livraison express, rapide et fiable de colis, documents administratifs et marchandises.{% endblock %}">
-    <meta name="keywords" content="{% block meta_keywords %}Mon Livreur Pro, livraison, coursier, transport rapide, colis express, service fiable, logistique urbaine, livraison à domicile, e-commerce, messagerie, suivi colis, transporteur, Grand-Bassam, Abidjan, Côte d’Ivoire, Modeste, Cité AGD, livraison sécurisée, ponctualité, tarif abordable{% endblock %}">
+    <meta name="description" content="{% block meta_description %}Service de livraison professionnel pour entreprises et e-commerce à Grand-Bassam et Abidjan, Côte d'Ivoire. Livraison express, rapide et fiable de colis, documents administratifs et marchandises.{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}Mon Livreur Pro, livraison, coursier, transport rapide, colis express, service fiable, logistique urbaine, livraison à domicile, e-commerce, messagerie, suivi colis, transporteur, Grand-Bassam, Abidjan, Côte d'Ivoire, Modeste, Cité AGD, livraison sécurisée, ponctualité, tarif abordable{% endblock %}">
     <meta name="author" content="Ibrak Dev">
     <meta name="robots" content="{% block meta_robots %}index, follow{% endblock %}">
 
@@ -19,16 +19,16 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
     <meta property="og:title" content="{% block og_title %}Mon Livreur Pro - Service de Livraison Professionnel{% endblock %}">
-    <meta property="og:description" content="{% block og_description %}Service de livraison professionnel pour entreprises et e-commerce à Grand-Bassam et Abidjan, Côte d’Ivoire.{% endblock %}">
-    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static ‘site/img/logo.png’ %}">
+    <meta property="og:description" content="{% block og_description %}Service de livraison professionnel pour entreprises et e-commerce à Grand-Bassam et Abidjan, Côte d'Ivoire.{% endblock %}">
+    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'site/img/logo.png' %}">
     <meta property="og:locale" content="fr_CI">
     <meta property="og:site_name" content="Mon Livreur Pro">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{% block twitter_title %}Mon Livreur Pro - Service de Livraison Professionnel{% endblock %}">
-    <meta name="twitter:description" content="{% block twitter_description %}Service de livraison professionnel pour entreprises et e-commerce à Grand-Bassam et Abidjan, Côte d’Ivoire.{% endblock %}">
-    <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% static ‘site/img/logo.png’ %}">
+    <meta name="twitter:description" content="{% block twitter_description %}Service de livraison professionnel pour entreprises et e-commerce à Grand-Bassam et Abidjan, Côte d'Ivoire.{% endblock %}">
+    <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'site/img/logo.png' %}">
 
     <!-- JSON-LD Structured Data -->
     {% block json_ld %}
@@ -37,7 +37,7 @@
       "@context": "https://schema.org",
       "@type": "LocalBusiness",
       "name": "Mon Livreur Pro",
-      "description": "Service de livraison professionnel à Grand-Bassam et Abidjan, Côte d’Ivoire. Livraison express de colis, documents et marchandises pour entreprises et e-commerce.",
+      "description": "Service de livraison professionnel à Grand-Bassam et Abidjan, Côte d'Ivoire. Livraison express de colis, documents et marchandises pour entreprises et e-commerce.",
       "url": "{{ request.scheme }}://{{ request.get_host }}/accueil/",
       "telephone": "+2250150200509",
       "email": "infos@mon-livreur-pro.com",
@@ -52,7 +52,7 @@
         {"@type": "City", "name": "Grand-Bassam"},
         {"@type": "City", "name": "Abidjan"}
       ],
-      "image": "{{ request.scheme }}://{{ request.get_host }}{% static ‘site/img/logo.png’ %}",
+      "image": "{{ request.scheme }}://{{ request.get_host }}{% static 'site/img/logo.png' %}",
       "priceRange": "$$",
       "openingHours": "Mo-Sa 07:00-20:00",
       "sameAs": []
