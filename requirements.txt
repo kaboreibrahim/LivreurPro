@@ -1,5 +1,7 @@
 # --- Django ---
 Django==4.2.25
+python-dotenv==1.0.1
+mysqlclient==2.2.4
 asgiref==3.8.1
 sqlparse==0.5.3
 
