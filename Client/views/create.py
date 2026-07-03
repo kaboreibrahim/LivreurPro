@@ -20,23 +20,22 @@ def creer_demande_livraison(request):
                 demande = form.save(commit=False)
                 demande.client = request.user
                 demande.save()
-                
-                # Calculer la distance
-                demande.calculate_distance()
-                
-                messages.success(
-                    request, 
-                    f'Votre demande {demande.ref} a été créée avec succès !'
-                )
-                return redirect('Client:detail_demande', pk=demande.id)
-                
             except Exception as e:
-                # En cas d'erreur, afficher le message d'erreur
                 messages.error(
                     request,
                     f'Une erreur est survenue lors de la création de la demande : {str(e)}'
                 )
-                print(f"Erreur lors de la sauvegarde : {str(e)}")
+            else:
+                # Calcul de distance hors try principal pour ne pas annuler la demande
+                try:
+                    demande.calculate_distance()
+                except Exception:
+                    pass
+                messages.success(
+                    request,
+                    f'Votre demande {demande.ref} a été créée avec succès !'
+                )
+                return redirect('Client:detail_demande', pk=demande.id)
         else:
             # Afficher les erreurs de formulaire
             messages.error(

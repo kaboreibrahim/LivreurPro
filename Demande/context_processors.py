@@ -1,6 +1,6 @@
 def notifications_context(request):
     """Injecte le nombre de notifications non lues et les 8 dernières dans tous les templates."""
-    if not request.user.is_authenticated:
+    if not hasattr(request, 'user') or not request.user.is_authenticated:
         return {'unread_notifications_count': 0, 'recent_notifications': []}
 
     from Demande.models import Notification

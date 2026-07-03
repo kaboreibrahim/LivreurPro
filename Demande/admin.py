@@ -59,7 +59,7 @@ class DCLAdmin(admin.ModelAdmin):
             )
         }),
         ('Colis', {
-            'fields': ('description_colis', 'poids_colis', 'valeur_colis', 'photo_colis1', 'photo_colis2', 'preview_photo')
+            'fields': ('description_colis', 'unite_poids', 'poids_colis', 'valeur_colis', 'photo_colis1', 'photo_colis2', 'preview_photo')
         }),
         ('Logistique', {
             'fields': ('type_course', 'distance', 'cout_livraison', 'date_recuperation', 'instructions')

@@ -758,11 +758,21 @@
                         
                         <div class="form-group">
                             <label class="form-label">
-                                Poids (kg)
+                                Unité
                                 <span class="required">*</span>
                             </label>
-                            <input type="number" class="form-control" id="poids_colis" name="poids_colis" 
-                                   step="0.01" min="0.01" placeholder="Ex: 2.5" required>
+                            <select class="form-control" id="unite_poids" name="unite_poids">
+                                <option value="Kg" selected>Kg (Kilogramme)</option>
+                                <option value="T">T (Tonne)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                Poids
+                                <span class="required">*</span>
+                            </label>
+                            <input type="number" class="form-control" id="poids_colis" name="poids_colis"
+                                   step="0.01" min="0.01" placeholder="Ex: 25" required>
                         </div>
                         
                         <div class="form-group">

@@ -295,7 +295,7 @@ body { background: var(--bg); }
             <!-- Info chips -->
             <div class="chips-row">
                 {% if commande.poids_colis %}
-                <span class="chip-info"><i class="bi bi-box-seam"></i>{{ commande.poids_colis }} kg</span>
+                <span class="chip-info"><i class="bi bi-box-seam"></i>{{ commande.unite_poids }} — {{ commande.poids_colis }}</span>
                 {% endif %}
                 {% if commande.cout_livraison %}
                 <span class="chip-info chip-success"><i class="bi bi-tag-fill"></i>{{ commande.cout_livraison|floatformat:0 }} FCFA</span>

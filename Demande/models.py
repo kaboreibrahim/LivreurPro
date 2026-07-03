@@ -92,13 +92,23 @@ class DCL(SafeDeleteModel, LifecycleModel):
 
     # Informations du colis
     description_colis = models.TextField(
-        verbose_name="Description du colis", 
+        verbose_name="Description du colis",
         help_text="Donnez un aperçu détaillé du contenu du colis"
     )
+    UNITE_POIDS_CHOICES = [
+        ('Kg', 'Kg (Kilogramme)'),
+        ('T', 'T (Tonne)'),
+    ]
+    unite_poids = models.CharField(
+        max_length=2,
+        choices=UNITE_POIDS_CHOICES,
+        default='Kg',
+        verbose_name="Unité de poids",
+    )
     poids_colis = models.DecimalField(
-        max_digits=5, 
-        decimal_places=2, 
-        verbose_name="Poids du colis (kg)",
+        max_digits=8,
+        decimal_places=2,
+        verbose_name="Poids du colis",
         validators=[MinValueValidator(0.01, "Le poids doit être supérieur à 0")]
     )
     valeur_colis = models.DecimalField(
@@ -245,6 +255,7 @@ class DCL(SafeDeleteModel, LifecycleModel):
             'Longitude destination': self.longitude_destination,
             'Contact destinataire': self.Contact_destinateur,
             'Description colis': self.description_colis,
+            'Unité poids': self.unite_poids,
             'Poids colis': self.poids_colis,
             'Valeur colis': self.valeur_colis,
             'Date demande': self.date_demande.strftime('%Y-%m-%d %H:%M:%S'),

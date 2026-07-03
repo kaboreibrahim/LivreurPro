@@ -22,12 +22,16 @@ def demande_publique(request):
             try:
                 with transaction.atomic():
                     demande = form.save_as_guest()
-                    demande.calculate_distance()
                 messages.success(
                     request,
                     f'Votre demande {demande.ref} a été soumise avec succès ! '
                     'Nous vous contacterons très prochainement.'
                 )
+                # Calcul de distance hors transaction pour ne pas annuler la demande en cas d'erreur réseau
+                try:
+                    demande.calculate_distance()
+                except Exception:
+                    pass
                 return redirect('demande_confirmation', ref=demande.ref)
             except Exception as e:
                 messages.error(request, f'Une erreur est survenue : {str(e)}')

@@ -14,6 +14,7 @@ class DCLForm(forms.ModelForm):
             'longitude_destination',
             'Contact_destinateur',
             'description_colis',
+            'unite_poids',
             'poids_colis',
             'valeur_colis',
             'date_recuperation',
@@ -48,9 +49,12 @@ class DCLForm(forms.ModelForm):
                 'rows': 4,
                 'placeholder': 'Décrivez le contenu du colis...',
             }),
+            'unite_poids': forms.Select(attrs={
+                'class': 'form-control',
+            }),
             'poids_colis': forms.NumberInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Poids en kg',
+                'placeholder': 'Ex: 25',
                 'step': '0.01',
                 'min': '0.01',
             }),

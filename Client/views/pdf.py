@@ -165,7 +165,7 @@ def _build_pdf(demande):
     # ─── Colis ───────────────────────────────────────────────────────────────
     section_table('Colis', [
         ('Description', demande.description_colis),
-        ('Poids', f"{demande.poids_colis} kg"),
+        ('Poids', f"{demande.poids_colis} {demande.unite_poids}"),
         ('Type de course', demande.get_type_course_display()),
         ('Date de récupération', demande.date_recuperation.strftime('%d/%m/%Y à %H:%M')),
     ])

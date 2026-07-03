@@ -20,13 +20,12 @@
                         <li class="breadcrumb-item text-white active" aria-current="page">Demande de coursier</li>
                     </ol>
                 </nav>
-                {% if not request.user.is_authenticated %}
+                
                 <div class="mt-4">
                     <a href="{% url 'login' %}" class="btn btn-light fw-semibold px-4 py-2" style="border-radius:10px; color:#000080;">
                         <i class="bi bi-person-circle me-2"></i>Vous avez un compte ? Se connecter
                     </a>
                 </div>
-                {% endif %}
             </div>
             <div class="col-lg-6 align-self-end text-center text-lg-end">
                 <img class="img-fluid" src="{% static 'site/img/delivery-hero-img.png' %}" alt="" style="max-height: 280px;">
@@ -386,10 +385,18 @@
 
                     <div class="row g-3">
                         <div class="col-sm-6">
-                            <label class="form-label">Poids (kg) <span class="required">*</span></label>
+                            <label class="form-label">Unité <span class="required">*</span></label>
+                            <select name="unite_poids" class="form-control {% if form.unite_poids.errors %}is-invalid{% endif %}">
+                                <option value="Kg" {% if form.unite_poids.value|default:'Kg' == 'Kg' %}selected{% endif %}>Kg (Kilogramme)</option>
+                                <option value="T" {% if form.unite_poids.value == 'T' %}selected{% endif %}>T (Tonne)</option>
+                            </select>
+                            {% for e in form.unite_poids.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">Poids <span class="required">*</span></label>
                             <input type="number" name="poids_colis" step="0.01" min="0.01"
                                    class="form-control {% if form.poids_colis.errors %}is-invalid{% endif %}"
-                                   value="{{ form.poids_colis.value|default:'' }}" placeholder="Ex: 2.5" required>
+                                   value="{{ form.poids_colis.value|default:'' }}" placeholder="Ex: 25" required>
                             {% for e in form.poids_colis.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
                         </div>
                         <div class="col-sm-6">
