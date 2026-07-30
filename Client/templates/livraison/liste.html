@@ -1,913 +1,816 @@
 {% extends 'base.html' %}
-{% block page_title %}Liste des demandes de livraison{% endblock %}
-{% block content %}
 {% load static %}
+{% block page_title %}Mes Courses — Mon Livreur Pro{% endblock %}
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+<style>
+:root {
+    --primary: #0d2559;
+    --primary-dark: #0a1f47;
+    --secondary: #ff8000;
+    --secondary-light: rgba(255,128,0,0.12);
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --info: #3b82f6;
+    --surface: #ffffff;
+    --bg: #f7f9fc;
+    --text: #111827;
+    --text-muted: #6b7280;
+    --border: #e5e7eb;
+    --card-shadow: 0 4px 20px rgba(13,37,89,0.07);
+    --card-hover: 0 10px 36px rgba(13,37,89,0.14);
+}
 
-    <style>
-        :root {
-            --primary-color: #4f46e5;
-            --secondary-color: #6366f1;
-            --success-color: #10b981;
-            --warning-color: #f59e0b;
-            --danger-color: #ef4444;
-            --info-color: #3b82f6;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
-            min-height: 100vh;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        }
-        
-        .page-header {
-            background: white;
-            border-radius: 16px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-        }
-        
-        .page-title {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #1e293b;
-            margin: 0;
-        }
-        
-        .page-subtitle {
-            color: #64748b;
-            margin-top: 0.5rem;
-            font-size: 0.95rem;
-        }
-        
-        .btn-primary-custom {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 12px;
-            font-weight: 600;
-            color: white;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-        }
-        
-        .btn-primary-custom:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
-        }
-        
-        /* Filtres */
-        .filters-section {
-            background: white;
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-        }
-        
-        .filter-group {
-            margin-bottom: 0;
-        }
-        
-        .filter-btn {
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            border: 2px solid #e2e8f0;
-            background: white;
-            color: #64748b;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            margin-right: 0.5rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        .filter-btn:hover {
-            border-color: var(--primary-color);
-            color: var(--primary-color);
-        }
-        
-        .filter-btn.active {
-            background: var(--primary-color);
-            border-color: var(--primary-color);
-            color: white;
-        }
-        
-        .search-box {
-            position: relative;
-        }
-        
-        .search-box input {
-            padding: 0.75rem 1rem 0.75rem 2.75rem;
-            border-radius: 12px;
-            border: 2px solid #e2e8f0;
-            transition: all 0.2s ease;
-            width: 100%;
-        }
-        
-        .search-box input:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-            outline: none;
-        }
-        
-        .search-box i {
-            position: absolute;
-            left: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #94a3b8;
-        }
-        
-        /* Cartes de demandes */
-        .demande-card {
-            background: white;
-            border-radius: 16px;
-            padding: 1.5rem;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-            cursor: pointer;
-            height: 100%;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .demande-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-            transform: scaleX(0);
-            transition: transform 0.3s ease;
-        }
-        
-        .demande-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 28px rgba(0,0,0,0.12);
-            border-color: var(--primary-color);
-        }
-        
-        .demande-card:hover::before {
-            transform: scaleX(1);
-        }
-        
-        .card-header-section {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 1.5rem;
-        }
-        
-        .demande-ref {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: #1e293b;
-            margin: 0;
-        }
-        
-        .status-badge {
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .status-EN_ATTENTE {
-            background: #fef3c7;
-            color: #92400e;
-        }
-        
-        .status-VALIDATION_CLIENT {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-        
-        .status-VALIDATION_LIVREUR {
-            background: #e0e7ff;
-            color: #4338ca;
-        }
-        
-        .status-LIVREUR_ROUTE {
-            background: #fed7aa;
-            color: #9a3412;
-        }
-        
-        .status-RECEPTION_COLIS {
-            background: #e9d5ff;
-            color: #6b21a8;
-        }
-        
-        .status-LIVRAISON_EN_ROUTE {
-            background: #fce7f3;
-            color: #9f1239;
-        }
-        
-        .status-TERMINEE {
-            background: #d1fae5;
-            color: #065f46;
-        }
-        
-        .status-ANNULEE {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-        
-        .location-section {
-            background: #f8fafc;
-            border-radius: 12px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-        }
-        
-        .location-item {
-            display: flex;
-            align-items: start;
-            gap: 0.75rem;
-            margin-bottom: 0.75rem;
-        }
-        
-        .location-item:last-child {
-            margin-bottom: 0;
-        }
-        
-        .location-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            font-size: 1rem;
-        }
-        
-        .location-icon.departure {
-            background: #dcfce7;
-            color: #166534;
-        }
-        
-        .location-icon.destination {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-        
-        .location-text {
-            flex: 1;
-        }
-        
-        .location-label {
-            font-size: 0.75rem;
-            color: #64748b;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .location-address {
-            color: #1e293b;
-            font-weight: 500;
-            margin: 0.25rem 0 0 0;
-            font-size: 0.9rem;
-        }
-        
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-            margin: 1rem 0;
-        }
-        
-        .info-item {
-            background: #f8fafc;
-            padding: 0.75rem;
-            border-radius: 8px;
-        }
-        
-        .info-label {
-            font-size: 0.75rem;
-            color: #64748b;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 0.25rem;
-        }
-        
-        .info-value {
-            color: #1e293b;
-            font-weight: 700;
-            font-size: 0.95rem;
-            margin: 0;
-        }
-        
-        .cost-section {
-            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-            padding: 1rem;
-            border-radius: 12px;
-            margin: 1rem 0;
-            text-align: center;
-        }
-        
-        .cost-label {
-            font-size: 0.75rem;
-            color: #0369a1;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .cost-value {
-            color: #0c4a6e;
-            font-weight: 800;
-            font-size: 1.5rem;
-            margin: 0.25rem 0 0 0;
-        }
-        
-        .card-footer-section {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: 1rem;
-            border-top: 2px solid #f1f5f9;
-        }
-        
-        .date-info {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: #64748b;
-            font-size: 0.85rem;
-        }
-        
-        .view-details {
-            color: var(--primary-color);
-            font-weight: 600;
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-        
-        /* Empty state */
-        .empty-state {
-            background: white;
-            border-radius: 16px;
-            padding: 4rem 2rem;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-        }
-        
-        .empty-state-icon {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-        }
-        
-        .empty-state h3 {
-            color: #1e293b;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-        
-        .empty-state p {
-            color: #64748b;
-            margin-bottom: 2rem;
-        }
-        
-        /* Stats cards */
-        .stats-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-        
-        .stat-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-        }
-        
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 800;
-            color: #1e293b;
-            margin: 0.5rem 0;
-        }
-        
-        .stat-label {
-            color: #64748b;
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-        
-        /* Responsive Mobile First */
-        @media (max-width: 768px) {
-            body {
-                background: white;
-            }
-            
-            .container {
-                padding: 0;
-            }
-            
-            .page-header {
-                padding: 1rem;
-                border-radius: 0 0 24px 24px;
-                margin-bottom: 1rem;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            }
-            
-            .page-title {
-                font-size: 1.5rem;
-            }
-            
-            .page-subtitle {
-                font-size: 0.85rem;
-            }
-            
-            .btn-primary-custom {
-                width: 100%;
-                padding: 1rem;
-                font-size: 1rem;
-                margin-top: 1rem;
-            }
-            
-            /* Stats en carousel horizontal */
-            .stats-cards {
-                display: flex;
-                overflow-x: auto;
-                gap: 0.75rem;
-                padding: 0 1rem;
-                margin-bottom: 1rem;
-                scroll-snap-type: x mandatory;
-                -webkit-overflow-scrolling: touch;
-            }
-            
-            .stats-cards::-webkit-scrollbar {
-                display: none;
-            }
-            
-            .stat-card {
-                min-width: 140px;
-                padding: 1rem;
-                scroll-snap-align: start;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            }
-            
-            .stat-value {
-                font-size: 1.75rem;
-            }
-            
-            .stat-label {
-                font-size: 0.8rem;
-            }
-            
-            /* Filtres adaptés mobile */
-            .filters-section {
-                padding: 1rem;
-                border-radius: 0;
-                margin-bottom: 0;
-                position: sticky;
-                top: 0;
-                z-index: 100;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            }
-            
-            .filter-group {
-                display: flex;
-                overflow-x: auto;
-                gap: 0.5rem;
-                padding-bottom: 0.5rem;
-                scroll-snap-type: x mandatory;
-                -webkit-overflow-scrolling: touch;
-            }
-            
-            .filter-group::-webkit-scrollbar {
-                display: none;
-            }
-            
-            .filter-btn {
-                white-space: nowrap;
-                margin: 0;
-                padding: 0.65rem 1rem;
-                font-size: 0.85rem;
-                scroll-snap-align: start;
-                flex-shrink: 0;
-            }
-            
-            .search-box {
-                margin-top: 0.75rem;
-            }
-            
-            .search-box input {
-                padding: 0.85rem 1rem 0.85rem 2.75rem;
-                font-size: 0.95rem;
-            }
-            
-            /* Cards optimisées mobile */
-            .row {
-                margin: 0;
-            }
-            
-            .demande-item {
-                padding: 0 0.75rem 0.75rem 0.75rem;
-            }
-            
-            .demande-card {
-                padding: 1.25rem;
-                border-radius: 20px;
-                box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-            }
-            
-            .demande-card:active {
-                transform: scale(0.98);
-            }
-            
-            .card-header-section {
-                margin-bottom: 1.25rem;
-                flex-direction: column;
-                gap: 0.75rem;
-                align-items: flex-start;
-            }
-            
-            .demande-ref {
-                font-size: 1.15rem;
-            }
-            
-            .status-badge {
-                padding: 0.5rem 1rem;
-                font-size: 0.7rem;
-                align-self: flex-start;
-            }
-            
-            .location-section {
-                padding: 1rem;
-                margin-bottom: 1rem;
-            }
-            
-            .location-item {
-                margin-bottom: 1rem;
-            }
-            
-            .location-icon {
-                width: 36px;
-                height: 36px;
-            }
-            
-            .location-label {
-                font-size: 0.7rem;
-            }
-            
-            .location-address {
-                font-size: 0.95rem;
-                line-height: 1.4;
-            }
-            
-            .info-grid {
-                grid-template-columns: 1fr 1fr;
-                gap: 0.75rem;
-            }
-            
-            .info-item {
-                padding: 0.85rem;
-            }
-            
-            .info-label {
-                font-size: 0.7rem;
-            }
-            
-            .info-value {
-                font-size: 1rem;
-            }
-            
-            .cost-section {
-                padding: 1rem;
-                margin: 1rem 0;
-            }
-            
-            .cost-label {
-                font-size: 0.7rem;
-            }
-            
-            .cost-value {
-                font-size: 1.75rem;
-            }
-            
-            .card-footer-section {
-                flex-direction: column;
-                gap: 0.75rem;
-                align-items: flex-start;
-                padding-top: 1rem;
-            }
-            
-            .date-info {
-                font-size: 0.8rem;
-            }
-            
-            .view-details {
-                font-size: 0.9rem;
-                align-self: flex-end;
-            }
-            
-            /* Empty state mobile */
-            .empty-state {
-                margin: 1rem;
-                padding: 3rem 1.5rem;
-                border-radius: 20px;
-            }
-            
-            .empty-state-icon {
-                font-size: 3rem;
-            }
-            
-            .empty-state h3 {
-                font-size: 1.25rem;
-            }
-            
-            .empty-state p {
-                font-size: 0.9rem;
-            }
-            
-            /* Messages d'alerte */
-            .alert {
-                margin: 0 1rem 1rem 1rem;
-                border-radius: 12px;
-                font-size: 0.9rem;
-            }
-        }
-        
-        /* Très petits écrans */
-        @media (max-width: 375px) {
-            .page-title {
-                font-size: 1.3rem;
-            }
-            
-            .stat-card {
-                min-width: 120px;
-            }
-            
-            .demande-card {
-                padding: 1rem;
-            }
-            
-            .cost-value {
-                font-size: 1.5rem;
-            }
-        }
-    </style>
+/* ── Page Header ── */
+.liste-header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    border-radius: 24px;
+    padding: 1.75rem 1.75rem 2.25rem;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 28px rgba(13,37,89,0.25);
+}
+.liste-header::before {
+    content: '';
+    position: absolute;
+    right: -40px; top: -40px;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    background: rgba(255,128,0,.10);
+}
+.liste-header::after {
+    content: '';
+    position: absolute;
+    left: -30px; bottom: -50px;
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.04);
+}
+.header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    position: relative; z-index: 1;
+}
+.header-text h1 {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: white;
+    margin: 0 0 .3rem;
+}
+.header-text p {
+    font-size: .85rem;
+    color: rgba(255,255,255,.65);
+    margin: 0;
+}
+.btn-new {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    background: var(--secondary);
+    color: white;
+    border-radius: 14px;
+    padding: .7rem 1.25rem;
+    font-size: .85rem;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+    box-shadow: 0 4px 14px rgba(255,128,0,.4);
+    transition: transform .2s, box-shadow .2s;
+    flex-shrink: 0;
+    position: relative; z-index: 1;
+}
+.btn-new:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255,128,0,.55);
+    color: white;
+}
 
-    <div class="container mt-4 mb-5">
-        <!-- En-tête -->
-        <div class="page-header">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                <div>
-                    <h1 class="page-title">📦 Mes Livraisons</h1>
-                    <p class="page-subtitle">Gérez et suivez toutes vos demandes de livraison</p>
-                </div>
-                <a href="{% url 'Client:creer_demande' %}" class="btn btn-primary-custom">
-                    <i class="bi bi-plus-circle me-2"></i>
-                    Nouvelle Demande
-                </a>
-            </div>
+/* ── Stats Strip ── */
+.stats-strip {
+    display: flex;
+    gap: .85rem;
+    overflow-x: auto;
+    padding-bottom: .25rem;
+    margin-bottom: 1.25rem;
+    scrollbar-width: none;
+}
+.stats-strip::-webkit-scrollbar { display: none; }
+.stat-chip {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 1rem 1.25rem;
+    min-width: 120px;
+    flex-shrink: 0;
+    box-shadow: var(--card-shadow);
+}
+.chip-icon {
+    font-size: 1.2rem;
+    margin-bottom: .4rem;
+    display: block;
+}
+.chip-value {
+    font-size: 1.65rem;
+    font-weight: 800;
+    line-height: 1;
+    display: block;
+    margin-bottom: .2rem;
+}
+.chip-label {
+    font-size: .7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    color: var(--text-muted);
+}
+.stat-chip.c-blue   .chip-icon,
+.stat-chip.c-blue   .chip-value { color: var(--primary); }
+.stat-chip.c-orange .chip-icon,
+.stat-chip.c-orange .chip-value { color: var(--secondary); }
+.stat-chip.c-green  .chip-icon,
+.stat-chip.c-green  .chip-value { color: var(--success); }
+.stat-chip.c-red    .chip-icon,
+.stat-chip.c-red    .chip-value { color: var(--danger); }
+
+/* ── Tab Nav ── */
+.tab-nav {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: .4rem;
+    display: flex;
+    gap: .4rem;
+    margin-bottom: 1.1rem;
+    box-shadow: var(--card-shadow);
+}
+.tab-btn {
+    flex: 1;
+    padding: .8rem .5rem;
+    border: none;
+    background: transparent;
+    border-radius: 12px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: .85rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all .25s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+}
+.tab-btn.active {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 4px 14px rgba(13,37,89,.25);
+}
+.tab-count {
+    padding: .1rem .5rem;
+    border-radius: 20px;
+    font-size: .7rem;
+    font-weight: 700;
+    background: rgba(255,255,255,.22);
+}
+.tab-btn:not(.active) .tab-count {
+    background: var(--border);
+    color: var(--text-muted);
+}
+
+/* ── Search ── */
+.search-wrap {
+    position: relative;
+    margin-bottom: 1rem;
+}
+.search-wrap i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 1rem;
+    pointer-events: none;
+}
+.search-input {
+    width: 100%;
+    padding: .9rem 1rem .9rem 2.75rem;
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: .92rem;
+    background: var(--surface);
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+}
+.search-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(13,37,89,.07);
+}
+
+/* ── Sub-filters ── */
+.sub-filters {
+    display: flex;
+    gap: .5rem;
+    overflow-x: auto;
+    padding-bottom: .75rem;
+    margin-bottom: 1.1rem;
+    scrollbar-width: none;
+}
+.sub-filters::-webkit-scrollbar { display: none; }
+.sub-btn {
+    padding: .45rem 1rem;
+    border-radius: 20px;
+    border: 2px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: .78rem;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: all .2s;
+}
+.sub-btn.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+.sub-btn:hover:not(.active) {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+/* ── Cards Grid ── */
+.cards-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+@media (min-width: 768px)  { .cards-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1200px) { .cards-grid { grid-template-columns: repeat(3, 1fr); } }
+
+.demande-item { display: flex; flex-direction: column; }
+
+/* ── Delivery Card ── */
+.delivery-card {
+    background: var(--surface);
+    border-radius: 20px;
+    padding: 1.25rem;
+    box-shadow: var(--card-shadow);
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform .25s, box-shadow .25s, border-color .25s;
+    position: relative;
+    overflow: hidden;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+.delivery-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    transform: scaleX(0);
+    transition: transform .3s;
+    transform-origin: left;
+}
+.delivery-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--card-hover);
+    border-color: rgba(13,37,89,.08);
+}
+.delivery-card:hover::before { transform: scaleX(1); }
+.delivery-card:active { transform: scale(.98); }
+
+.dc-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    gap: .5rem;
+}
+.dc-ref {
+    font-size: .95rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin: 0 0 .2rem;
+}
+.dc-date { font-size: .72rem; color: var(--text-muted); }
+
+/* Status badges */
+.status-badge {
+    padding: .3rem .8rem;
+    border-radius: 20px;
+    font-size: .68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.status-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.s-EN_ATTENTE           { background: #fef3c7; color: #92400e; }
+.s-EN_ATTENTE::before   { background: #f59e0b; }
+.s-VALIDATION_CLIENT    { background: #dbeafe; color: #1e40af; }
+.s-VALIDATION_CLIENT::before { background: #3b82f6; }
+.s-VALIDATION_LIVREUR   { background: #e0e7ff; color: #4338ca; }
+.s-VALIDATION_LIVREUR::before { background: #6366f1; }
+.s-LIVREUR_ROUTE        { background: rgba(255,128,0,.12); color: #c05000; }
+.s-LIVREUR_ROUTE::before { background: var(--secondary); }
+.s-RECEPTION_COLIS      { background: #e9d5ff; color: #6b21a8; }
+.s-RECEPTION_COLIS::before { background: #a855f7; }
+.s-LIVRAISON_EN_ROUTE   { background: #fce7f3; color: #9f1239; }
+.s-LIVRAISON_EN_ROUTE::before { background: #ec4899; }
+.s-TERMINEE             { background: #d1fae5; color: #065f46; }
+.s-TERMINEE::before     { background: var(--success); }
+.s-ANNULEE              { background: #fee2e2; color: #991b1b; }
+.s-ANNULEE::before      { background: var(--danger); }
+
+/* Route section */
+.dc-route {
+    background: #f9fafb;
+    border-radius: 14px;
+    padding: .9rem 1rem;
+    margin-bottom: .9rem;
+}
+.route-point {
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+}
+.route-point + .route-point {
+    margin-top: .75rem;
+    padding-top: .75rem;
+    border-top: 1px dashed var(--border);
+}
+.route-icon {
+    width: 32px; height: 32px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .95rem;
+    flex-shrink: 0;
+}
+.route-icon.dep  { background: #dcfce7; color: #166534; }
+.route-icon.dest { background: #fee2e2; color: #991b1b; }
+.route-label {
+    font-size: .65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--text-muted);
+    margin-bottom: .15rem;
+}
+.route-addr {
+    font-size: .87rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0;
+    line-height: 1.35;
+}
+
+/* Info chips */
+.dc-info-row {
+    display: flex;
+    gap: .65rem;
+    margin-bottom: .85rem;
+}
+.dc-info-chip {
+    background: #f9fafb;
+    border-radius: 10px;
+    padding: .6rem .85rem;
+    flex: 1;
+}
+.dc-info-label {
+    font-size: .65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--text-muted);
+    margin-bottom: .15rem;
+}
+.dc-info-value {
+    font-size: .87rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0;
+}
+
+/* Cost */
+.dc-cost {
+    background: linear-gradient(135deg, rgba(13,37,89,.06) 0%, rgba(13,37,89,.02) 100%);
+    border-radius: 12px;
+    padding: .7rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: .85rem;
+}
+.dc-cost-label { font-size: .75rem; font-weight: 600; color: var(--text-muted); }
+.dc-cost-value { font-size: 1.15rem; font-weight: 800; color: var(--primary); }
+
+/* Footer */
+.dc-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding-top: .75rem;
+    border-top: 1px solid var(--border);
+    margin-top: auto;
+}
+.dc-link {
+    font-size: .82rem;
+    font-weight: 700;
+    color: var(--secondary);
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+}
+
+/* Cancel button */
+.btn-cancel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    width: 100%;
+    margin-top: .75rem;
+    padding: .65rem;
+    border: 2px solid #fecaca;
+    border-radius: 12px;
+    background: transparent;
+    color: var(--danger);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: .82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .2s, border-color .2s;
+}
+.btn-cancel:hover { background: #fee2e2; border-color: var(--danger); }
+
+/* Empty / No-results */
+.empty-wrap {
+    background: var(--surface);
+    border-radius: 20px;
+    padding: 3rem 2rem;
+    text-align: center;
+    box-shadow: var(--card-shadow);
+}
+.empty-wrap i {
+    font-size: 3rem;
+    color: var(--border);
+    display: block;
+    margin-bottom: 1rem;
+}
+.empty-wrap h3 { font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: .5rem; }
+.empty-wrap p  { font-size: .88rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+
+.no-results {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--text-muted);
+    font-size: .9rem;
+    display: none;
+    background: var(--surface);
+    border-radius: 16px;
+    box-shadow: var(--card-shadow);
+}
+.no-results i { font-size: 2rem; display: block; margin-bottom: .5rem; opacity: .35; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="liste-header">
+    <div class="header-row">
+        <div class="header-text">
+            <h1><i class="bi bi-box-seam me-2"></i>Mes Courses</h1>
+            <p>Gérez et suivez toutes vos demandes de livraison</p>
         </div>
-        
-        <!-- Messages d'alerte -->
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert" style="border-radius: 12px; border: none;">
-                    <i class="bi bi-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %} me-2"></i>
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endfor %}
-        {% endif %}
-        
-        <!-- Statistiques -->
-        {% if demandes %}
-        <div class="stats-cards">
-            <div class="stat-card">
-                <i class="bi bi-box-seam text-primary" style="font-size: 1.5rem;"></i>
-                <div class="stat-value">{{ demandes|length }}</div>
-                <div class="stat-label">Total demandes</div>
-            </div>
-            <div class="stat-card">
-                <i class="bi bi-clock-history text-warning" style="font-size: 1.5rem;"></i>
-                <div class="stat-value" id="enCoursCount">0</div>
-                <div class="stat-label">En cours</div>
-            </div>
-            <div class="stat-card">
-                <i class="bi bi-check-circle text-success" style="font-size: 1.5rem;"></i>
-                <div class="stat-value" id="termineesCount">0</div>
-                <div class="stat-label">Terminées</div>
-            </div>
-        </div>
-        
-        <!-- Filtres et recherche -->
-        <div class="filters-section">
-            <div class="row g-3 align-items-center">
-                <div class="col-md-8">
-                    <div class="filter-group">
-                        <button class="filter-btn active" data-filter="all">
-                            <i class="bi bi-list-ul me-1"></i> Toutes
-                        </button>
-                        <button class="filter-btn" data-filter="EN_ATTENTE">
-                            <i class="bi bi-hourglass-split me-1"></i> En attente
-                        </button>
-                        <button class="filter-btn" data-filter="VALIDATION_CLIENT,VALIDATION_LIVREUR,LIVREUR_ROUTE,RECEPTION_COLIS,LIVRAISON_EN_ROUTE">
-                            <i class="bi bi-arrow-repeat me-1"></i> En cours
-                        </button>
-                        <button class="filter-btn" data-filter="TERMINEE">
-                            <i class="bi bi-check-circle me-1"></i> Terminées
-                        </button>
-                        <button class="filter-btn" data-filter="ANNULEE">
-                            <i class="bi bi-x-circle me-1"></i> Annulées
-                        </button>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="search-box">
-                        <i class="bi bi-search"></i>
-                        <input type="text" class="form-control" id="searchInput" placeholder="Rechercher par référence...">
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Liste des demandes -->
-        <div class="row" id="demandesContainer">
-            {% for demande in demandes %}
-            <div class="col-md-6 col-lg-4 mb-4 demande-item" data-status="{{ demande.statut }}" data-ref="{{ demande.ref|lower }}">
-                <div class="demande-card" onclick="window.location.href='{% url 'Client:detail_demande' demande.id %}'">
-                    <div class="card-header-section">
-                        <h3 class="demande-ref">{{ demande.ref }}</h3>
-                        <span class="status-badge status-{{ demande.statut }}">
-                            <i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i>
-                            {{ demande.get_statut_display|truncatewords:2 }}
-                        </span>
-                    </div>
-                    
-                    <div class="location-section">
-                        <div class="location-item">
-                            <div class="location-icon departure">
-                                <i class="bi bi-geo-alt-fill"></i>
-                            </div>
-                            <div class="location-text">
-                                <div class="location-label">Départ</div>
-                                <p class="location-address">{{ demande.adresse_depart|truncatewords:5 }}</p>
-                            </div>
-                        </div>
-                        
-                        <div class="location-item">
-                            <div class="location-icon destination">
-                                <i class="bi bi-geo-fill"></i>
-                            </div>
-                            <div class="location-text">
-                                <div class="location-label">Destination</div>
-                                <p class="location-address">{{ demande.adresse_destination|truncatewords:5 }}</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <div class="info-label">Type</div>
-                            <p class="info-value">{{ demande.get_type_course_display }}</p>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Poids</div>
-                            <p class="info-value">{{ demande.unite_poids }} — {{ demande.poids_colis }}</p>
-                        </div>
-                    </div>
-                    
-                    {% if demande.cout_livraison %}
-                    <div class="cost-section">
-                        <div class="cost-label">Coût Total</div>
-                        <p class="cost-value">{{ demande.cout_livraison }} FCFA</p>
-                    </div>
-                    {% endif %}
-                    
-                    <div class="card-footer-section">
-                        <div class="date-info">
-                            <i class="bi bi-calendar-check"></i>
-                            {{ demande.date_demande|date:"d/m/Y à H:i" }}
-                        </div>
-                        <div class="view-details">
-                            Détails
-                            <i class="bi bi-arrow-right"></i>
-                        </div>
-                    </div>
-                    {% if demande.statut == 'EN_ATTENTE' %}
-                    <div class="mt-2">
-                        <form action="{% url 'Client:annuler_commande' demande.ref %}" method="post" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler cette commande ?');">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-outline-danger w-100" onclick="event.stopPropagation();">
-                                <i class="bi bi-x-circle me-1"></i> Annuler la commande
-                            </button>
-                        </form>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <!-- État vide -->
-        <div class="empty-state">
-            <div class="empty-state-icon">📦</div>
-            <h3>Aucune demande pour le moment</h3>
-            <p>Commencez par créer votre première demande de livraison</p>
-            <a href="{% url 'Client:creer_demande' %}" class="btn btn-primary-custom">
-                <i class="bi bi-plus-circle me-2"></i>
-                Créer une demande
-            </a>
-        </div>
-        {% endif %}
+        <a href="{% url 'Client:creer_demande' %}" class="btn-new">
+            <i class="bi bi-plus-circle"></i>
+            <span>Nouvelle</span>
+        </a>
     </div>
-    
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <script>
-        // Filtrage
-        const filterBtns = document.querySelectorAll('.filter-btn');
-        const demandeItems = document.querySelectorAll('.demande-item');
-        
-        filterBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                // Mise à jour des boutons actifs
-                filterBtns.forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                
-                const filter = this.dataset.filter;
-                
-                demandeItems.forEach(item => {
-                    const status = item.dataset.status;
-                    if (filter === 'all') {
-                        item.style.display = 'block';
-                    } else {
-                        const filterStatuses = filter.split(',');
-                        if (filterStatuses.includes(status)) {
-                            item.style.display = 'block';
-                        } else {
-                            item.style.display = 'none';
-                        }
-                    }
-                });
-            });
+</div>
+
+{% if demandes %}
+
+<!-- Stats Strip -->
+<div class="stats-strip">
+    <div class="stat-chip c-blue">
+        <i class="bi bi-box-seam chip-icon"></i>
+        <span class="chip-value">{{ demandes|length }}</span>
+        <span class="chip-label">Total</span>
+    </div>
+    <div class="stat-chip c-orange">
+        <i class="bi bi-truck chip-icon"></i>
+        <span class="chip-value" id="countEncours">—</span>
+        <span class="chip-label">En cours</span>
+    </div>
+    <div class="stat-chip c-green">
+        <i class="bi bi-check-circle chip-icon"></i>
+        <span class="chip-value" id="countTerminees">—</span>
+        <span class="chip-label">Terminées</span>
+    </div>
+    <div class="stat-chip c-red">
+        <i class="bi bi-x-circle chip-icon"></i>
+        <span class="chip-value" id="countAnnulees">—</span>
+        <span class="chip-label">Annulées</span>
+    </div>
+</div>
+
+<!-- Tabs -->
+<div class="tab-nav">
+    <button class="tab-btn active" data-tab="encours">
+        <i class="bi bi-arrow-repeat"></i>
+        En cours
+        <span class="tab-count" id="tabCountEncours">0</span>
+    </button>
+    <button class="tab-btn" data-tab="historique">
+        <i class="bi bi-clock-history"></i>
+        Historique
+        <span class="tab-count" id="tabCountHistorique">0</span>
+    </button>
+</div>
+
+<!-- Search -->
+<div class="search-wrap">
+    <i class="bi bi-search"></i>
+    <input type="text" class="search-input" id="searchInput" placeholder="Rechercher par référence ou adresse…">
+</div>
+
+<!-- Sub-filters: En cours -->
+<div class="sub-filters" id="subFiltersEncours">
+    <button class="sub-btn active" data-sub="all">Toutes</button>
+    <button class="sub-btn" data-sub="EN_ATTENTE">En attente</button>
+    <button class="sub-btn" data-sub="VALIDATION_CLIENT,VALIDATION_LIVREUR">Validation</button>
+    <button class="sub-btn" data-sub="LIVREUR_ROUTE,RECEPTION_COLIS,LIVRAISON_EN_ROUTE">En livraison</button>
+</div>
+
+<!-- Sub-filters: Historique -->
+<div class="sub-filters" id="subFiltersHistorique" style="display:none">
+    <button class="sub-btn active" data-sub="all">Toutes</button>
+    <button class="sub-btn" data-sub="TERMINEE">Terminées</button>
+    <button class="sub-btn" data-sub="ANNULEE">Annulées</button>
+</div>
+
+<!-- ── Tab: En cours ── -->
+<section id="tabEncours">
+    <div class="cards-grid" id="gridEncours">
+        {% for demande in demandes %}
+        {% if demande.statut != 'TERMINEE' and demande.statut != 'ANNULEE' %}
+        <div class="demande-item"
+             data-status="{{ demande.statut }}"
+             data-search="{{ demande.ref|lower }} {{ demande.adresse_depart|lower }} {{ demande.adresse_destination|lower }}">
+            <div class="delivery-card" onclick="window.location.href='{% url 'Client:detail_demande' demande.id %}'">
+                <div class="dc-top">
+                    <div>
+                        <p class="dc-ref">{{ demande.ref }}</p>
+                        <p class="dc-date"><i class="bi bi-calendar3"></i> {{ demande.date_demande|date:"d/m/Y · H:i" }}</p>
+                    </div>
+                    <span class="status-badge s-{{ demande.statut }}">{{ demande.get_statut_display|truncatewords:2 }}</span>
+                </div>
+                <div class="dc-route">
+                    <div class="route-point">
+                        <div class="route-icon dep"><i class="bi bi-geo-alt-fill"></i></div>
+                        <div>
+                            <div class="route-label">Départ</div>
+                            <p class="route-addr">{{ demande.adresse_depart|truncatewords:6 }}</p>
+                        </div>
+                    </div>
+                    <div class="route-point">
+                        <div class="route-icon dest"><i class="bi bi-geo-fill"></i></div>
+                        <div>
+                            <div class="route-label">Destination</div>
+                            <p class="route-addr">{{ demande.adresse_destination|truncatewords:6 }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="dc-info-row">
+                    <div class="dc-info-chip">
+                        <div class="dc-info-label">Type</div>
+                        <p class="dc-info-value">{{ demande.get_type_course_display }}</p>
+                    </div>
+                    <div class="dc-info-chip">
+                        <div class="dc-info-label">Poids</div>
+                        <p class="dc-info-value">{{ demande.poids_colis }} {{ demande.unite_poids }}</p>
+                    </div>
+                </div>
+                {% if demande.cout_livraison %}
+                <div class="dc-cost">
+                    <span class="dc-cost-label">Coût total</span>
+                    <span class="dc-cost-value">{{ demande.cout_livraison }} FCFA</span>
+                </div>
+                {% endif %}
+                <div class="dc-footer">
+                    <span class="dc-link">Voir détails <i class="bi bi-arrow-right"></i></span>
+                </div>
+                {% if demande.statut == 'EN_ATTENTE' %}
+                <form action="{% url 'Client:annuler_commande' demande.ref %}" method="post"
+                      onsubmit="return confirm('Annuler cette commande ?');"
+                      onclick="event.stopPropagation();">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-cancel">
+                        <i class="bi bi-x-circle"></i> Annuler la commande
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+    <div class="no-results" id="noResultsEncours">
+        <i class="bi bi-search"></i>
+        Aucune commande ne correspond à votre recherche.
+    </div>
+    <div class="empty-wrap" id="emptyEncours" style="display:none">
+        <i class="bi bi-truck"></i>
+        <h3>Aucune course en cours</h3>
+        <p>Vos demandes actives apparaîtront ici.</p>
+    </div>
+</section>
+
+<!-- ── Tab: Historique ── -->
+<section id="tabHistorique" style="display:none">
+    <div class="cards-grid" id="gridHistorique">
+        {% for demande in demandes %}
+        {% if demande.statut == 'TERMINEE' or demande.statut == 'ANNULEE' %}
+        <div class="demande-item"
+             data-status="{{ demande.statut }}"
+             data-search="{{ demande.ref|lower }} {{ demande.adresse_depart|lower }} {{ demande.adresse_destination|lower }}">
+            <div class="delivery-card" onclick="window.location.href='{% url 'Client:detail_demande' demande.id %}'">
+                <div class="dc-top">
+                    <div>
+                        <p class="dc-ref">{{ demande.ref }}</p>
+                        <p class="dc-date"><i class="bi bi-calendar3"></i> {{ demande.date_demande|date:"d/m/Y · H:i" }}</p>
+                    </div>
+                    <span class="status-badge s-{{ demande.statut }}">{{ demande.get_statut_display }}</span>
+                </div>
+                <div class="dc-route">
+                    <div class="route-point">
+                        <div class="route-icon dep"><i class="bi bi-geo-alt-fill"></i></div>
+                        <div>
+                            <div class="route-label">Départ</div>
+                            <p class="route-addr">{{ demande.adresse_depart|truncatewords:6 }}</p>
+                        </div>
+                    </div>
+                    <div class="route-point">
+                        <div class="route-icon dest"><i class="bi bi-geo-fill"></i></div>
+                        <div>
+                            <div class="route-label">Destination</div>
+                            <p class="route-addr">{{ demande.adresse_destination|truncatewords:6 }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="dc-info-row">
+                    <div class="dc-info-chip">
+                        <div class="dc-info-label">Type</div>
+                        <p class="dc-info-value">{{ demande.get_type_course_display }}</p>
+                    </div>
+                    <div class="dc-info-chip">
+                        <div class="dc-info-label">Poids</div>
+                        <p class="dc-info-value">{{ demande.poids_colis }} {{ demande.unite_poids }}</p>
+                    </div>
+                </div>
+                {% if demande.cout_livraison %}
+                <div class="dc-cost">
+                    <span class="dc-cost-label">Coût total</span>
+                    <span class="dc-cost-value">{{ demande.cout_livraison }} FCFA</span>
+                </div>
+                {% endif %}
+                <div class="dc-footer">
+                    <span class="dc-link">Voir détails <i class="bi bi-arrow-right"></i></span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+    <div class="no-results" id="noResultsHistorique">
+        <i class="bi bi-search"></i>
+        Aucune commande ne correspond à votre recherche.
+    </div>
+    <div class="empty-wrap" id="emptyHistorique" style="display:none">
+        <i class="bi bi-clock-history"></i>
+        <h3>Aucun historique</h3>
+        <p>Vos commandes terminées ou annulées apparaîtront ici.</p>
+    </div>
+</section>
+
+{% else %}
+
+<!-- Global empty state -->
+<div class="empty-wrap" style="margin-top: 1rem;">
+    <i class="bi bi-inbox"></i>
+    <h3>Aucune demande pour le moment</h3>
+    <p>Commencez par créer votre première demande de livraison.</p>
+    <a href="{% url 'Client:creer_demande' %}" class="btn-new" style="display:inline-flex; margin: 0 auto;">
+        <i class="bi bi-plus-circle"></i> Créer une demande
+    </a>
+</div>
+
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    /* ── Comptage initial ── */
+    let encours = 0, terminees = 0, annulees = 0;
+    document.querySelectorAll('#gridEncours .demande-item').forEach(el => encours++);
+    document.querySelectorAll('#gridHistorique .demande-item').forEach(el => {
+        el.dataset.status === 'TERMINEE' ? terminees++ : annulees++;
+    });
+
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    set('countEncours',        encours);
+    set('countTerminees',      terminees);
+    set('countAnnulees',       annulees);
+    set('tabCountEncours',     encours);
+    set('tabCountHistorique',  terminees + annulees);
+
+    if (!document.querySelector('#gridEncours .demande-item'))
+        show('emptyEncours');
+    if (!document.querySelector('#gridHistorique .demande-item'))
+        show('emptyHistorique');
+
+    function show(id) { const el = document.getElementById(id); if (el) el.style.display = 'block'; }
+
+    /* ── Tabs ── */
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            const tab = this.dataset.tab;
+            toggle('tabEncours',           tab === 'encours');
+            toggle('tabHistorique',        tab === 'historique');
+            toggle('subFiltersEncours',    tab === 'encours',    'flex');
+            toggle('subFiltersHistorique', tab === 'historique', 'flex');
+            document.getElementById('searchInput').value = '';
+            document.querySelectorAll('.sub-btn').forEach(b => b.classList.toggle('active', b.dataset.sub === 'all'));
+            applyFilters();
         });
-        
-        // Recherche
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-            searchInput.addEventListener('input', function() {
-                const searchTerm = this.value.toLowerCase();
-                
-                demandeItems.forEach(item => {
-                    const ref = item.dataset.ref;
-                    if (ref.includes(searchTerm)) {
-                        item.style.display = 'block';
-                    } else {
-                        item.style.display = 'none';
-                    }
-                });
-            });
-        }
-        
-        // Calcul des statistiques
-        function updateStats() {
-            let enCours = 0;
-            let terminees = 0;
-            
-            demandeItems.forEach(item => {
-                const status = item.dataset.status;
-                if (status === 'TERMINEE') {
-                    terminees++;
-                } else if (status !== 'ANNULEE') {
-                    enCours++;
-                }
-            });
-            
-            const enCoursEl = document.getElementById('enCoursCount');
-            const termineesEl = document.getElementById('termineesCount');
-            
-            if (enCoursEl) enCoursEl.textContent = enCours;
-            if (termineesEl) termineesEl.textContent = terminees;
-        }
-        
-        updateStats();
-    </script>
-</body>
-</html>
+    });
+
+    function toggle(id, visible, display) {
+        const el = document.getElementById(id);
+        if (el) el.style.display = visible ? (display || 'block') : 'none';
+    }
+
+    /* ── Sub-filters ── */
+    document.querySelectorAll('.sub-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            this.closest('.sub-filters').querySelectorAll('.sub-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            applyFilters();
+        });
+    });
+
+    /* ── Search ── */
+    document.getElementById('searchInput')?.addEventListener('input', applyFilters);
+
+    /* ── Filter logic ── */
+    function applyFilters() {
+        const term     = (document.getElementById('searchInput')?.value || '').toLowerCase();
+        const activeTab = document.querySelector('.tab-btn.active')?.dataset.tab || 'encours';
+        const gridId   = activeTab === 'encours'    ? 'gridEncours'          : 'gridHistorique';
+        const sfId     = activeTab === 'encours'    ? 'subFiltersEncours'    : 'subFiltersHistorique';
+        const noResId  = activeTab === 'encours'    ? 'noResultsEncours'     : 'noResultsHistorique';
+
+        const sub     = document.querySelector('#' + sfId + ' .sub-btn.active')?.dataset.sub || 'all';
+        const items   = document.querySelectorAll('#' + gridId + ' .demande-item');
+        let visible   = 0;
+
+        items.forEach(item => {
+            const matchSearch = !term || item.dataset.search.includes(term);
+            const matchSub    = sub === 'all' || sub.split(',').includes(item.dataset.status);
+            const show        = matchSearch && matchSub;
+            item.style.display = show ? 'flex' : 'none';
+            if (show) visible++;
+        });
+
+        const noRes = document.getElementById(noResId);
+        if (noRes) noRes.style.display = (visible === 0 && items.length > 0) ? 'block' : 'none';
+    }
+
+    applyFilters();
+});
+</script>
 {% endblock %}

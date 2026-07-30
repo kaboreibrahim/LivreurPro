@@ -6,7 +6,7 @@ from Livreur.views.location import update_livreur_location
 from Livreur.views.list import DemandeLivreurListView
 from Livreur.views.detail import detail_demande_livreur
 from Livreur.views.accepter import accepter_course
-from Livreur.views.livraison import commencer_livraison, confirmer_livraison
+from Livreur.views.livraison import commencer_livraison, confirmer_livraison, confirmer_recuperation_expediteur
 app_name = 'Livreur'
 
 urlpatterns = [
@@ -19,6 +19,7 @@ urlpatterns = [
 
     path('detail/course/<uuid:pk>/', detail_demande_livreur, name='detail_demande_livreur'),
     path('detail/course/<uuid:pk>/accepter/', accepter_course, name='accepter_course'),
+    path('detail/course/<uuid:pk>/confirmer-recuperation/', confirmer_recuperation_expediteur, name='confirmer_recuperation_expediteur'),
     path('detail/course/<uuid:pk>/commencer-livraison/', commencer_livraison, name='commencer_livraison'),
     path('detail/course/<uuid:pk>/confirmer-livraison/', confirmer_livraison, name='confirmer_livraison'),
     

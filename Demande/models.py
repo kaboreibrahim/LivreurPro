@@ -1,5 +1,5 @@
 from urllib import request
-from django.db import models
+from django.db import models, transaction
 from django.utils import timezone
 import uuid
 from django.conf import settings
@@ -221,9 +221,24 @@ class DCL(SafeDeleteModel, LifecycleModel):
         verbose_name="Signature du destinataire",
         help_text="Signature en base64 (PNG)"
     )
+    signature_expediteur = models.TextField(
+        blank=True, null=True,
+        verbose_name="Signature de l'expéditeur",
+        help_text="Signature en base64 (PNG) — capturée uniquement pour les demandes invité (sans compte client)"
+    )
     date_livraison = models.DateTimeField(
         null=True, blank=True,
         verbose_name="Date de livraison effective"
+    )
+
+    # Facturation — numéro définitif, assigné une seule fois (voir get_or_create_numero_facture)
+    numero_facture = models.CharField(
+        max_length=30, unique=True, null=True, blank=True,
+        verbose_name="Numéro de facture"
+    )
+    date_facture = models.DateTimeField(
+        null=True, blank=True,
+        verbose_name="Date de facturation"
     )
 
     class Meta:
@@ -417,6 +432,37 @@ class DCL(SafeDeleteModel, LifecycleModel):
             self.statut = new_status
             self.save()
 
+    def get_or_create_numero_facture(self):
+        """Retourne le numéro de facture de cette demande, ou en génère un nouveau
+        et définitif la première fois (format FACT-AAAA-MM-NNNN, séquence mensuelle).
+        """
+        if self.numero_facture:
+            return self.numero_facture
+
+        with transaction.atomic():
+            demande = DCL.objects.select_for_update().get(pk=self.pk)
+            if demande.numero_facture:
+                self.numero_facture = demande.numero_facture
+                self.date_facture = demande.date_facture
+                return self.numero_facture
+
+            now = timezone.now()
+            counter, _ = FactureCounter.objects.select_for_update().get_or_create(
+                annee=now.year, mois=now.month, defaults={'dernier_numero': 0}
+            )
+            counter.dernier_numero += 1
+            counter.save(update_fields=['dernier_numero'])
+
+            numero = f"FACT-{now.year}-{now.month:02d}-{counter.dernier_numero:04d}"
+            demande.numero_facture = numero
+            demande.date_facture = now
+            demande.save(update_fields=['numero_facture', 'date_facture'])
+
+            self.numero_facture = numero
+            self.date_facture = now
+
+        return self.numero_facture
+
     def calculate_distance(self):
        
         import requests
@@ -456,6 +502,25 @@ class DCL(SafeDeleteModel, LifecycleModel):
             pass
 
         return None
+
+
+class FactureCounter(models.Model):
+    """Compteur du dernier numéro de facture émis pour un mois donné.
+
+    Verrouillé (select_for_update) et incrémenté dans DCL.get_or_create_numero_facture()
+    pour garantir une numérotation séquentielle sans collision ni trou.
+    """
+    annee = models.PositiveIntegerField(verbose_name="Année")
+    mois = models.PositiveSmallIntegerField(verbose_name="Mois")
+    dernier_numero = models.PositiveIntegerField(default=0, verbose_name="Dernier numéro émis")
+
+    class Meta:
+        unique_together = ('annee', 'mois')
+        verbose_name = "Compteur de facture"
+        verbose_name_plural = "Compteurs de facture"
+
+    def __str__(self):
+        return f"{self.annee}-{self.mois:02d} → {self.dernier_numero}"
 
 
 class Notification(models.Model):

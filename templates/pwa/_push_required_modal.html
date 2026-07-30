@@ -1,0 +1,105 @@
+{% load static %}
+<style>
+    body.mlp-push-modal-lock { overflow: hidden; }
+    .mlp-push-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 2000;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        background: rgba(0,0,40,0.55);
+        backdrop-filter: blur(3px);
+    }
+    .mlp-push-modal.mlp-show { display: flex; }
+    .mlp-push-modal-box {
+        width: 100%;
+        max-width: 420px;
+        background: #ffffff;
+        border-radius: 18px;
+        box-shadow: 0 20px 60px rgba(0,0,40,0.35);
+        padding: 28px 26px;
+        text-align: center;
+        animation: mlpPushModalPop .3s ease;
+    }
+    @keyframes mlpPushModalPop {
+        from { opacity: 0; transform: translateY(10px) scale(.97); }
+        to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .mlp-push-modal-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 14px;
+        border-radius: 50%;
+        background: #FFF9E5;
+        color: #FF6B00;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+    }
+    .mlp-push-modal-box h3 {
+        font-size: 1.15rem;
+        color: #000080;
+        margin-bottom: 8px;
+    }
+    .mlp-push-modal-box p {
+        font-size: 0.9rem;
+        color: #6b7280;
+        line-height: 1.5;
+        margin-bottom: 18px;
+    }
+    .mlp-push-modal-btn {
+        background: #FF6B00;
+        color: #fff;
+        border: none;
+        padding: 11px 26px;
+        border-radius: 22px;
+        font-size: 0.92rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .mlp-push-modal-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(255,107,0,.4); }
+    .mlp-push-modal-btn-outline {
+        background: transparent;
+        color: #000080;
+        border: 1.5px solid #000080;
+    }
+    .mlp-push-modal-btn-outline:hover { box-shadow: none; background: #f4f4ff; }
+    .mlp-push-modal-denied ol {
+        text-align: left;
+        font-size: 0.85rem;
+        color: #4b5563;
+        line-height: 1.6;
+        margin: 0 0 16px;
+        padding-left: 20px;
+    }
+    .mlp-push-modal-error {
+        color: #c62828;
+        font-size: 0.82rem;
+        margin-top: 12px;
+        margin-bottom: 0;
+    }
+</style>
+<div id="mlp-push-modal" class="mlp-push-modal" role="dialog" aria-modal="true" aria-label="Activer les notifications">
+    <div class="mlp-push-modal-box">
+        <div class="mlp-push-modal-icon"><i class='bx bxs-bell-ring'></i></div>
+        <h3>Activez les notifications</h3>
+        <p>Les notifications sont indispensables pour suivre en temps réel vos livraisons sur Mon Livreur Pro. Vous devez les activer pour continuer.</p>
+
+        <button type="button" id="mlp-push-modal-btn" class="mlp-push-modal-btn">Activer les notifications</button>
+
+        <div id="mlp-push-modal-denied" hidden>
+            <p style="text-align:left; margin-bottom:10px;">Les notifications sont actuellement bloquées pour ce site. Pour les réactiver :</p>
+            <ol>
+                <li>Ouvrez l'icône de cadenas / informations dans la barre d'adresse de votre navigateur</li>
+                <li>Trouvez "Notifications" et choisissez "Autoriser"</li>
+                <li>Revenez ici et cliquez ci-dessous</li>
+            </ol>
+            <button type="button" id="mlp-push-modal-recheck" class="mlp-push-modal-btn mlp-push-modal-btn-outline">J'ai activé, vérifier</button>
+            <p id="mlp-push-modal-error" class="mlp-push-modal-error" hidden>Toujours désactivé — vérifiez les réglages de notification de ce site dans votre navigateur.</p>
+        </div>
+    </div>
+</div>

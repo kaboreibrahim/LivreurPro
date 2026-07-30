@@ -16,7 +16,12 @@ def modifier_prix(request, pk):
         if not nouveau_prix:
             messages.error(request, "Veuillez saisir un prix valide.")
             return redirect('Gestionnaire:detail_demande', pk=demande.pk)
-        
+
+        # Une demande invité n'a pas de client pour valider le prix : on saute
+        # directement à VALIDATION_LIVREUR, quel que soit le statut posté par le formulaire.
+        if nouveau_statut == 'VALIDATION_CLIENT' and demande.client_id is None:
+            nouveau_statut = 'VALIDATION_LIVREUR'
+
         try:
             # Mettre à jour le prix
             demande.cout_livraison = float(nouveau_prix)

@@ -95,14 +95,16 @@ def create_notifications_for_dcl(demande, old_statut, new_statut):
                 'info', livreur_url,
             )
         else:
-            # Pas encore de livreur : le client vient d'accepter le prix
+            # Pas encore de livreur : soit le client vient d'accepter le prix,
+            # soit (demande invité) le gestionnaire a défini le prix directement.
+            if client:
+                titre = "Prix accepté — assignez un livreur"
+                message = f"Le client a accepté le prix de la demande {ref}. Veuillez assigner un livreur."
+            else:
+                titre = "Prix défini — assignez un livreur"
+                message = f"Le prix de la demande invité {ref} a été défini. Veuillez assigner un livreur."
             for g in _get_gestionnaires():
-                _create_notif(
-                    g, demande,
-                    "Prix accepté — assignez un livreur",
-                    f"Le client a accepté le prix de la demande {ref}. Veuillez assigner un livreur.",
-                    'warning', gestionnaire_url,
-                )
+                _create_notif(g, demande, titre, message, 'warning', gestionnaire_url)
 
     elif new_statut == 'LIVREUR_ROUTE':
         if client:

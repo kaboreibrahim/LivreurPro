@@ -1,519 +1,645 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block page_name %}Tableau de bord{% endblock %}
+{% block page_title %}Tableau de bord — Mon Livreur Pro{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 <style>
     :root {
-        --primary: #000080;
-        --secondary: #FF6B00;
-        --light: #FFF9E5;
-        --dark: #1A1A1A;
-        --primary-gradient: linear-gradient(135deg, #000080 0%, #0000b3 100%);
-        --success-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        --warning-gradient: linear-gradient(135deg, #FF6B00 0%, #ff8534 100%);
-        --info-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-        --danger-gradient: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-        --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        --card-hover-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        --primary: #0d2559;
+        --primary-dark: #0a1f47;
+        --secondary: #ff8000;
+        --secondary-light: rgba(255,128,0,0.10);
+        --success: #10b981;
+        --info: #3b82f6;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --surface: #ffffff;
+        --bg: #f7f9fc;
+        --text: #111827;
+        --text-muted: #6b7280;
+        --border: #e5e7eb;
+        --card-shadow: 0 4px 20px rgba(13,37,89,0.07);
+        --card-hover: 0 10px 36px rgba(13,37,89,0.14);
     }
-    
-    body {
-        background: var(--light);
-        min-height: 100vh;
-    }
-    
-    .dashboard-header {
+
+    body { background: var(--bg); }
+
+    /* ── Greeting ── */
+    .greeting-section {
         margin-bottom: 2rem;
     }
-    
-    .dashboard-header h1 {
-        font-weight: 700;
+    .greeting-section h1 {
+        font-size: 1.6rem;
+        font-weight: 800;
         color: var(--primary);
-        margin-bottom: 0.5rem;
+        margin-bottom: .25rem;
     }
-    
-    .dashboard-subtitle {
-        color: #718096;
-        font-size: 1rem;
+    .greeting-section h1 span { color: var(--secondary); }
+    .greeting-section p {
+        color: var(--text-muted);
+        font-size: .95rem;
     }
-    
+
+    /* ── Stat Cards ── */
+    .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.25rem;
+        margin-bottom: 1.75rem;
+    }
+    @media (max-width: 1100px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 600px)  { .stat-grid { grid-template-columns: repeat(2, 1fr); gap: .75rem; } }
+
     .stat-card {
-        border-radius: 20px;
+        background: var(--surface);
+        border-radius: 18px;
+        padding: 1.4rem 1.5rem;
         box-shadow: var(--card-shadow);
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        overflow: hidden;
+        transition: transform .25s, box-shadow .25s;
         position: relative;
-        border: none;
-        height: 100%;
+        overflow: hidden;
     }
-    
-    .stat-card::before {
+    .stat-card::after {
         content: '';
         position: absolute;
-        top: 0;
-        right: 0;
-        width: 150px;
-        height: 150px;
-        background: rgba(255, 255, 255, 0.1);
+        top: -24px; right: -24px;
+        width: 90px; height: 90px;
         border-radius: 50%;
-        transform: translate(50%, -50%);
+        opacity: .08;
     }
-    
     .stat-card:hover {
-        transform: translateY(-8px);
-        box-shadow: var(--card-hover-shadow);
+        transform: translateY(-5px);
+        box-shadow: var(--card-hover);
     }
-    
-    .stat-card.primary { background: var(--primary-gradient); }
-    .stat-card.success { background: var(--success-gradient); }
-    .stat-card.warning { background: var(--warning-gradient); }
-    .stat-card.danger { background: var(--danger-gradient); }
-    .stat-card.info { background: var(--info-gradient); }
-    
-    .stat-card .card-body {
-        position: relative;
-        z-index: 1;
-        padding: 1.5rem;
+
+    .stat-card.c-blue   { border-left: 4px solid var(--primary); }
+    .stat-card.c-blue   .stat-icon-wrap { background: rgba(13,37,89,.10); color: var(--primary); }
+    .stat-card.c-blue   .stat-value { color: var(--primary); }
+    .stat-card.c-blue::after { background: var(--primary); }
+
+    .stat-card.c-green  { border-left: 4px solid var(--success); }
+    .stat-card.c-green  .stat-icon-wrap { background: rgba(16,185,129,.12); color: var(--success); }
+    .stat-card.c-green  .stat-value { color: var(--success); }
+    .stat-card.c-green::after { background: var(--success); }
+
+    .stat-card.c-orange { border-left: 4px solid var(--secondary); }
+    .stat-card.c-orange .stat-icon-wrap { background: var(--secondary-light); color: var(--secondary); }
+    .stat-card.c-orange .stat-value { color: var(--secondary); }
+    .stat-card.c-orange::after { background: var(--secondary); }
+
+    .stat-card.c-info   { border-left: 4px solid var(--info); }
+    .stat-card.c-info   .stat-icon-wrap { background: rgba(59,130,246,.12); color: var(--info); }
+    .stat-card.c-info   .stat-value { color: var(--info); }
+    .stat-card.c-info::after { background: var(--info); }
+
+    .stat-icon-wrap {
+        width: 48px; height: 48px;
+        border-radius: 14px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.4rem;
+        margin-bottom: 1rem;
     }
-    
-    .stat-icon {
-        font-size: 3rem;
-        opacity: 0.9;
-    }
-    
     .stat-value {
-        font-size: 2.5rem;
+        font-size: 2rem;
         font-weight: 800;
-        margin: 0.5rem 0;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        line-height: 1;
+        margin-bottom: .3rem;
     }
-    
     .stat-label {
-        font-size: 0.9rem;
+        font-size: .78rem;
+        font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 1px;
-        opacity: 0.95;
+        letter-spacing: .8px;
+        color: var(--text-muted);
+    }
+
+    /* ── Finance row ── */
+    .finance-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+        margin-bottom: 1.75rem;
+    }
+    @media (max-width: 600px) { .finance-grid { grid-template-columns: 1fr; } }
+
+    .finance-card {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        border-radius: 18px;
+        padding: 1.4rem 1.5rem;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: 0 6px 24px rgba(13,37,89,0.25);
+        transition: transform .25s;
+    }
+    .finance-card:hover { transform: translateY(-4px); }
+    .finance-card.alt {
+        background: linear-gradient(135deg, var(--secondary) 0%, #e07000 100%);
+        box-shadow: 0 6px 24px rgba(255,128,0,0.3);
+    }
+    .finance-icon {
+        width: 52px; height: 52px;
+        border-radius: 14px;
+        background: rgba(255,255,255,.15);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+    .finance-label {
+        font-size: .78rem;
         font-weight: 600;
+        opacity: .75;
+        text-transform: uppercase;
+        letter-spacing: .6px;
+        margin-bottom: .2rem;
     }
-    
-    .chart-container {
-        background: white;
-        border-radius: 20px;
+    .finance-value {
+        font-size: 1.45rem;
+        font-weight: 800;
+    }
+
+    /* ── Charts ── */
+    .charts-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 1.25rem;
+        margin-bottom: 1.75rem;
+    }
+    @media (max-width: 900px) { .charts-grid { grid-template-columns: 1fr; } }
+
+    .chart-card {
+        background: var(--surface);
+        border-radius: 18px;
+        padding: 1.5rem;
         box-shadow: var(--card-shadow);
-        padding: 2rem;
-        margin-bottom: 2rem;
-        transition: all 0.3s ease;
     }
-    
-    .chart-container:hover {
-        box-shadow: var(--card-hover-shadow);
+    .chart-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1.25rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border);
     }
-    
-    .chart-header {
+    .chart-card-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin: 0;
+    }
+    .chart-card-sub {
+        font-size: .78rem;
+        color: var(--text-muted);
+        margin-top: .15rem;
+    }
+
+    /* ── Promo Banner ── */
+    .promo-banner {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        border-radius: 20px;
+        padding: 1.75rem 2rem;
+        margin-bottom: 1.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        overflow: hidden;
+        position: relative;
+        box-shadow: 0 8px 28px rgba(13,37,89,0.25);
+    }
+    .promo-banner::before {
+        content: '';
+        position: absolute;
+        right: -40px; top: -40px;
+        width: 160px; height: 160px;
+        border-radius: 50%;
+        background: rgba(255,128,0,.15);
+    }
+    .promo-banner::after {
+        content: '';
+        position: absolute;
+        right: 60px; bottom: -60px;
+        width: 120px; height: 120px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.06);
+    }
+    .promo-text h3 {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: white;
+        margin-bottom: .5rem;
+    }
+    .promo-text p {
+        font-size: .85rem;
+        color: rgba(255,255,255,.7);
+        margin: 0;
+    }
+    .promo-btn {
+        background: var(--secondary);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: .65rem 1.4rem;
+        font-size: .85rem;
+        font-weight: 700;
+        text-decoration: none;
+        white-space: nowrap;
+        box-shadow: 0 4px 14px rgba(255,128,0,.4);
+        transition: transform .2s, box-shadow .2s;
+        position: relative; z-index: 1;
+    }
+    .promo-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255,128,0,.55);
+        color: white;
+    }
+
+    /* ── Orders lists ── */
+    .orders-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+    }
+    @media (max-width: 900px) { .orders-grid { grid-template-columns: 1fr; } }
+
+    .orders-card {
+        background: var(--surface);
+        border-radius: 18px;
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+    }
+    .orders-card-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 1.5rem;
-        padding-bottom: 1rem;
-        border-bottom: 2px solid #f1f5f9;
+        margin-bottom: 1.1rem;
+        padding-bottom: .9rem;
+        border-bottom: 1px solid var(--border);
     }
-    
-    .chart-title {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: #2d3748;
-        margin: 0;
-    }
-    
-    .chart-subtitle {
-        font-size: 0.875rem;
-        color: #718096;
-    }
-    
-    .orders-list {
-        background: white;
-        border-radius: 20px;
-        box-shadow: var(--card-shadow);
-        padding: 2rem;
-    }
-    
-    .order-item {
-        padding: 1rem;
-        border-radius: 12px;
-        margin-bottom: 1rem;
-        background: #f8fafc;
-        border-left: 4px solid var(--primary);
-        transition: all 0.3s ease;
-    }
-    
-    .order-item:hover {
-        background: #f1f5f9;
-        transform: translateX(5px);
-    }
-    
-    .order-ref {
+    .orders-card-title {
+        font-size: 1rem;
         font-weight: 700;
         color: var(--primary);
-        font-size: 1rem;
+        margin: 0;
     }
-    
-    .order-status {
-        display: inline-block;
-        padding: 0.25rem 0.75rem;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 600;
+
+    .order-item {
+        display: flex;
+        align-items: center;
+        gap: .9rem;
+        padding: .85rem;
+        border-radius: 12px;
+        margin-bottom: .6rem;
+        background: #f9fafb;
+        transition: background .2s, transform .2s;
+        cursor: pointer;
+        text-decoration: none;
+        color: inherit;
     }
-    
-    .status-en-attente { background: #fef3c7; color: #92400e; }
-    .status-validation { background: #dbeafe; color: var(--primary); }
-    .status-en-cours { background: #ffedd5; color: var(--secondary); }
-    .status-terminee { background: #d1fae5; color: #065f46; }
-    .status-annulee { background: #fee2e2; color: #991b1b; }
-    
-    .info-card {
-        background: white;
-        border-radius: 15px;
-        padding: 1.5rem;
-        box-shadow: var(--card-shadow);
-        margin-bottom: 1rem;
+    .order-item:hover {
+        background: #f1f5ff;
+        transform: translateX(4px);
+        color: inherit;
     }
-    
-    .info-label {
-        font-size: 0.875rem;
-        color: #718096;
-        margin-bottom: 0.25rem;
+    .order-item:last-child { margin-bottom: 0; }
+
+    .order-icon {
+        width: 40px; height: 40px;
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+        background: rgba(13,37,89,.08);
+        color: var(--primary);
     }
-    
-    .info-value {
-        font-size: 1.5rem;
+    .order-icon.green  { background: rgba(16,185,129,.10); color: var(--success); }
+    .order-icon.orange { background: var(--secondary-light); color: var(--secondary); }
+    .order-icon.red    { background: rgba(239,68,68,.10); color: var(--danger); }
+
+    .order-info { flex: 1; min-width: 0; }
+    .order-ref {
+        font-size: .85rem;
         font-weight: 700;
-        color: #2d3748;
+        color: var(--primary);
+        margin-bottom: .15rem;
     }
-    
-    .badge-custom {
-        padding: 0.5rem 1rem;
-        border-radius: 10px;
-        font-weight: 600;
-        font-size: 0.875rem;
+    .order-dest {
+        font-size: .78rem;
+        color: var(--text-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
-    
+    .order-date {
+        font-size: .72rem;
+        color: var(--text-muted);
+        margin-top: .1rem;
+    }
+
+    .order-badge {
+        font-size: .7rem;
+        font-weight: 700;
+        padding: .25rem .6rem;
+        border-radius: 20px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .badge-attente   { background: #fef3c7; color: #92400e; }
+    .badge-cours     { background: rgba(255,128,0,.12); color: var(--secondary); }
+    .badge-terminee  { background: rgba(16,185,129,.12); color: #065f46; }
+    .badge-annulee   { background: rgba(239,68,68,.12); color: #991b1b; }
+    .badge-validation { background: rgba(59,130,246,.12); color: #1d4ed8; }
+
     .empty-state {
         text-align: center;
-        padding: 3rem 1rem;
-        color: #718096;
+        padding: 2.5rem 1rem;
+        color: var(--text-muted);
     }
-    
     .empty-state i {
-        font-size: 4rem;
-        margin-bottom: 1rem;
-        opacity: 0.5;
+        font-size: 2.5rem;
+        opacity: .35;
+        display: block;
+        margin-bottom: .75rem;
     }
-    
-    @media (max-width: 768px) {
-        .stat-value {
-            font-size: 2rem;
-        }
-        
-        .stat-icon {
-            font-size: 2rem;
-        }
+    .empty-state p { font-size: .88rem; margin: 0; }
+
+    /* ── CTA Button ── */
+    .cta-new {
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        background: var(--secondary);
+        color: white;
+        border-radius: 12px;
+        padding: .6rem 1.2rem;
+        font-size: .82rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: transform .2s, box-shadow .2s;
+        box-shadow: 0 4px 12px rgba(255,128,0,.3);
     }
+    .cta-new:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(255,128,0,.45);
+        color: white;
+    }
+    .cta-link {
+        font-size: .8rem;
+        font-weight: 700;
+        color: var(--secondary);
+        text-decoration: none;
+    }
+    .cta-link:hover { text-decoration: underline; color: var(--secondary); }
+
+    .section-mb { margin-bottom: 1.75rem; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="dashboard-header">
-        <h1><i class="bi bi-speedometer2"></i> Tableau de bord</h1>
-        <p class="dashboard-subtitle">Bienvenue, <strong>{{ user.first_name }} {{ user.last_name }}</strong></p>
+<div class="py-3">
+
+    <!-- Greeting -->
+    <div class="greeting-section">
+        <h1>Bonjour <span>{{ user.first_name|default:user.username }}</span> 👋</h1>
+        <p>Suivez vos livraisons en temps réel et gérez toutes vos commandes facilement.</p>
     </div>
-    
-    <!-- Statistics Cards Row 1 -->
-    <div class="row g-4 mb-4">
-        <div class="col-xl-3 col-md-6">
-            <div class="stat-card primary text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <div class="stat-label">Total Commandes</div>
-                            <div class="stat-value">{{ total_orders }}</div>
-                        </div>
-                        <i class="bi bi-box-seam stat-icon"></i>
-                    </div>
-                </div>
+
+    <!-- Stat Cards -->
+    <div class="stat-grid section-mb">
+        <div class="stat-card c-blue">
+            <div class="stat-icon-wrap"><i class="bi bi-box-seam"></i></div>
+            <div class="stat-value">{{ total_orders }}</div>
+            <div class="stat-label">Total commandes</div>
+        </div>
+        <div class="stat-card c-green">
+            <div class="stat-icon-wrap"><i class="bi bi-check-circle"></i></div>
+            <div class="stat-value">{{ completed_orders }}</div>
+            <div class="stat-label">Livrées</div>
+        </div>
+        <div class="stat-card c-orange">
+            <div class="stat-icon-wrap"><i class="bi bi-truck"></i></div>
+            <div class="stat-value">{{ in_progress_orders }}</div>
+            <div class="stat-label">En cours</div>
+        </div>
+        <div class="stat-card c-info">
+            <div class="stat-icon-wrap"><i class="bi bi-clock-history"></i></div>
+            <div class="stat-value">{{ pending_orders }}</div>
+            <div class="stat-label">En attente</div>
+        </div>
+    </div>
+
+    <!-- Finance Cards -->
+    <div class="finance-grid section-mb">
+        <div class="finance-card">
+            <div class="finance-icon"><i class="bi bi-wallet2"></i></div>
+            <div>
+                <div class="finance-label">Total dépensé</div>
+                <div class="finance-value">{{ total_spent|floatformat:0 }} FCFA</div>
             </div>
         </div>
-        
-        <div class="col-xl-3 col-md-6">
-            <div class="stat-card success text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <div class="stat-label">Livrées</div>
-                            <div class="stat-value">{{ completed_orders }}</div>
-                        </div>
-                        <i class="bi bi-check-circle stat-icon"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-xl-3 col-md-6">
-            <div class="stat-card warning text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <div class="stat-label">En Cours</div>
-                            <div class="stat-value">{{ in_progress_orders }}</div>
-                        </div>
-                        <i class="bi bi-truck stat-icon"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-xl-3 col-md-6">
-            <div class="stat-card info text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <div class="stat-label">En Attente</div>
-                            <div class="stat-value">{{ pending_orders }}</div>
-                        </div>
-                        <i class="bi bi-clock-history stat-icon"></i>
-                    </div>
-                </div>
+        <div class="finance-card alt">
+            <div class="finance-icon"><i class="bi bi-graph-up-arrow"></i></div>
+            <div>
+                <div class="finance-label">Coût moyen</div>
+                <div class="finance-value">{{ avg_delivery_cost|floatformat:0 }} FCFA</div>
             </div>
         </div>
     </div>
-    
-    <!-- Additional Stats Row -->
-    <div class="row g-4 mb-4">
-        <div class="col-lg-6">
-            <div class="info-card">
-                <div class="info-label">Total Dépensé</div>
-                <div class="info-value text-primary">{{ total_spent|floatformat:0 }} FCFA</div>
+
+    <!-- Charts -->
+    <div class="charts-grid section-mb">
+        <div class="chart-card">
+            <div class="chart-card-header">
+                <div>
+                    <h5 class="chart-card-title">Activité des commandes</h5>
+                    <p class="chart-card-sub">Évolution sur les 6 derniers mois</p>
+                </div>
             </div>
+            <canvas id="monthlyOrdersChart" height="90"></canvas>
         </div>
-        <div class="col-lg-6">
-            <div class="info-card">
-                <div class="info-label">Coût Moyen</div>
-                <div class="info-value" style="color: var(--secondary);">{{ avg_delivery_cost|floatformat:0 }} FCFA</div>
+        <div class="chart-card">
+            <div class="chart-card-header">
+                <div>
+                    <h5 class="chart-card-title">Répartition</h5>
+                    <p class="chart-card-sub">Par statut</p>
+                </div>
             </div>
+            <canvas id="statusDistributionChart"></canvas>
         </div>
     </div>
-    
-    <!-- Charts Row -->
-    <div class="row g-4 mb-4">
-        <!-- Monthly Orders Chart -->
-        <div class="col-lg-8">
-            <div class="chart-container">
-                <div class="chart-header">
-                    <div>
-                        <h5 class="chart-title">Activité des Commandes</h5>
-                        <p class="chart-subtitle">Évolution sur les 6 derniers mois</p>
-                    </div>
-                </div>
-                <canvas id="monthlyOrdersChart"></canvas>
-            </div>
+
+    <!-- Promo Banner -->
+    <div class="promo-banner section-mb">
+        <div class="promo-text">
+            <h3>Nouvelle demande de livraison ?</h3>
+            <p>Soumettez votre demande en quelques clics, un livreur prendra en charge votre colis.</p>
         </div>
-        
-        <!-- Status Distribution Chart -->
-        <div class="col-lg-4">
-            <div class="chart-container">
-                <div class="chart-header">
-                    <div>
-                        <h5 class="chart-title">Répartition</h5>
-                        <p class="chart-subtitle">Par statut</p>
-                    </div>
-                </div>
-                <canvas id="statusDistributionChart"></canvas>
+        <a href="{% url 'Client:creer_demande' %}" class="promo-btn">
+            <i class="bi bi-plus-circle me-1"></i> Nouvelle demande
+        </a>
+    </div>
+
+    <!-- Orders Lists -->
+    <div class="orders-grid">
+        <!-- En Attente -->
+        <div class="orders-card">
+            <div class="orders-card-header">
+                <h5 class="orders-card-title"><i class="bi bi-hourglass-split me-1"></i> En attente</h5>
+                <span class="badge" style="background:rgba(245,158,11,.15);color:#92400e;font-weight:700;border-radius:20px;padding:.3rem .7rem;">
+                    {{ pending_orders }}
+                </span>
             </div>
+            {% if pending_orders_list %}
+                {% for order in pending_orders_list %}
+                <a href="{% url 'Client:detail_demande' order.id %}" class="order-item">
+                    <div class="order-icon orange"><i class="bi bi-hourglass-split"></i></div>
+                    <div class="order-info">
+                        <div class="order-ref">{{ order.ref }}</div>
+                        <div class="order-dest"><i class="bi bi-geo-alt" style="font-size:.72rem;"></i> {{ order.adresse_destination|truncatewords:5 }}</div>
+                        <div class="order-date"><i class="bi bi-calendar3" style="font-size:.72rem;"></i> {{ order.date_demande|date:"d/m/Y H:i" }}</div>
+                    </div>
+                    <span class="order-badge badge-attente">En attente</span>
+                </a>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-check2-circle"></i>
+                    <p>Aucune commande en attente</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Récentes -->
+        <div class="orders-card">
+            <div class="orders-card-header">
+                <h5 class="orders-card-title"><i class="bi bi-clock-history me-1"></i> Commandes récentes</h5>
+                <a href="{% url 'Client:liste_demandes' %}" class="cta-link">Voir tout →</a>
+            </div>
+            {% if recent_orders %}
+                {% for order in recent_orders %}
+                <a href="{% url 'Client:detail_demande' order.id %}" class="order-item">
+                    <div class="order-icon {% if order.statut == 'TERMINEE' %}green{% elif order.statut == 'ANNULEE' %}red{% else %}orange{% endif %}">
+                        <i class="bi {% if order.statut == 'TERMINEE' %}bi-check-circle{% elif order.statut == 'ANNULEE' %}bi-x-circle{% elif order.statut == 'EN_ATTENTE' %}bi-hourglass-split{% else %}bi-truck{% endif %}"></i>
+                    </div>
+                    <div class="order-info">
+                        <div class="order-ref">{{ order.ref }}</div>
+                        <div class="order-dest"><i class="bi bi-geo-alt" style="font-size:.72rem;"></i> {{ order.adresse_destination|truncatewords:5 }}</div>
+                        <div class="order-date"><i class="bi bi-calendar3" style="font-size:.72rem;"></i> {{ order.date_demande|date:"d/m/Y H:i" }}</div>
+                    </div>
+                    <span class="order-badge
+                        {% if order.statut == 'TERMINEE' %}badge-terminee
+                        {% elif order.statut == 'ANNULEE' %}badge-annulee
+                        {% elif order.statut == 'EN_ATTENTE' %}badge-attente
+                        {% elif order.statut == 'VALIDATION_CLIENT' %}badge-validation
+                        {% else %}badge-cours{% endif %}">
+                        {{ order.get_statut_display }}
+                    </span>
+                </a>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-inbox"></i>
+                    <p>Aucune commande récente</p>
+                </div>
+            {% endif %}
         </div>
     </div>
-    
-    <!-- Bottom Row -->
-    <div class="row g-4">
-        <!-- Pending Orders -->
-        <div class="col-lg-6">
-            <div class="orders-list">
-                <div class="chart-header">
-                    <h5 class="chart-title"><i class="bi bi-hourglass-split"></i> Commandes en Attente</h5>
-                    <span class="badge bg-warning text-dark">{{ pending_orders }}</span>
-                </div>
-                
-                {% if pending_orders_list %}
-                    {% for order in pending_orders_list %}
-                    <div class="order-item">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <span class="order-ref">{{ order.ref }}</span>
-                            <span class="order-status status-en-attente">En attente</span>
-                        </div>
-                        <div class="small text-muted">
-                            <i class="bi bi-geo-alt"></i> {{ order.adresse_destination|truncatewords:5 }}
-                        </div>
-                        <div class="small text-muted">
-                            <i class="bi bi-calendar"></i> {{ order.date_demande|date:"d/m/Y H:i" }}
-                        </div>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="empty-state">
-                        <i class="bi bi-check-circle"></i>
-                        <p>Aucune commande en attente</p>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-        
-        <!-- Recent Orders -->
-        <div class="col-lg-6">
-            <div class="orders-list">
-                <div class="chart-header">
-                    <h5 class="chart-title"><i class="bi bi-clock-history"></i> Commandes Récentes</h5>
-                </div>
-                
-                {% if recent_orders %}
-                    {% for order in recent_orders %}
-                    <div class="order-item">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <span class="order-ref">{{ order.ref }}</span>
-                            <span class="order-status {% if order.statut == 'TERMINEE' %}status-terminee{% elif order.statut == 'ANNULEE' %}status-annulee{% elif order.statut == 'EN_ATTENTE' %}status-en-attente{% else %}status-en-cours{% endif %}">
-                                {{ order.get_statut_display }}
-                            </span>
-                        </div>
-                        <div class="small text-muted">
-                            <i class="bi bi-geo-alt"></i> {{ order.adresse_destination|truncatewords:5 }}
-                        </div>
-                        <div class="small text-muted">
-                            <i class="bi bi-calendar"></i> {{ order.date_demande|date:"d/m/Y H:i" }}
-                        </div>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="empty-state">
-                        <i class="bi bi-inbox"></i>
-                        <p>Aucune commande récente</p>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
+
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-    // Chart.js default configuration
-    Chart.defaults.font.family = "'Inter', sans-serif";
-    Chart.defaults.color = '#718096';
-    
-    // Monthly Orders Line Chart
-    const monthlyCtx = document.getElementById('monthlyOrdersChart').getContext('2d');
-    new Chart(monthlyCtx, {
+    Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+    Chart.defaults.color = '#6b7280';
+
+    // Line chart — activité mensuelle
+    new Chart(document.getElementById('monthlyOrdersChart'), {
         type: 'line',
         data: {
             labels: JSON.parse('{{ months|safe }}'),
             datasets: [{
                 label: 'Commandes',
                 data: JSON.parse('{{ order_counts|safe }}'),
-                borderColor: 'var(--primary)',
-                backgroundColor: 'rgba(0, 0, 128, 0.1)',
-                tension: 0.4,
+                borderColor: '#0d2559',
+                backgroundColor: 'rgba(13,37,89,0.08)',
+                tension: 0.45,
                 fill: true,
                 borderWidth: 3,
-                pointBackgroundColor: 'var(--primary)',
+                pointBackgroundColor: '#ff8000',
                 pointBorderColor: '#fff',
                 pointBorderWidth: 2,
                 pointRadius: 5,
-                pointHoverRadius: 7
+                pointHoverRadius: 7,
+                pointHoverBackgroundColor: '#ff8000',
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: true,
             plugins: {
-                legend: {
-                    display: false
-                },
+                legend: { display: false },
                 tooltip: {
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    backgroundColor: '#0d2559',
                     padding: 12,
-                    borderRadius: 8,
-                    titleFont: { size: 14, weight: 'bold' },
-                    bodyFont: { size: 13 }
+                    borderRadius: 10,
+                    titleFont: { size: 13, weight: '700' },
+                    bodyFont:  { size: 12 },
+                    callbacks: {
+                        title: ctx => ctx[0].label,
+                        label: ctx => ` ${ctx.parsed.y} commande${ctx.parsed.y > 1 ? 's' : ''}`
+                    }
                 }
             },
             scales: {
                 y: {
                     beginAtZero: true,
-                    ticks: {
-                        stepSize: 1,
-                        font: { size: 12 }
-                    },
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.05)',
-                        drawBorder: false
-                    }
+                    ticks: { stepSize: 1, font: { size: 11 } },
+                    grid: { color: 'rgba(0,0,0,0.04)' }
                 },
                 x: {
-                    grid: {
-                        display: false
-                    },
-                    ticks: {
-                        font: { size: 12 }
-                    }
+                    grid: { display: false },
+                    ticks: { font: { size: 11 } }
                 }
             }
         }
     });
-    
-    // Status Distribution Doughnut Chart
-    const statusCtx = document.getElementById('statusDistributionChart').getContext('2d');
-    new Chart(statusCtx, {
+
+    // Doughnut chart — répartition par statut
+    new Chart(document.getElementById('statusDistributionChart'), {
         type: 'doughnut',
         data: {
             labels: JSON.parse('{{ status_labels|safe }}'),
             datasets: [{
                 data: JSON.parse('{{ status_data|safe }}'),
-                backgroundColor: [
-                    '#000080',
-                    '#10b981',
-                    '#FF6B00',
-                    '#ef4444',
-                    '#3b82f6',
-                    '#6366f1'
-                ],
+                backgroundColor: ['#0d2559','#10b981','#ff8000','#ef4444','#3b82f6','#6366f1'],
                 borderWidth: 0,
                 hoverOffset: 10
             }]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true,
             plugins: {
                 legend: {
                     position: 'bottom',
                     labels: {
-                        padding: 15,
-                        font: { size: 12 },
+                        padding: 14,
+                        font: { size: 11, weight: '600' },
                         usePointStyle: true,
                         pointStyle: 'circle'
                     }
                 },
                 tooltip: {
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    backgroundColor: '#0d2559',
                     padding: 12,
-                    borderRadius: 8
+                    borderRadius: 10
                 }
             },
-            cutout: '70%'
+            cutout: '68%'
         }
     });
 </script>

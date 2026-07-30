@@ -27,6 +27,7 @@ load_dotenv(BASE_DIR / '.env')
 SECRET_KEY = os.environ.get('SECRET_KEY')
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost').split(',')
+CSRF_TRUSTED_ORIGINS = [o for o in os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',') if o]
 
 
 # Application definition
@@ -43,11 +44,12 @@ INSTALLED_APPS = [
 
     #application du projet
     "WebSite", #site web
-    "Auth" ,  #application de connexion 
-    "Client", #application client 
+    "Auth" ,  #application de connexion
+    "Client", #application client
     "Demande",#application demande
     "Livreur", #application livreur
     "Gestionnaire", #application gestionnaire
+    "notifications", #application notifications push (VAPID/Web Push)
 ]
 
 
@@ -90,6 +92,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "Demande.context_processors.notifications_context",
+                "notifications.context_processors.vapid_context",
             ],
         },
     },
@@ -167,7 +170,11 @@ STORAGES = {
     },
 }
 
- 
+# Fichiers PWA servis à la racine du domaine (manifest.json, service-worker.js, offline.html)
+# nécessaire pour que le service worker ait le scope '/' (WhiteNoise ne sert que /static/ sinon).
+WHITENOISE_ROOT = os.path.join(BASE_DIR, 'public')
+
+
 
 MEDIA_URL = 'medias/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'medias')
@@ -178,6 +185,11 @@ MAPBOX_ACCESS_TOKEN = os.environ.get('MAPBOX_ACCESS_TOKEN', '')
 
 # Configuration LocationIQ (autocomplétion adresses)
 LOCATIONIQ_KEY = os.environ.get('LOCATIONIQ_KEY', '')
+
+# Configuration Web Push (VAPID) — voir scripts/generate_vapid_keys.py
+VAPID_PUBLIC_KEY = os.environ.get('VAPID_PUBLIC_KEY', '')
+VAPID_PRIVATE_KEY_PATH = os.path.join(BASE_DIR, os.environ.get('VAPID_PRIVATE_KEY_PATH', 'vapid_private_key.pem'))
+VAPID_ADMIN_EMAIL = os.environ.get('VAPID_ADMIN_EMAIL', '')
 
 
 

@@ -203,7 +203,7 @@
     }
     .signature-banner-title { font-size: 0.76rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #5b21b6; margin-bottom: 0.25rem; }
     .signature-banner-sub { font-size: 0.84rem; color: #4c1d95; margin-bottom: 1rem; }
-    #signatureCanvas {
+    .sig-canvas {
         display: block; background: white; border-radius: 12px;
         border: 2px solid #c4b5fd; width: 100%; touch-action: none;
         cursor: crosshair;
@@ -370,6 +370,27 @@
 </div>
 {% endif %}
 
+<!-- Pad signature expéditeur (LIVREUR_ROUTE — demandes invité uniquement) -->
+{% if demande.statut == 'LIVREUR_ROUTE' and not demande.client %}
+<div class="signature-banner">
+    <div class="signature-banner-title"><i class="bi bi-pen me-1"></i>Signature de l'expéditeur requise</div>
+    <div class="signature-banner-sub">Cette demande n'a pas de compte client : faites signer l'expéditeur (la personne qui vous remet le colis) directement sur cet écran pour confirmer la récupération.</div>
+    <canvas id="signatureCanvasExp" class="sig-canvas" height="180"></canvas>
+    <div class="sig-actions">
+        <button type="button" class="btn-clear-sig" id="btnClearSigExp">
+            <i class="bi bi-eraser"></i>Effacer
+        </button>
+        <form method="post" action="{% url 'Livreur:confirmer_recuperation_expediteur' demande.pk %}" id="sigFormExp" style="flex:2; display:flex;">
+            {% csrf_token %}
+            <input type="hidden" name="signature" id="sigInputExp">
+            <button type="submit" class="btn-confirm-delivery" id="btnConfirmPickup" disabled style="width:100%;">
+                <i class="bi bi-check-circle-fill"></i>Confirmer la récupération
+            </button>
+        </form>
+    </div>
+</div>
+{% endif %}
+
 <!-- Bannière commencer livraison (RECEPTION_COLIS) -->
 {% if demande.statut == 'RECEPTION_COLIS' %}
 <div class="start-delivery-banner">
@@ -392,7 +413,7 @@
 <div class="signature-banner">
     <div class="signature-banner-title"><i class="bi bi-pen me-1"></i>Signature du destinataire requise</div>
     <div class="signature-banner-sub">Faites signer le destinataire directement sur cet écran pour confirmer la livraison.</div>
-    <canvas id="signatureCanvas" height="180"></canvas>
+    <canvas id="signatureCanvas" class="sig-canvas" height="180"></canvas>
     <div class="sig-actions">
         <button type="button" class="btn-clear-sig" id="btnClearSig">
             <i class="bi bi-eraser"></i>Effacer
@@ -612,14 +633,15 @@
 {% block extra_js %}
 <script src='https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js'></script>
 <script>
-    // ===== Signature pad =====
-    (function() {
-        const canvas = document.getElementById('signatureCanvas');
+    // ===== Signature pad (réutilisable : destinataire + expéditeur) =====
+    function initSignaturePad(cfg) {
+        const canvas = document.getElementById(cfg.canvasId);
         if (!canvas) return;
 
         const ctx = canvas.getContext('2d');
         let drawing = false;
         let hasSignature = false;
+        const confirmBtn = document.getElementById(cfg.confirmBtnId);
 
         function resizeCanvas() {
             const ratio = window.devicePixelRatio || 1;
@@ -637,7 +659,6 @@
 
         function getPos(e) {
             const rect = canvas.getBoundingClientRect();
-            const ratio = window.devicePixelRatio || 1;
             if (e.touches) {
                 return { x: (e.touches[0].clientX - rect.left), y: (e.touches[0].clientY - rect.top) };
             }
@@ -649,7 +670,7 @@
             if (!drawing) return; e.preventDefault();
             const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke();
             hasSignature = true;
-            document.getElementById('btnConfirmDelivery').disabled = false;
+            confirmBtn.disabled = false;
         }
         function stopDraw(e) { drawing = false; }
 
@@ -661,17 +682,20 @@
         canvas.addEventListener('touchmove', draw, { passive: false });
         canvas.addEventListener('touchend', stopDraw);
 
-        document.getElementById('btnClearSig').addEventListener('click', () => {
+        document.getElementById(cfg.clearBtnId).addEventListener('click', () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             hasSignature = false;
-            document.getElementById('btnConfirmDelivery').disabled = true;
+            confirmBtn.disabled = true;
         });
 
-        document.getElementById('sigForm').addEventListener('submit', function(e) {
+        document.getElementById(cfg.formId).addEventListener('submit', function(e) {
             if (!hasSignature) { e.preventDefault(); return; }
-            document.getElementById('sigInput').value = canvas.toDataURL('image/png');
+            document.getElementById(cfg.hiddenInputId).value = canvas.toDataURL('image/png');
         });
-    })();
+    }
+
+    initSignaturePad({ canvasId: 'signatureCanvas', clearBtnId: 'btnClearSig', confirmBtnId: 'btnConfirmDelivery', hiddenInputId: 'sigInput', formId: 'sigForm' });
+    initSignaturePad({ canvasId: 'signatureCanvasExp', clearBtnId: 'btnClearSigExp', confirmBtnId: 'btnConfirmPickup', hiddenInputId: 'sigInputExp', formId: 'sigFormExp' });
 
     // Modal d'acceptation
     const btnAccept  = document.getElementById('btnAccept');

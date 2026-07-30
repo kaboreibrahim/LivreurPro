@@ -7,9 +7,10 @@
     <title>{% block page_title %}Mon Livreur Pro{% endblock %}</title>
     <link rel="icon" href="{% static 'site/img/logo.png' %}">
     <link rel="apple-touch-icon" href="{% static 'site/img/logo.png' %}">
+    {% include "pwa/_pwa_meta.html" %}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
     <link href="https://cdnjs.cloudflare.com/ajax/libs/boxicons/2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     {% block extra_css %}{% endblock %}
     
     <style>
@@ -20,15 +21,21 @@
         }
 
         :root {
-            --primary: #000080;
-            --secondary: #FF6B00;
-            --light: #FFF9E5;
+            --primary: #0d2559;
+            --primary-dark: #0a1f47;
+            --secondary: #ff8000;
+            --secondary-light: rgba(255,128,0,0.12);
+            --light: #f7f9fc;
             --dark: #1A1A1A;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --card-shadow: 0 4px 20px rgba(13,37,89,0.08);
+            --card-hover: 0 8px 32px rgba(13,37,89,0.15);
         }
 
         body {
-            font-family: 'Public Sans', sans-serif;
-            background-color: #FAFAFA;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--light);
             display: flex;
             flex-direction: column;
             min-height: 100vh;
@@ -49,9 +56,9 @@
             left: 0;
             right: 0;
             height: 70px;
-            background: linear-gradient(135deg, var(--primary) 0%, #000060 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             z-index: 1000;
-            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 20px rgba(13,37,89,0.25);
             display: flex;
             align-items: center;
             padding: 0 30px;
@@ -95,28 +102,31 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            color: white;
+            color: rgba(255,255,255,0.85);
             text-decoration: none;
-            padding: 10px 20px;
+            padding: 9px 18px;
             border-radius: 30px;
-            background-color: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
-            font-weight: 500;
-            letter-spacing: 0.5px;
+            background-color: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            transition: all 0.25s ease;
+            font-weight: 600;
+            font-size: 0.88rem;
+            letter-spacing: 0.3px;
         }
 
         .header-nav-btn:hover {
-            background-color: rgba(10, 56, 184, 0.2);
+            background-color: rgba(255,128,0,0.18);
+            border-color: rgba(255,128,0,0.4);
+            color: white;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 88, 74, 0.1);
+            box-shadow: 0 4px 14px rgba(255,128,0,0.18);
         }
 
         .header-nav-btn.active {
             background-color: var(--secondary);
             border-color: var(--secondary);
             color: white;
-            box-shadow: 0 4px 12px rgba(255, 107, 0, 0.3);
+            box-shadow: 0 4px 14px rgba(255,128,0,0.4);
         }
 
         .header-nav-btn i {
@@ -220,6 +230,19 @@
             font-weight: 500;
         }
         .notif-mark-all-btn:hover { text-decoration: underline; }
+        .notif-header-actions { display: flex; align-items: center; gap: 10px; }
+        .notif-push-toggle {
+            background: none;
+            border: none;
+            color: var(--secondary);
+            font-size: 1.05rem;
+            cursor: pointer;
+            padding: 2px;
+            line-height: 1;
+            transition: transform .2s ease;
+        }
+        .notif-push-toggle:hover { transform: scale(1.15); }
+        .notif-push-toggle.mlp-push-active { color: #2e7d32; }
         .notif-dropdown-body { max-height: 320px; overflow-y: auto; }
         .notif-dropdown-item {
             display: flex;
@@ -327,9 +350,10 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 60px;
-            background-color: var(--light);
-            border-bottom: 2px solid var(--secondary);
+            height: 62px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-bottom: none;
+            box-shadow: 0 2px 16px rgba(13,37,89,0.25);
             z-index: 999;
             padding: 0 15px;
             align-items: center;
@@ -345,8 +369,8 @@
 
         .mobile-logo {
             font-size: 1.1rem;
-            font-weight: bold;
-            color: var(--primary);
+            font-weight: 800;
+            color: white;
         }
 
         .mobile-user {
@@ -359,17 +383,20 @@
             width: 35px;
             height: 35px;
             border-radius: 50%;
-            background-color: var(--primary);
+            background-color: var(--secondary);
             color: white;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-weight: 700;
+            font-size: .85rem;
             cursor: pointer;
             transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(255,128,0,.35);
         }
 
         .mobile-avatar:hover {
-            background-color: var(--secondary);
+            background-color: #e07000;
             transform: scale(1.05);
         }
 
@@ -393,7 +420,7 @@
         }
 
         .mobile-logout-btn:hover {
-            background-color: var(--primary);
+            background-color: #e07000;
             transform: scale(1.05);
         }
 
@@ -403,7 +430,11 @@
 
         .notification-badge i {
             font-size: 1.5rem;
-            color: var(--primary);
+            color: rgba(255,255,255,0.85);
+        }
+
+        .notification-badge:hover i {
+            color: var(--secondary);
         }
 
         .badge-count {
@@ -426,10 +457,11 @@
             left: 0;
             right: 0;
             height: 70px;
-            background-color: white;
-            border-top: 2px solid var(--secondary);
+            background: linear-gradient(180deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-top: none;
             z-index: 1000;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 -4px 20px rgba(13,37,89,0.3);
+            border-radius: 20px 20px 0 0;
         }
 
         .bottom-nav-container {
@@ -445,24 +477,24 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 4px;
+            gap: 3px;
             flex: 1;
-            color: #666;
+            color: rgba(255,255,255,0.5);
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.25s;
             text-decoration: none;
             padding: 8px;
             position: relative;
         }
 
         .nav-item i {
-            font-size: 1.6rem;
-            transition: all 0.3s;
+            font-size: 1.5rem;
+            transition: all 0.25s;
         }
 
         .nav-item span {
-            font-size: 0.7rem;
-            font-weight: 500;
+            font-size: 0.68rem;
+            font-weight: 600;
             text-align: center;
         }
 
@@ -475,7 +507,7 @@
         }
 
         .nav-item:hover {
-            color: var(--secondary);
+            color: rgba(255,128,0,0.8);
         }
 
         /* Indicateur actif */
@@ -485,20 +517,22 @@
             top: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 40px;
+            width: 36px;
             height: 3px;
             background-color: var(--secondary);
-            border-radius: 0 0 3px 3px;
+            border-radius: 0 0 4px 4px;
         }
 
         /* Content area */
         .content-card {
             background: white;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.25rem;
+            box-shadow: var(--card-shadow);
+            transition: box-shadow .25s;
         }
+        .content-card:hover { box-shadow: var(--card-hover); }
 
         /* Responsive */
         @media (max-width: 768px) {
@@ -694,12 +728,17 @@
             <div class="notif-dropdown-menu" id="notifDropdownMenu">
                 <div class="notif-dropdown-header">
                     <span><i class='bx bxs-bell me-1'></i>Notifications</span>
-                    {% if unread_notifications_count > 0 %}
-                    <form method="post" action="{% url 'notifications:marquer_tout_lu' %}" style="margin:0;">
-                        {% csrf_token %}
-                        <button type="submit" class="notif-mark-all-btn">Tout lire</button>
-                    </form>
-                    {% endif %}
+                    <div class="notif-header-actions">
+                        <button type="button" id="mlp-push-toggle" class="notif-push-toggle" title="Activer les notifications push" aria-pressed="false">
+                            <i class='bx bx-bell-plus'></i>
+                        </button>
+                        {% if unread_notifications_count > 0 %}
+                        <form method="post" action="{% url 'notifications:marquer_tout_lu' %}" style="margin:0;">
+                            {% csrf_token %}
+                            <button type="submit" class="notif-mark-all-btn">Tout lire</button>
+                        </form>
+                        {% endif %}
+                    </div>
                 </div>
                 <div class="notif-dropdown-body">
                     {% if recent_notifications %}
@@ -781,14 +820,7 @@
                 {% endblock content %}
             </main>
         </div>
-        <!-- Notifications/Messages -->
-        <div class="container-fluid">
-            {% include "layouts/_message.html" %}
-        </div>
     </div>
-        {% include "layouts/_message.html" %}
-    </div>
-</div>
 
     <!-- Mobile Bottom Navigation -->
     <div class="mobile-bottom-nav">
@@ -831,7 +863,8 @@
           <span>Déconnexion</span>
       </a>
     </div>
-      <!-- Notifications/Messages -->
+
+    <!-- Toast/Messages -->
     <div class="container-fluid">
         {% include "layouts/_message.html" %}
     </div>
@@ -949,5 +982,9 @@
         });
     </script>
     {% block extra_js %}{% endblock %}
+    {% include "pwa/_install_banner.html" %}
+    {% include "pwa/_push_required_modal.html" %}
+    <script src="{% static 'js/pwa.js' %}" defer></script>
+    <script src="{% static 'js/push-subscribe.js' %}" defer></script>
 </body>
 </html>

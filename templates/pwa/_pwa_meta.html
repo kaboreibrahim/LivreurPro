@@ -1,0 +1,11 @@
+{% load static %}
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#000080">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Livreur Pro">
+<link rel="apple-touch-icon" href="{% static 'pwa/icons/apple-touch-icon.png' %}">
+<link rel="icon" type="image/png" sizes="96x96" href="{% static 'pwa/icons/icon-96.png' %}">
+<link rel="icon" type="image/png" sizes="192x192" href="{% static 'pwa/icons/icon-192.png' %}">
+<link rel="icon" type="image/png" sizes="512x512" href="{% static 'pwa/icons/icon-512.png' %}">
+<meta name="mlp-vapid-key" content="{{ vapid_public_key }}">

@@ -7,6 +7,7 @@
     <title>{% block page_title %}Mon Livreur Pro{% endblock %}</title>
     <link rel="icon" href="{% static 'site/img/logo.png' %}">
     <link rel="apple-touch-icon" href="{% static 'site/img/logo.png' %}">
+    {% include "pwa/_pwa_meta.html" %}
     <link href="https://cdnjs.cloudflare.com/ajax/libs/boxicons/2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     {% block extra_css %}{% endblock %}
@@ -219,6 +220,19 @@
             font-weight: 500;
         }
         .notif-mark-all-btn:hover { text-decoration: underline; }
+        .notif-header-actions { display: flex; align-items: center; gap: 10px; }
+        .notif-push-toggle {
+            background: none;
+            border: none;
+            color: var(--secondary);
+            font-size: 1.05rem;
+            cursor: pointer;
+            padding: 2px;
+            line-height: 1;
+            transition: transform .2s ease;
+        }
+        .notif-push-toggle:hover { transform: scale(1.15); }
+        .notif-push-toggle.mlp-push-active { color: #2e7d32; }
         .notif-dropdown-body { max-height: 320px; overflow-y: auto; }
         .notif-dropdown-item {
             display: flex;
@@ -853,12 +867,17 @@
             <div class="notif-dropdown-menu" id="notifDropdownMenu">
                 <div class="notif-dropdown-header">
                     <span><i class='bx bxs-bell me-1'></i>Notifications</span>
-                    {% if unread_notifications_count > 0 %}
-                    <form method="post" action="{% url 'notifications:marquer_tout_lu' %}" style="margin:0;">
-                        {% csrf_token %}
-                        <button type="submit" class="notif-mark-all-btn">Tout lire</button>
-                    </form>
-                    {% endif %}
+                    <div class="notif-header-actions">
+                        <button type="button" id="mlp-push-toggle" class="notif-push-toggle" title="Activer les notifications push" aria-pressed="false">
+                            <i class='bx bx-bell-plus'></i>
+                        </button>
+                        {% if unread_notifications_count > 0 %}
+                        <form method="post" action="{% url 'notifications:marquer_tout_lu' %}" style="margin:0;">
+                            {% csrf_token %}
+                            <button type="submit" class="notif-mark-all-btn">Tout lire</button>
+                        </form>
+                        {% endif %}
+                    </div>
                 </div>
                 <div class="notif-dropdown-body">
                     {% if recent_notifications %}
@@ -1197,5 +1216,9 @@
             }
         });
     </script>
+    {% include "pwa/_install_banner.html" %}
+    {% include "pwa/_push_required_modal.html" %}
+    <script src="{% static 'js/pwa.js' %}" defer></script>
+    <script src="{% static 'js/push-subscribe.js' %}" defer></script>
 </body>
 </html>

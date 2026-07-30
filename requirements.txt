@@ -22,6 +22,9 @@ uritemplate==4.2.0
 # --- Static files ---
 whitenoise==6.12.0
 
+# --- Web Push (VAPID) ---
+pywebpush==2.3.0
+
 # --- CORS & Forms ---
 django-cors-headers==4.9.0
 django-crispy-forms==2.6

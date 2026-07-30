@@ -45,6 +45,9 @@ urlpatterns = [
     ##### url Notifications #####
     path('notifications/', include(('Demande.urls', 'notifications'))),
 
+    ##### url Notifications Push (abonnements VAPID/Web Push) #####
+    path('push/', include(('notifications.urls', 'push'))),
+
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + [
     # Sert les fichiers media quel que soit DEBUG (en prod, déléguer à Nginx)
     re_path(r'^medias/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),

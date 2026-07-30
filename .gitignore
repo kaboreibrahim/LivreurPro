@@ -18,6 +18,9 @@ env/
 .env.*
 !.env.example
 
+# Clé privée VAPID (Web Push) — NE JAMAIS COMMITTER
+vapid_private_key.pem
+
 # VS Code Local History — NE JAMAIS COMMITTER
 .history/
 

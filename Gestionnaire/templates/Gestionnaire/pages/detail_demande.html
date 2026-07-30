@@ -883,6 +883,13 @@ body { background: var(--bg); }
             <span>Télécharger le reçu PDF</span>
           </a>
           {% endif %}
+
+          {% if demande.cout_livraison %}
+          <a href="{% url 'Gestionnaire:facture_pdf' demande.pk %}" target="_blank" class="act-btn">
+            <i class="bi bi-receipt" style="color:#000080;"></i>
+            <span>Imprimer la facture{% if demande.numero_facture %} ({{ demande.numero_facture }}){% endif %}</span>
+          </a>
+          {% endif %}
         </div>
       </div>
     </div>
@@ -970,7 +977,13 @@ body { background: var(--bg); }
                      min="0" step="0.01" required
                      placeholder="Montant en FCFA">
             </div>
-            <div class="form-text">Le statut passera à « Prix validé par le client ».</div>
+            <div class="form-text">
+              {% if demande.client %}
+              Le statut passera à « Prix validé par le client ».
+              {% else %}
+              Demande invité (sans compte client) : le statut passera directement à « Validation livreur ».
+              {% endif %}
+            </div>
             <input type="hidden" name="nouveau_statut" value="VALIDATION_CLIENT">
           </div>
         </div>

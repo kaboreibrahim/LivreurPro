@@ -124,6 +124,7 @@ class DCLPublicForm(DCLForm):
             'placeholder': 'votre@email.com',
         })
     )
+    
 
     # Champs invité en premier dans le formulaire
     field_order = ['nom', 'prenom', 'telephone', 'email']

@@ -63,6 +63,7 @@
     <!-- Favicon -->
     <link rel="icon" href="{% static 'site/img/logo.png' %}">
     <link rel="apple-touch-icon" href="{% static 'site/img/logo.png' %}">
+    {% include "pwa/_pwa_meta.html" %}
 
     <!-- Preconnect for performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -614,6 +615,8 @@
         });
     })();
     </script>
+    {% include "pwa/_install_banner.html" %}
+    <script src="{% static 'js/pwa.js' %}" defer></script>
 </body>
 
 </html>

@@ -4,6 +4,7 @@ from django.contrib.auth import views as auth_views
 from Gestionnaire.views import *
 from Gestionnaire.views.assigner import assigner_livreur_modal, assigner_livreur
 from Gestionnaire.views.pdf import recu_pdf_gestionnaire
+from Gestionnaire.views.facture import facture_pdf
 
 app_name = 'Gestionnaire'
 
@@ -21,6 +22,7 @@ urlpatterns = [
     # Changement de statut
     path('demandes/<uuid:pk>/statut/<str:nouveau_statut>/', changer_statut, name='changer_statut'),
     path('demandes/<uuid:pk>/recu-pdf/', recu_pdf_gestionnaire, name='recu_pdf'),
+    path('demandes/<uuid:pk>/facture-pdf/', facture_pdf, name='facture_pdf'),
 
     # localisatoion des livreurs
     path('api/livreur-positions/', get_livreur_positions, name='get_livreur_positions'),
