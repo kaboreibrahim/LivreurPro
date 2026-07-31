@@ -1,0 +1,457 @@
+{% extends 'base_gestionnaire.html' %}
+{% load static %}
+
+{% block page_title %}Livraisons manuelles — Mon Livreur Pro{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+<style>
+:root {
+    --navy:       #000080;
+    --navy-dark:  #000060;
+    --navy-light: #e8eaf6;
+    --orange:     #FF6B00;
+    --bg:         #F0F2F7;
+    --card-bg:    #ffffff;
+    --border:     #e8ecf0;
+    --text-1:     #0f172a;
+    --text-2:     #475569;
+    --text-3:     #94a3b8;
+    --radius-sm:  8px;
+    --radius-md:  14px;
+    --radius-lg:  20px;
+    --shadow-sm:  0 1px 4px rgba(0,0,0,.07);
+    --shadow-md:  0 4px 16px rgba(0,0,0,.10);
+    --transition: .22s cubic-bezier(.4,0,.2,1);
+}
+
+body { background: var(--bg); }
+
+.page-wrapper { max-width: 1480px; margin: 0 auto; padding: 0 1.25rem 3rem; }
+
+.page-header {
+    background: linear-gradient(135deg, var(--navy) 0%, #1a237e 60%, #283593 100%);
+    border-radius: var(--radius-lg);
+    padding: 2rem 2.5rem;
+    margin-bottom: 1.75rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+.page-header .content { position: relative; z-index: 1; }
+.page-header h1 { font-size: 1.75rem; font-weight: 800; color: #fff; margin: 0 0 .3rem; letter-spacing: -.5px; }
+.page-header p { color: rgba(255,255,255,.7); font-size: .92rem; margin: 0; }
+.btn-add-livraison {
+    display: inline-flex; align-items: center; gap: .45rem;
+    background: var(--orange); border: none;
+    color: #fff; border-radius: 10px;
+    padding: .65rem 1.2rem; font-size: .9rem; font-weight: 700;
+    text-decoration: none; transition: var(--transition); cursor: pointer;
+    box-shadow: 0 4px 14px rgba(255,107,0,.35);
+}
+.btn-add-livraison:hover { background: #e05f00; color: #fff; transform: translateY(-1px); }
+
+.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.75rem; }
+@media (max-width: 700px) { .stats-grid { grid-template-columns: 1fr; gap: .75rem; } }
+.stat-card {
+    background: var(--card-bg); border-radius: var(--radius-md);
+    padding: 1.25rem 1.1rem; box-shadow: var(--shadow-sm);
+    border-top: 3px solid var(--accent, #e2e8f0);
+}
+.stat-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: color-mix(in srgb, var(--accent, #94a3b8) 12%, transparent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; color: var(--accent, #64748b); margin-bottom: .75rem;
+}
+.stat-val { font-size: 1.9rem; font-weight: 800; color: var(--text-1); line-height: 1; margin-bottom: .25rem; }
+.stat-label { font-size: .78rem; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .4px; }
+
+.filter-bar {
+    background: var(--card-bg); border-radius: var(--radius-md);
+    padding: 1.1rem 1.4rem; margin-bottom: 1.25rem;
+    box-shadow: var(--shadow-sm); border: 1px solid var(--border);
+}
+.filter-row { display: flex; gap: .75rem; align-items: center; flex-wrap: wrap; }
+.search-wrap { position: relative; flex: 1; min-width: 220px; }
+.search-wrap i { position: absolute; left: .9rem; top: 50%; transform: translateY(-50%); color: var(--text-3); font-size: 1rem; }
+.search-input {
+    width: 100%; padding: .65rem .9rem .65rem 2.5rem;
+    border: 1.5px solid var(--border); border-radius: 10px;
+    font-size: .9rem; background: #f8fafc; outline: none; transition: var(--transition);
+}
+.search-input:focus { border-color: var(--orange); background: #fff; box-shadow: 0 0 0 3px rgba(255,107,0,.10); }
+.chips { display: flex; gap: .4rem; align-items: center; }
+.chip {
+    display: inline-flex; align-items: center; gap: .35rem;
+    padding: .45rem .85rem; border-radius: 20px; font-size: .8rem;
+    font-weight: 600; border: 1.5px solid var(--border);
+    background: #f8fafc; color: var(--text-2); cursor: pointer; transition: var(--transition);
+}
+.chip:hover { border-color: var(--navy); color: var(--navy); background: var(--navy-light); }
+.chip.active { background: var(--orange); border-color: var(--orange); color: #fff; }
+
+.results-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: .5rem; }
+.results-count { font-size: .88rem; color: var(--text-2); font-weight: 500; margin: 0; }
+.results-count strong { color: var(--text-1); font-weight: 700; }
+.btn-reset {
+    display: inline-flex; align-items: center; gap: .3rem;
+    color: var(--navy); text-decoration: none; font-weight: 600;
+    border: 1.5px solid var(--border); border-radius: 20px; background: #fff;
+}
+
+.table-card { background: var(--card-bg); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); border: 1px solid var(--border); overflow: hidden; }
+.livraisons-table { width: 100%; border-collapse: collapse; font-size: .86rem; }
+.livraisons-table th {
+    background: #f8fafc; text-align: left; padding: .75rem .9rem;
+    font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .4px;
+    color: var(--text-3); border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+.livraisons-table td { padding: .75rem .9rem; border-bottom: 1px solid var(--border); color: var(--text-1); vertical-align: middle; }
+.livraisons-table tbody tr:last-child td { border-bottom: none; }
+.livraisons-table tbody tr:hover { background: #fafbfc; }
+.route-cell { display: flex; align-items: center; gap: .35rem; white-space: nowrap; }
+.route-cell i { color: var(--text-3); font-size: .78rem; }
+.montant-cell { font-weight: 700; color: #065f46; white-space: nowrap; }
+.badge-facturee { display: inline-flex; align-items: center; gap: .3rem; padding: .3rem .7rem; border-radius: 20px; font-size: .72rem; font-weight: 700; background: #d1fae5; color: #065f46; white-space: nowrap; }
+.badge-non-facturee { display: inline-flex; align-items: center; gap: .3rem; padding: .3rem .7rem; border-radius: 20px; font-size: .72rem; font-weight: 700; background: #fef3c7; color: #92400e; white-space: nowrap; }
+.actions-cell { display: flex; gap: .35rem; white-space: nowrap; }
+.btn-icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px; border: 1.5px solid var(--border);
+    background: #fff; color: var(--text-2); cursor: pointer; text-decoration: none; transition: var(--transition);
+}
+.btn-icon:hover { border-color: var(--navy); color: var(--navy); background: var(--navy-light); }
+.btn-icon.danger:hover { border-color: #ef4444; color: #ef4444; background: #fee2e2; }
+.btn-icon.facture { border-color: var(--orange); color: var(--orange); }
+.btn-icon.facture:hover { background: #fff3e0; }
+
+.empty-state { text-align: center; padding: 3.5rem 1.5rem; }
+.empty-state i { font-size: 2.5rem; color: var(--text-3); margin-bottom: .75rem; display: block; }
+.empty-state h3 { font-size: 1.1rem; color: var(--text-1); margin-bottom: .35rem; }
+.empty-state p { color: var(--text-3); font-size: .88rem; }
+
+.pagination-wrap { display: flex; justify-content: center; gap: .3rem; margin-top: 1.5rem; }
+.pg-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 34px; height: 34px; padding: 0 .5rem; border-radius: 8px;
+    border: 1.5px solid var(--border); background: #fff; color: var(--text-2);
+    text-decoration: none; font-size: .85rem; font-weight: 600;
+}
+.pg-btn.active { background: var(--navy); border-color: var(--navy); color: #fff; }
+.pg-btn.disabled { opacity: .4; pointer-events: none; }
+.pg-ellipsis { display: inline-flex; align-items: center; color: var(--text-3); padding: 0 .3rem; }
+
+.modal-header-navy { background: linear-gradient(135deg, var(--navy) 0%, #1a237e 100%); color: #fff; }
+.modal-header-navy .btn-close { filter: invert(1); }
+
+@media (max-width: 900px) {
+    .table-card { overflow-x: auto; }
+    .livraisons-table { min-width: 900px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-wrapper">
+
+    <div class="page-header mb-4">
+        <div class="content d-flex align-items-start justify-content-between flex-wrap gap-3">
+            <div>
+                <h1><i class="bi bi-journal-text me-2"></i>Livraisons manuelles</h1>
+                <p>Registre des clients récurrents (B2B) suivis hors du workflow de demande en ligne</p>
+            </div>
+            <button type="button" class="btn-add-livraison" data-bs-toggle="modal" data-bs-target="#ajouterLivraisonModal">
+                <i class="bi bi-plus-lg"></i> Ajouter une livraison
+            </button>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card" style="--accent:#000080;">
+            <div class="stat-icon" style="--accent:#000080;"><i class="bi bi-journal-text"></i></div>
+            <div class="stat-val">{{ total }}</div>
+            <div class="stat-label">Total</div>
+        </div>
+        <div class="stat-card" style="--accent:#10b981;">
+            <div class="stat-icon" style="--accent:#10b981;"><i class="bi bi-receipt"></i></div>
+            <div class="stat-val">{{ facturees }}</div>
+            <div class="stat-label">Facturées</div>
+        </div>
+        <div class="stat-card" style="--accent:#FF6B00;">
+            <div class="stat-icon" style="--accent:#FF6B00;"><i class="bi bi-clock-history"></i></div>
+            <div class="stat-val">{{ non_facturees }}</div>
+            <div class="stat-label">Non facturées</div>
+        </div>
+    </div>
+
+    <div class="filter-bar">
+        <form method="get" id="filterForm">
+            <div class="filter-row">
+                <div class="search-wrap">
+                    <i class="bi bi-search"></i>
+                    <input type="text" name="q" class="search-input"
+                           placeholder="Client, téléphone, nature du colis, adresse…"
+                           value="{{ search_query }}" autocomplete="off">
+                </div>
+                <div class="chips">
+                    <button type="button" class="chip {% if not selected_facture %}active{% endif %}" onclick="setFacture('')">
+                        <i class="bi bi-list-ul"></i> Toutes
+                    </button>
+                    <button type="button" class="chip {% if selected_facture == 'non' %}active{% endif %}" onclick="setFacture('non')">
+                        <i class="bi bi-clock-history"></i> Non facturées
+                    </button>
+                    <button type="button" class="chip {% if selected_facture == 'oui' %}active{% endif %}" onclick="setFacture('oui')">
+                        <i class="bi bi-receipt"></i> Facturées
+                    </button>
+                </div>
+            </div>
+            <input type="hidden" name="facture" id="factureInput" value="{{ selected_facture }}">
+        </form>
+    </div>
+
+    <div class="results-bar">
+        <p class="results-count">
+            <strong>{{ livraisons|length }}</strong> livraison{{ livraisons|length|pluralize }} affichée{{ livraisons|length|pluralize }}
+            {% if search_query %} · recherche : « {{ search_query }} »{% endif %}
+        </p>
+        {% if search_query or selected_facture %}
+        <a href="{% url 'Gestionnaire:livraisons_manuelles_liste' %}" class="btn-reset" style="padding:.4rem .9rem; font-size:.8rem;">
+            <i class="bi bi-x-lg"></i> Réinitialiser
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="table-card">
+        {% if livraisons %}
+        <table class="livraisons-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Client</th>
+                    <th>Téléphone</th>
+                    <th>Nature du colis</th>
+                    <th>Itinéraire</th>
+                    <th>Observations</th>
+                    <th>Montant</th>
+                    <th>Facture</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for l in livraisons %}
+                <tr>
+                    <td>{{ l.date_livraison|date:"d/m/Y" }}</td>
+                    <td>{{ l.client_nom }}</td>
+                    <td>{{ l.client_telephone|default:"–" }}</td>
+                    <td>{{ l.nature_colis }}</td>
+                    <td>
+                        <span class="route-cell">{{ l.lieu_depart }} <i class="bi bi-arrow-right"></i> {{ l.lieu_arrivee }}</span>
+                    </td>
+                    <td>{{ l.observations|default:"–" }}</td>
+                    <td class="montant-cell">{{ l.montant|floatformat:0 }} FCFA</td>
+                    <td>
+                        {% if l.numero_facture %}
+                        <span class="badge-facturee"><i class="bi bi-check-circle-fill"></i> {{ l.numero_facture }}</span>
+                        {% else %}
+                        <span class="badge-non-facturee"><i class="bi bi-clock-history"></i> Non facturée</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="actions-cell">
+                            <a href="{% url 'Gestionnaire:facture_livraison_manuelle_pdf' l.pk %}" target="_blank"
+                               class="btn-icon facture" title="{% if l.numero_facture %}Imprimer la facture{% else %}Générer la facture{% endif %}">
+                                <i class="bi bi-receipt"></i>
+                            </a>
+                            {% if not l.numero_facture %}
+                            <button type="button" class="btn-icon" title="Modifier"
+                                    onclick="openEditModal('{{ l.pk }}', '{{ l.date_livraison|date:'Y-m-d' }}', '{{ l.client_nom|escapejs }}', '{{ l.client_telephone|default:''|escapejs }}', '{{ l.nature_colis|escapejs }}', '{{ l.lieu_depart|escapejs }}', '{{ l.lieu_arrivee|escapejs }}', '{{ l.observations|default:''|escapejs }}', '{{ l.montant }}')">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <form method="post" action="{% url 'Gestionnaire:supprimer_livraison_manuelle' l.pk %}" style="display:inline;"
+                                  onsubmit="return confirm('Supprimer cette livraison du registre ?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-icon danger" title="Supprimer">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-journal-x"></i>
+            <h3>Aucune livraison trouvée</h3>
+            <p>Aucune livraison ne correspond à vos critères, ou le registre est encore vide.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if is_paginated %}
+    <div class="pagination-wrap">
+        {% if page_obj.has_previous %}
+        <a class="pg-btn" href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_facture %}&facture={{ selected_facture }}{% endif %}"><i class="bi bi-chevron-double-left"></i></a>
+        <a class="pg-btn" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_facture %}&facture={{ selected_facture }}{% endif %}"><i class="bi bi-chevron-left"></i></a>
+        {% else %}
+        <span class="pg-btn disabled"><i class="bi bi-chevron-double-left"></i></span>
+        <span class="pg-btn disabled"><i class="bi bi-chevron-left"></i></span>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <span class="pg-btn active">{{ num }}</span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a class="pg-btn" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_facture %}&facture={{ selected_facture }}{% endif %}">{{ num }}</a>
+            {% elif num == page_obj.number|add:'-3' or num == page_obj.number|add:'3' %}
+                <span class="pg-ellipsis">…</span>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <a class="pg-btn" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_facture %}&facture={{ selected_facture }}{% endif %}"><i class="bi bi-chevron-right"></i></a>
+        <a class="pg-btn" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_facture %}&facture={{ selected_facture }}{% endif %}"><i class="bi bi-chevron-double-right"></i></a>
+        {% else %}
+        <span class="pg-btn disabled"><i class="bi bi-chevron-right"></i></span>
+        <span class="pg-btn disabled"><i class="bi bi-chevron-double-right"></i></span>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- ── Modal : Ajouter une livraison ── -->
+<div class="modal fade" id="ajouterLivraisonModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header modal-header-navy">
+        <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Ajouter une livraison</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post" action="{% url 'Gestionnaire:creer_livraison_manuelle' %}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Date</label>
+              <input type="date" class="form-control" name="date_livraison" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Montant (FCFA)</label>
+              <input type="number" class="form-control" name="montant" min="0" step="1" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Client</label>
+              <input type="text" class="form-control" name="client_nom" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Numéro client</label>
+              <input type="text" class="form-control" name="client_telephone">
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-bold">Nature du colis</label>
+              <input type="text" class="form-control" name="nature_colis" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Départ</label>
+              <input type="text" class="form-control" name="lieu_depart" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Arrivée</label>
+              <input type="text" class="form-control" name="lieu_arrivee" required>
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-bold">Observations</label>
+              <input type="text" class="form-control" name="observations">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle me-1"></i>Ajouter</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal : Modifier une livraison (partagé, rempli en JS) ── -->
+<div class="modal fade" id="modifierLivraisonModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header modal-header-navy">
+        <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Modifier la livraison</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post" id="editLivraisonForm">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Date</label>
+              <input type="date" class="form-control" name="date_livraison" id="editDate" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Montant (FCFA)</label>
+              <input type="number" class="form-control" name="montant" id="editMontant" min="0" step="1" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Client</label>
+              <input type="text" class="form-control" name="client_nom" id="editClientNom" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Numéro client</label>
+              <input type="text" class="form-control" name="client_telephone" id="editClientTel">
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-bold">Nature du colis</label>
+              <input type="text" class="form-control" name="nature_colis" id="editNature" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Départ</label>
+              <input type="text" class="form-control" name="lieu_depart" id="editDepart" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Arrivée</label>
+              <input type="text" class="form-control" name="lieu_arrivee" id="editArrivee" required>
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-bold">Observations</label>
+              <input type="text" class="form-control" name="observations" id="editObservations">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle me-1"></i>Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function setFacture(val) {
+    document.getElementById('factureInput').value = val;
+    document.getElementById('filterForm').submit();
+}
+
+function openEditModal(pk, date, clientNom, clientTel, nature, depart, arrivee, observations, montant) {
+    document.getElementById('editDate').value = date;
+    document.getElementById('editClientNom').value = clientNom;
+    document.getElementById('editClientTel').value = clientTel;
+    document.getElementById('editNature').value = nature;
+    document.getElementById('editDepart').value = depart;
+    document.getElementById('editArrivee').value = arrivee;
+    document.getElementById('editObservations').value = observations;
+    document.getElementById('editMontant').value = montant;
+    document.getElementById('editLivraisonForm').action = '/gestionnaire/livraisons-manuelles/' + pk + '/modifier/';
+    new bootstrap.Modal(document.getElementById('modifierLivraisonModal')).show();
+}
+</script>
+{% endblock %}

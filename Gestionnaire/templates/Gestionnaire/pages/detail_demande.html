@@ -885,10 +885,17 @@ body { background: var(--bg); }
           {% endif %}
 
           {% if demande.cout_livraison %}
-          <a href="{% url 'Gestionnaire:facture_pdf' demande.pk %}" target="_blank" class="act-btn">
-            <i class="bi bi-receipt" style="color:#000080;"></i>
-            <span>Imprimer la facture{% if demande.numero_facture %} ({{ demande.numero_facture }}){% endif %}</span>
-          </a>
+            {% if demande.numero_facture %}
+            <a href="{% url 'Gestionnaire:facture_pdf' demande.pk %}" target="_blank" class="act-btn">
+              <i class="bi bi-receipt" style="color:#000080;"></i>
+              <span>Imprimer la facture ({{ demande.numero_facture }})</span>
+            </a>
+            {% else %}
+            <button type="button" class="act-btn" data-bs-toggle="modal" data-bs-target="#genererFactureModal">
+              <i class="bi bi-receipt" style="color:#000080;"></i>
+              <span>Générer la facture</span>
+            </button>
+            {% endif %}
           {% endif %}
         </div>
       </div>
@@ -1032,6 +1039,38 @@ body { background: var(--bg); }
 
 {# ── Modal : Assigner livreur ── #}
 {% include 'Gestionnaire/modals/assigner_livreur_modal.html' with demande_id=demande.id %}
+
+{# ── Modal : Générer la facture (1ère génération uniquement — désignation à figer) ── #}
+<div class="modal fade" id="genererFactureModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header modal-header-navy">
+        <h5 class="modal-title"><i class="bi bi-receipt me-2"></i>Générer la facture</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post" action="{% url 'Gestionnaire:generer_facture' demande.pk %}" target="_blank">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-bold">Désignation du colis</label>
+            <textarea class="form-control" name="designation" rows="3" required
+                      placeholder="Décrivez le colis facturé...">{{ demande.description_colis }}</textarea>
+            <div class="form-text">
+              Cette désignation apparaîtra sur la facture et sera définitive, au même titre
+              que le numéro de facture : elle ne pourra plus être modifiée une fois la facture générée.
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-circle me-1"></i>Générer la facture
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 {% endblock %}
 

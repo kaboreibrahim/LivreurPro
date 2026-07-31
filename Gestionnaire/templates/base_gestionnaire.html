@@ -853,6 +853,10 @@
                     <i class='bx bx-user'></i>
                     <span>Client</span>
                 </a>
+                <a href="{% url 'Gestionnaire:livraisons_manuelles_liste' %}" class="header-nav-btn">
+                    <i class='bx bx-archive'></i>
+                    <span>Registre</span>
+                </a>
             </nav>
         </div>
         <div class="header-right">
@@ -996,6 +1000,10 @@
 
     <!-- More Menu -->
     <div class="more-menu" id="moreMenu">
+      <a href="{% url 'Gestionnaire:livraisons_manuelles_liste' %}" class="more-menu-item">
+          <i class='bx bx-archive'></i>
+          <span>Registre</span>
+      </a>
       <a href=" " class="more-menu-item">
           <i class='bx bx-user'></i>
           <span>Mon Profil</span>

@@ -84,7 +84,9 @@ class DCLAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         """Remplir la référence si besoin et journaliser la modification si nécessaire."""
         if not obj.ref:
-            obj.ref = f'DCL-{uuid.uuid4().hex[:8].upper()}'
+            # Préfixe DCL pour une demande libre (invité, sans compte client), DC sinon
+            prefix = 'DCL' if obj.client_id is None else 'DC'
+            obj.ref = f'{prefix}-{uuid.uuid4().hex[:8].upper()}'
         super().save_model(request, obj, form, change)
 
 

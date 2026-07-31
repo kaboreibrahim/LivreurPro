@@ -1,10 +1,13 @@
 import io
 
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.http import HttpResponse, Http404
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.views.decorators.http import require_POST
 from django.utils import timezone
 from Demande.models import DCL
+from Gestionnaire.models import LivraisonManuelle
 from Client.decorators import role_required
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
@@ -131,13 +134,30 @@ def _build_facture_pdf(demande):
     story.append(client_table)
     story.append(Spacer(1, 6 * mm))
 
+    # ─── Itinéraire ──────────────────────────────────────────────────────────
+    story.append(Paragraph('Itinéraire', style_section))
+    itineraire_data = [
+        [Paragraph('Départ', style_label), Paragraph('Destination', style_label)],
+        [Paragraph(demande.adresse_depart, style_value), Paragraph(demande.adresse_destination, style_value)],
+    ]
+    itineraire_table = Table(itineraire_data, colWidths=['50%', '50%'])
+    itineraire_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), LIGHT_GREY),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('LEFTPADDING', (0, 0), (-1, -1), 10),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 10),
+        ('BOX', (0, 0), (-1, -1), 0.5, colors.HexColor('#E2E8F0')),
+        ('LINEAFTER', (0, 0), (0, -1), 0.5, colors.HexColor('#E2E8F0')),
+    ]))
+    story.append(itineraire_table)
+    story.append(Spacer(1, 6 * mm))
+
     # ─── Prestation ──────────────────────────────────────────────────────────
     story.append(Paragraph('Détail de la prestation', style_section))
     montant = demande.cout_livraison or 0
-    designation = (
-        f"Prestation de livraison — {demande.get_type_course_display()} — "
-        f"{demande.adresse_depart} → {demande.adresse_destination}"
-    )
+    designation = demande.designation_facture or demande.get_default_designation_facture()
+
     presta_header = ['Désignation', 'Qté', 'Prix unitaire', 'Montant']
     presta_row = [Paragraph(designation, style_small), '1', f"{montant} FCFA", f"{montant} FCFA"]
     presta_table = Table(
@@ -205,11 +225,244 @@ def _build_facture_pdf(demande):
 @login_required
 @role_required("gestionnaire")
 def facture_pdf(request, pk):
-    """Génère (une seule fois) et retourne la facture PDF définitive dès que le montant est connu."""
+    """Réimprime la facture PDF définitive déjà générée (désignation et numéro figés)."""
     demande = get_object_or_404(DCL, id=pk)
 
     if demande.cout_livraison is None:
         raise Http404("La facture n'est disponible qu'une fois le montant de la livraison défini.")
+
+    demande.get_or_create_numero_facture()
+
+    buffer = _build_facture_pdf(demande)
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="{demande.numero_facture}.pdf"'
+    return response
+
+
+def _build_facture_livraison_manuelle_pdf(livraison):
+    """Facture PDF pour une ligne du registre des livraisons manuelles (clients
+    récurrents/B2B hors workflow DCL — voir Gestionnaire.models.LivraisonManuelle).
+    Même identité légale/mise en page que _build_facture_pdf, contenu adapté.
+    """
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        rightMargin=20 * mm,
+        leftMargin=20 * mm,
+        topMargin=20 * mm,
+        bottomMargin=20 * mm,
+    )
+
+    PRIMARY = colors.HexColor('#000080')
+    LIGHT_GREY = colors.HexColor('#F8FAFC')
+    MID_GREY = colors.HexColor('#64748B')
+    DARK = colors.HexColor('#1E293B')
+    SUCCESS = colors.HexColor('#16A34A')
+
+    style_label = ParagraphStyle('label', fontSize=8, fontName='Helvetica', textColor=MID_GREY)
+    style_value = ParagraphStyle('value', fontSize=10, fontName='Helvetica-Bold', textColor=DARK)
+    style_small = ParagraphStyle('small', fontSize=8, fontName='Helvetica', textColor=MID_GREY)
+    style_center = ParagraphStyle('center', fontSize=8, fontName='Helvetica', textColor=MID_GREY, alignment=TA_CENTER)
+    style_section = ParagraphStyle('section', fontSize=11, fontName='Helvetica-Bold', textColor=PRIMARY, spaceBefore=8, spaceAfter=4)
+
+    story = []
+
+    # ─── Header ──────────────────────────────────────────────────────────────
+    header_data = [[
+        Paragraph(
+            f"<b>{EMETTEUR['nom']}</b><br/><font size=8>{EMETTEUR['adresse']}</font>"
+            f"<br/><font size=8>Tél: {EMETTEUR['telephone']} · {EMETTEUR['email']}</font>",
+            ParagraphStyle('logo', fontSize=15, fontName='Helvetica-Bold', textColor=colors.white, leading=13),
+        ),
+        Paragraph(
+            f"FACTURE<br/><font size=11>{livraison.numero_facture}</font>",
+            ParagraphStyle('rh', fontSize=16, fontName='Helvetica-Bold', textColor=colors.white, alignment=TA_RIGHT),
+        ),
+    ]]
+    header_table = Table(header_data, colWidths=['62%', '38%'])
+    header_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), PRIMARY),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 14),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 14),
+        ('TOPPADDING', (0, 0), (-1, -1), 14),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 14),
+    ]))
+    story.append(header_table)
+    story.append(Spacer(1, 3 * mm))
+
+    # ─── Mentions légales de l'émetteur ─────────────────────────────────────
+    story.append(Paragraph(
+        f"RCCM : {EMETTEUR['rccm']} · Compte Contribuable (CC) : {EMETTEUR['cc']}",
+        style_small,
+    ))
+    story.append(Spacer(1, 5 * mm))
+
+    # ─── Facture / Date ──────────────────────────────────────────────────────
+    date_facture = livraison.date_facture.strftime('%d/%m/%Y à %H:%M') if livraison.date_facture else '–'
+    info_data = [
+        [Paragraph('N° de facture', style_label), Paragraph('Date de facturation', style_label)],
+        [Paragraph(livraison.numero_facture, style_value), Paragraph(date_facture, style_value)],
+    ]
+    info_table = Table(info_data, colWidths=['50%', '50%'])
+    info_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), LIGHT_GREY),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('LEFTPADDING', (0, 0), (-1, -1), 10),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 10),
+        ('BOX', (0, 0), (-1, -1), 0.5, colors.HexColor('#E2E8F0')),
+        ('LINEAFTER', (0, 0), (0, -1), 0.5, colors.HexColor('#E2E8F0')),
+    ]))
+    story.append(info_table)
+    story.append(Spacer(1, 5 * mm))
+
+    # ─── Facturé à ───────────────────────────────────────────────────────────
+    story.append(Paragraph('Facturé à', style_section))
+    client_data = [
+        [Paragraph('Nom', style_label), Paragraph(livraison.client_nom, style_value)],
+        [Paragraph('Téléphone', style_label), Paragraph(livraison.client_telephone or '–', style_value)],
+    ]
+    client_table = Table(client_data, colWidths=['30%', '70%'])
+    client_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), LIGHT_GREY),
+        ('TOPPADDING', (0, 0), (-1, -1), 5),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+        ('LEFTPADDING', (0, 0), (-1, -1), 10),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+        ('LINEBELOW', (0, 0), (-1, -2), 0.5, colors.HexColor('#E2E8F0')),
+        ('BOX', (0, 0), (-1, -1), 0.5, colors.HexColor('#E2E8F0')),
+    ]))
+    story.append(client_table)
+    story.append(Spacer(1, 6 * mm))
+
+    # ─── Itinéraire ──────────────────────────────────────────────────────────
+    story.append(Paragraph('Itinéraire', style_section))
+    itineraire_data = [
+        [Paragraph('Départ', style_label), Paragraph('Destination', style_label)],
+        [Paragraph(livraison.lieu_depart, style_value), Paragraph(livraison.lieu_arrivee, style_value)],
+    ]
+    itineraire_table = Table(itineraire_data, colWidths=['50%', '50%'])
+    itineraire_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), LIGHT_GREY),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('LEFTPADDING', (0, 0), (-1, -1), 10),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 10),
+        ('BOX', (0, 0), (-1, -1), 0.5, colors.HexColor('#E2E8F0')),
+        ('LINEAFTER', (0, 0), (0, -1), 0.5, colors.HexColor('#E2E8F0')),
+    ]))
+    story.append(itineraire_table)
+    story.append(Spacer(1, 6 * mm))
+
+    # ─── Prestation ──────────────────────────────────────────────────────────
+    story.append(Paragraph('Détail de la prestation', style_section))
+    montant = livraison.montant or 0
+    designation = livraison.get_designation_facture()
+
+    presta_header = ['Désignation', 'Qté', 'Prix unitaire', 'Montant']
+    presta_row = [Paragraph(designation, style_small), '1', f"{montant} FCFA", f"{montant} FCFA"]
+    presta_table = Table(
+        [presta_header, presta_row],
+        colWidths=['52%', '10%', '19%', '19%'],
+    )
+    presta_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), PRIMARY),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 9),
+        ('FONTNAME', (0, 1), (-1, 1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, 1), 9),
+        ('ALIGN', (1, 0), (-1, -1), 'CENTER'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('TOPPADDING', (0, 0), (-1, -1), 7),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 7),
+        ('LEFTPADDING', (0, 0), (-1, -1), 8),
+        ('BOX', (0, 0), (-1, -1), 0.5, colors.HexColor('#E2E8F0')),
+        ('LINEBELOW', (0, 0), (-1, 0), 0.5, colors.HexColor('#E2E8F0')),
+    ]))
+    story.append(presta_table)
+    story.append(Spacer(1, 5 * mm))
+
+    # ─── Total ───────────────────────────────────────────────────────────────
+    total_data = [
+        [Paragraph('Total HT', style_label), Paragraph(f"{montant} FCFA", style_value)],
+        [Paragraph('TVA', style_label), Paragraph('Non applicable', style_value)],
+        [
+            Paragraph('Total TTC', ParagraphStyle('ttcl2', fontSize=11, fontName='Helvetica-Bold', textColor=PRIMARY)),
+            Paragraph(f"{montant} FCFA", ParagraphStyle('ttcv2', fontSize=13, fontName='Helvetica-Bold', textColor=SUCCESS, alignment=TA_RIGHT)),
+        ],
+    ]
+    total_table = Table(total_data, colWidths=['70%', '30%'])
+    total_table.setStyle(TableStyle([
+        ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
+        ('TOPPADDING', (0, 0), (-1, -1), 5),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+        ('LEFTPADDING', (0, 0), (-1, -1), 10),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 10),
+        ('LINEABOVE', (0, 2), (-1, 2), 0.75, PRIMARY),
+        ('BOX', (0, 0), (-1, -1), 0.5, colors.HexColor('#E2E8F0')),
+    ]))
+    story.append(total_table)
+    story.append(Spacer(1, 6 * mm))
+
+    # ─── Footer légal ────────────────────────────────────────────────────────
+    story.append(HRFlowable(width='100%', thickness=0.5, color=colors.HexColor('#E2E8F0')))
+    story.append(Spacer(1, 3 * mm))
+    story.append(Paragraph(
+        f"{EMETTEUR['nom']} · RCCM {EMETTEUR['rccm']} · CC {EMETTEUR['cc']} · TVA non applicable",
+        style_center,
+    ))
+    generated_at = timezone.now().strftime('%d/%m/%Y à %H:%M')
+    story.append(Paragraph(
+        f"Facture définitive n° {livraison.numero_facture} — générée le {generated_at}",
+        style_center,
+    ))
+
+    doc.build(story)
+    buffer.seek(0)
+    return buffer
+
+
+@login_required
+@role_required("gestionnaire")
+def facture_livraison_manuelle_pdf(request, pk):
+    """Génère (une seule fois, définitivement) ou réimprime la facture PDF d'une
+    ligne du registre des livraisons manuelles. Désignation et montant sont déjà
+    connus depuis la création de la ligne — pas de popup nécessaire ici.
+    """
+    livraison = get_object_or_404(LivraisonManuelle, pk=pk)
+
+    livraison.get_or_create_numero_facture()
+
+    buffer = _build_facture_livraison_manuelle_pdf(livraison)
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="{livraison.numero_facture}.pdf"'
+    return response
+
+
+@login_required
+@role_required("gestionnaire")
+@require_POST
+def generer_facture(request, pk):
+    """Génère la facture PDF définitive. À la toute première génération (numéro
+    pas encore attribué), enregistre la désignation du colis saisie par le
+    gestionnaire dans le popup — elle est ensuite figée, comme le numéro de
+    facture, et réutilisée à chaque réimpression.
+    """
+    demande = get_object_or_404(DCL, id=pk)
+
+    if demande.cout_livraison is None:
+        raise Http404("La facture n'est disponible qu'une fois le montant de la livraison défini.")
+
+    if not demande.numero_facture:
+        designation = request.POST.get('designation', '').strip()
+        if not designation:
+            messages.error(request, "Veuillez préciser la désignation du colis avant de générer la facture.")
+            return redirect('Gestionnaire:detail_demande', pk=pk)
+        demande.designation_facture = designation
+        demande.save(update_fields=['designation_facture'])
 
     demande.get_or_create_numero_facture()
 

@@ -240,6 +240,11 @@ class DCL(SafeDeleteModel, LifecycleModel):
         null=True, blank=True,
         verbose_name="Date de facturation"
     )
+    designation_facture = models.CharField(
+        max_length=255, null=True, blank=True,
+        verbose_name="Désignation (facture)",
+        help_text="Description du colis à facturer, saisie par le gestionnaire à la première génération de la facture — définitive au même titre que le numéro de facture"
+    )
 
     class Meta:
         verbose_name = "Demande de coursier"
@@ -415,6 +420,14 @@ class DCL(SafeDeleteModel, LifecycleModel):
         '''
 
 
+    def get_default_designation_facture(self):
+        """Désignation générée par défaut, proposée au gestionnaire dans le popup
+        de génération de facture (il peut la remplacer avant la 1ère génération)."""
+        return (
+            f"Prestation de livraison — {self.get_type_course_display()} — "
+            f"{self.adresse_depart} → {self.adresse_destination}"
+        )
+
     def __str__(self):
         return f"Demande #{self.ref} | Client: {self.get_client_display()} | Statut: {self.get_statut_display()}"
 
@@ -423,8 +436,9 @@ class DCL(SafeDeleteModel, LifecycleModel):
 
     def save(self, *args, **kwargs):
         if not self.ref:
-            # Générer une référence unique basée sur un UUID
-            self.ref = f'DCL-{uuid.uuid4().hex[:8].upper()}'
+            # Préfixe DCL pour une demande libre (invité, sans compte client), DC sinon
+            prefix = 'DCL' if self.client_id is None else 'DC'
+            self.ref = f'{prefix}-{uuid.uuid4().hex[:8].upper()}'
         super().save(*args, **kwargs)
 
     def update_status(self, new_status):
@@ -434,34 +448,10 @@ class DCL(SafeDeleteModel, LifecycleModel):
 
     def get_or_create_numero_facture(self):
         """Retourne le numéro de facture de cette demande, ou en génère un nouveau
-        et définitif la première fois (format FACT-AAAA-MM-NNNN, séquence mensuelle).
+        et définitif la première fois (format FACT-AAAA-MM-NNNN, séquence mensuelle,
+        partagée avec les autres types de documents facturables — voir assign_numero_facture).
         """
-        if self.numero_facture:
-            return self.numero_facture
-
-        with transaction.atomic():
-            demande = DCL.objects.select_for_update().get(pk=self.pk)
-            if demande.numero_facture:
-                self.numero_facture = demande.numero_facture
-                self.date_facture = demande.date_facture
-                return self.numero_facture
-
-            now = timezone.now()
-            counter, _ = FactureCounter.objects.select_for_update().get_or_create(
-                annee=now.year, mois=now.month, defaults={'dernier_numero': 0}
-            )
-            counter.dernier_numero += 1
-            counter.save(update_fields=['dernier_numero'])
-
-            numero = f"FACT-{now.year}-{now.month:02d}-{counter.dernier_numero:04d}"
-            demande.numero_facture = numero
-            demande.date_facture = now
-            demande.save(update_fields=['numero_facture', 'date_facture'])
-
-            self.numero_facture = numero
-            self.date_facture = now
-
-        return self.numero_facture
+        return assign_numero_facture(self)
 
     def calculate_distance(self):
        
@@ -521,6 +511,45 @@ class FactureCounter(models.Model):
 
     def __str__(self):
         return f"{self.annee}-{self.mois:02d} → {self.dernier_numero}"
+
+
+def assign_numero_facture(instance):
+    """Assigne (une seule fois, atomiquement) un numéro de facture définitif et
+    séquentiel (format FACT-AAAA-MM-NNNN, séquence mensuelle) à `instance`.
+
+    Partagé par tous les types de documents facturables (DCL, LivraisonManuelle,
+    ...) via le même FactureCounter, pour garantir une numérotation légale
+    continue sans collision ni chevauchement entre les différentes sources.
+    `instance` doit avoir des champs `numero_facture`/`date_facture` et un pk
+    déjà enregistré en base.
+    """
+    if instance.numero_facture:
+        return instance.numero_facture
+
+    model = type(instance)
+    with transaction.atomic():
+        obj = model.objects.select_for_update().get(pk=instance.pk)
+        if obj.numero_facture:
+            instance.numero_facture = obj.numero_facture
+            instance.date_facture = obj.date_facture
+            return instance.numero_facture
+
+        now = timezone.now()
+        counter, _ = FactureCounter.objects.select_for_update().get_or_create(
+            annee=now.year, mois=now.month, defaults={'dernier_numero': 0}
+        )
+        counter.dernier_numero += 1
+        counter.save(update_fields=['dernier_numero'])
+
+        numero = f"FACT-{now.year}-{now.month:02d}-{counter.dernier_numero:04d}"
+        obj.numero_facture = numero
+        obj.date_facture = now
+        obj.save(update_fields=['numero_facture', 'date_facture'])
+
+        instance.numero_facture = numero
+        instance.date_facture = now
+
+    return instance.numero_facture
 
 
 class Notification(models.Model):

@@ -4,7 +4,11 @@ from django.contrib.auth import views as auth_views
 from Gestionnaire.views import *
 from Gestionnaire.views.assigner import assigner_livreur_modal, assigner_livreur
 from Gestionnaire.views.pdf import recu_pdf_gestionnaire
-from Gestionnaire.views.facture import facture_pdf
+from Gestionnaire.views.facture import facture_pdf, generer_facture, facture_livraison_manuelle_pdf
+from Gestionnaire.views.livraison_manuelle import (
+    LivraisonManuelleListView, creer_livraison_manuelle,
+    modifier_livraison_manuelle, supprimer_livraison_manuelle,
+)
 
 app_name = 'Gestionnaire'
 
@@ -23,6 +27,7 @@ urlpatterns = [
     path('demandes/<uuid:pk>/statut/<str:nouveau_statut>/', changer_statut, name='changer_statut'),
     path('demandes/<uuid:pk>/recu-pdf/', recu_pdf_gestionnaire, name='recu_pdf'),
     path('demandes/<uuid:pk>/facture-pdf/', facture_pdf, name='facture_pdf'),
+    path('demandes/<uuid:pk>/generer-facture/', generer_facture, name='generer_facture'),
 
     # localisatoion des livreurs
     path('api/livreur-positions/', get_livreur_positions, name='get_livreur_positions'),
@@ -32,6 +37,13 @@ urlpatterns = [
     path('clients/', ListeClientsView.as_view(), name='liste_clients'),
     path('clients/<int:pk>/', DetailClientView.as_view(), name='detail_client'),
     path('clients/<int:pk>/activer-desactiver/', activer_desactiver_client, name='activer_desactiver_client'),
+
+    # Registre des livraisons manuelles (clients récurrents/B2B hors workflow DCL)
+    path('livraisons-manuelles/', LivraisonManuelleListView.as_view(), name='livraisons_manuelles_liste'),
+    path('livraisons-manuelles/creer/', creer_livraison_manuelle, name='creer_livraison_manuelle'),
+    path('livraisons-manuelles/<uuid:pk>/modifier/', modifier_livraison_manuelle, name='modifier_livraison_manuelle'),
+    path('livraisons-manuelles/<uuid:pk>/supprimer/', supprimer_livraison_manuelle, name='supprimer_livraison_manuelle'),
+    path('livraisons-manuelles/<uuid:pk>/facture-pdf/', facture_livraison_manuelle_pdf, name='facture_livraison_manuelle_pdf'),
 
 
     # Redirection de l'URL racine vers le tableau de bord

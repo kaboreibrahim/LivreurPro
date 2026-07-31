@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Gestionnaire
+from .models import Gestionnaire, LivraisonManuelle
 
 
 class GestionnaireAdmin(admin.ModelAdmin):
@@ -18,3 +18,11 @@ class GestionnaireAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Gestionnaire, GestionnaireAdmin)
+
+
+@admin.register(LivraisonManuelle)
+class LivraisonManuelleAdmin(admin.ModelAdmin):
+    list_display = ('date_livraison', 'client_nom', 'nature_colis', 'lieu_depart', 'lieu_arrivee', 'montant', 'numero_facture')
+    search_fields = ('client_nom', 'client_telephone', 'nature_colis')
+    list_filter = ('date_livraison',)
+    readonly_fields = ('id', 'numero_facture', 'date_facture')
