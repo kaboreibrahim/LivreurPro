@@ -13,8 +13,8 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import mm
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
-from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.enums import TA_LEFT, TA_RIGHT
 
 # Informations légales de l'émetteur — voir templates/layouts/base_site.html pour les coordonnées publiques
 EMETTEUR = {
@@ -25,6 +25,32 @@ EMETTEUR = {
     'rccm': 'CI-ABJ-03-2023-B12-06135',
     'cc': '2304865G',
 }
+
+
+def _draw_facture_footer(canvas_obj, doc_obj, numero_facture):
+    """Dessine le pied de page légal ancré en bas de chaque page (indépendant de
+    la longueur du contenu au-dessus, contrairement à un flowable ajouté au fil
+    du texte)."""
+    canvas_obj.saveState()
+    page_width = doc_obj.pagesize[0]
+    y_line = 16 * mm
+
+    canvas_obj.setStrokeColor(colors.HexColor('#E2E8F0'))
+    canvas_obj.setLineWidth(0.5)
+    canvas_obj.line(20 * mm, y_line, page_width - 20 * mm, y_line)
+
+    canvas_obj.setFillColor(colors.HexColor('#64748B'))
+    canvas_obj.setFont('Helvetica', 8)
+    canvas_obj.drawCentredString(
+        page_width / 2, y_line - 5 * mm,
+        f"{EMETTEUR['nom']} · RCCM {EMETTEUR['rccm']} · CC {EMETTEUR['cc']} · TVA non applicable",
+    )
+    generated_at = timezone.now().strftime('%d/%m/%Y à %H:%M')
+    canvas_obj.drawCentredString(
+        page_width / 2, y_line - 9 * mm,
+        f"Facture définitive n° {numero_facture} — générée le {generated_at}",
+    )
+    canvas_obj.restoreState()
 
 
 def _build_facture_pdf(demande):
@@ -47,7 +73,6 @@ def _build_facture_pdf(demande):
     style_label = ParagraphStyle('label', fontSize=8, fontName='Helvetica', textColor=MID_GREY)
     style_value = ParagraphStyle('value', fontSize=10, fontName='Helvetica-Bold', textColor=DARK)
     style_small = ParagraphStyle('small', fontSize=8, fontName='Helvetica', textColor=MID_GREY)
-    style_center = ParagraphStyle('center', fontSize=8, fontName='Helvetica', textColor=MID_GREY, alignment=TA_CENTER)
     style_section = ParagraphStyle('section', fontSize=11, fontName='Helvetica-Bold', textColor=PRIMARY, spaceBefore=8, spaceAfter=4)
 
     story = []
@@ -202,22 +227,22 @@ def _build_facture_pdf(demande):
         ('BOX', (0, 0), (-1, -1), 0.5, colors.HexColor('#E2E8F0')),
     ]))
     story.append(total_table)
-    story.append(Spacer(1, 6 * mm))
+    story.append(Spacer(1, 10 * mm))
 
-    # ─── Footer légal ────────────────────────────────────────────────────────
-    story.append(HRFlowable(width='100%', thickness=0.5, color=colors.HexColor('#E2E8F0')))
-    story.append(Spacer(1, 3 * mm))
-    story.append(Paragraph(
-        f"{EMETTEUR['nom']} · RCCM {EMETTEUR['rccm']} · CC {EMETTEUR['cc']} · TVA non applicable",
-        style_center,
-    ))
-    generated_at = timezone.now().strftime('%d/%m/%Y à %H:%M')
-    story.append(Paragraph(
-        f"Facture définitive n° {demande.numero_facture} — générée le {generated_at}",
-        style_center,
-    ))
+    # ─── Signature ───────────────────────────────────────────────────────────
+    story.append(Paragraph('Signature et cachet', style_section))
+    signature_box = Table([['']], colWidths=['100%'], rowHeights=[22 * mm])
+    signature_box.setStyle(TableStyle([
+        ('BOX', (0, 0), (-1, -1), 0.75, colors.HexColor('#CBD5E1')),
+        ('BACKGROUND', (0, 0), (-1, -1), LIGHT_GREY),
+    ]))
+    story.append(signature_box)
 
-    doc.build(story)
+    doc.build(
+        story,
+        onFirstPage=lambda c, d: _draw_facture_footer(c, d, demande.numero_facture),
+        onLaterPages=lambda c, d: _draw_facture_footer(c, d, demande.numero_facture),
+    )
     buffer.seek(0)
     return buffer
 
@@ -263,7 +288,6 @@ def _build_facture_livraison_manuelle_pdf(livraison):
     style_label = ParagraphStyle('label', fontSize=8, fontName='Helvetica', textColor=MID_GREY)
     style_value = ParagraphStyle('value', fontSize=10, fontName='Helvetica-Bold', textColor=DARK)
     style_small = ParagraphStyle('small', fontSize=8, fontName='Helvetica', textColor=MID_GREY)
-    style_center = ParagraphStyle('center', fontSize=8, fontName='Helvetica', textColor=MID_GREY, alignment=TA_CENTER)
     style_section = ParagraphStyle('section', fontSize=11, fontName='Helvetica-Bold', textColor=PRIMARY, spaceBefore=8, spaceAfter=4)
 
     story = []
@@ -405,22 +429,22 @@ def _build_facture_livraison_manuelle_pdf(livraison):
         ('BOX', (0, 0), (-1, -1), 0.5, colors.HexColor('#E2E8F0')),
     ]))
     story.append(total_table)
-    story.append(Spacer(1, 6 * mm))
+    story.append(Spacer(1, 10 * mm))
 
-    # ─── Footer légal ────────────────────────────────────────────────────────
-    story.append(HRFlowable(width='100%', thickness=0.5, color=colors.HexColor('#E2E8F0')))
-    story.append(Spacer(1, 3 * mm))
-    story.append(Paragraph(
-        f"{EMETTEUR['nom']} · RCCM {EMETTEUR['rccm']} · CC {EMETTEUR['cc']} · TVA non applicable",
-        style_center,
-    ))
-    generated_at = timezone.now().strftime('%d/%m/%Y à %H:%M')
-    story.append(Paragraph(
-        f"Facture définitive n° {livraison.numero_facture} — générée le {generated_at}",
-        style_center,
-    ))
+    # ─── Signature ───────────────────────────────────────────────────────────
+    story.append(Paragraph('Signature et cachet', style_section))
+    signature_box = Table([['']], colWidths=['100%'], rowHeights=[22 * mm])
+    signature_box.setStyle(TableStyle([
+        ('BOX', (0, 0), (-1, -1), 0.75, colors.HexColor('#CBD5E1')),
+        ('BACKGROUND', (0, 0), (-1, -1), LIGHT_GREY),
+    ]))
+    story.append(signature_box)
 
-    doc.build(story)
+    doc.build(
+        story,
+        onFirstPage=lambda c, d: _draw_facture_footer(c, d, livraison.numero_facture),
+        onLaterPages=lambda c, d: _draw_facture_footer(c, d, livraison.numero_facture),
+    )
     buffer.seek(0)
     return buffer
 
